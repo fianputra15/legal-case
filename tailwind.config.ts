@@ -2,23 +2,25 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/widgets/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/shared/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/views/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Custom legal workspace colors
-        'legal': {
-          'active': '#EBE8E2',      // Active state (buttons, etc.)
-          'bg': '#F5F3F1',          // Background color
-          'text-primary': '#1F1D1B', // Large text, primary content
-          'text-sub': '#66635D',     // Sub text, counts, descriptions
-          'text-badge': '#827E77',   // Badge text
-          'success': '#EBFFEF',      // Success/approved indicator
-          'primary': '#FF6A2B',      // Primary/brand button
-        },
+        'light': '#EBE8E2',   
+        'weak50': '#F5F3F1',                  
+        'strong900': '#1F1D1B',    
+        'strong950': '#171717',          
+        'sub600': '#66635D',  
+        'base': '#827E77',   
+        'lighter': '#EBFFEF',     
+        'brand': '#FF6A2B',     
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],

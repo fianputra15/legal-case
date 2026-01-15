@@ -31,16 +31,16 @@ function NavItem({ href, icon, label, badge }: NavItemProps) {
       className={cn(
         'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group',
         isActive
-          ? 'bg-legal-active text-legal-text-primary'
-          : 'text-legal-text-sub hover:bg-legal-active hover:text-legal-text-primary'
+          ? 'bg-active text-text-primary'
+          : 'text-text-sub hover:bg-active hover:text-text-primary'
       )}
     >
-      <div className={cn('shrink-0', isActive ? 'text-legal-text-primary' : 'text-legal-text-sub group-hover:text-legal-text-primary')}>
+      <div className={cn('shrink-0', isActive ? 'text-text-primary' : 'text-text-sub group-hover:text-text-primary')}>
         <Image src={icon as StaticImport} alt={label} className="w-5 h-5" />
       </div>
       <span className="font-medium">{label}</span>
       {badge && (
-        <span className="ml-auto px-2 py-1 text-xs bg-legal-text-badge/10 text-legal-text-badge rounded-full">
+        <span className="ml-auto px-2 py-1 text-xs bg-text-badge/10 text-text-badge rounded-full">
           {badge}
         </span>
       )}
@@ -50,9 +50,9 @@ function NavItem({ href, icon, label, badge }: NavItemProps) {
 
 export default function Sidebar({ children }: SidebarProps) {
   return (
-    <aside className="w-64 bg-white border-r border-legal-active flex flex-col">
+    <aside className="w-64 bg-brand border-r border-active flex flex-col">
       <div className="p-6">
-        <h1 className="text-xl font-semibold text-legal-text-primary">
+        <h1 className="text-xl font-semibold text-text-primary">
           Legal Workspace
         </h1>
       </div>
@@ -88,16 +88,16 @@ export default function Sidebar({ children }: SidebarProps) {
         {children}
       </nav>
       
-      <div className="p-4 border-t border-legal-active">
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-legal-bg">
-          <div className="w-8 h-8 bg-legal-primary rounded-full flex items-center justify-center">
+      <div className="p-4 border-t border-active">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-weak">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-medium">JD</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-legal-text-primary truncate">
+            <p className="text-sm font-medium text-text-primary truncate">
               John Doe
             </p>
-            <p className="text-xs text-legal-text-sub truncate">
+            <p className="text-xs text-text-sub truncate">
               Senior Lawyer
             </p>
           </div>

@@ -6,7 +6,7 @@ export default function TypographyExamples() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Typography variant="h4" as="h4">
+        <Typography variant="headline" as="h4">
           Headline Example (h4)
         </Typography>
         <Typography variant="md" color="legal-text-sub">

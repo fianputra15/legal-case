@@ -10,11 +10,11 @@ interface HeaderProps {
 
 export default function Header({ title, actions, children }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-legal-active px-6 py-4">
+    <header className="bg-white border-b border-active px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {title && (
-            <h2 className="text-lg font-semibold text-legal-text-primary">
+            <h2 className="text-lg font-semibold text-text-primary">
               {title}
             </h2>
           )}
@@ -27,10 +27,10 @@ export default function Header({ title, actions, children }: HeaderProps) {
             <input
               type="text"
               placeholder="Search cases, clients..."
-              className="w-80 pl-10 pr-4 py-2 bg-legal-bg border border-legal-active rounded-lg text-sm placeholder:text-legal-text-sub focus:outline-none focus:ring-2 focus:ring-legal-primary focus:border-transparent"
+              className="w-80 pl-10 pr-4 py-2 bg-weak border border-active rounded-lg text-sm placeholder:text-text-sub focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             <svg
-              className="w-4 h-4 text-legal-text-sub absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="w-4 h-4 text-text-sub absolute left-3 top-1/2 transform -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -45,7 +45,7 @@ export default function Header({ title, actions, children }: HeaderProps) {
           </div>
           
           {/* Notifications */}
-          <button className="relative p-2 text-legal-text-sub hover:text-legal-text-primary transition-colors">
+          <button className="relative p-2 text-text-sub hover:text-text-primary transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -54,7 +54,7 @@ export default function Header({ title, actions, children }: HeaderProps) {
                 d="M15 17h5l-3-3V5a2 2 0 00-4 0v9l-3 3h5m6 0v1a3 3 0 11-6 0v-1m6 0V9a3 3 0 00-6 0v8z"
               />
             </svg>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-legal-primary text-white text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-xs rounded-full flex items-center justify-center">
               2
             </span>
           </button>

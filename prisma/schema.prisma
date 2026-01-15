@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  LAWYER
+  CLIENT
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  UNDER_REVIEW
+  AWAITING_CLIENT
+  CLOSED
+  ARCHIVED
+}
+
+enum CaseCategory {
+  CRIMINAL_LAW
+  CIVIL_LAW
+  CORPORATE_LAW
+  FAMILY_LAW
+  IMMIGRATION_LAW
+  INTELLECTUAL_PROPERTY
+  LABOR_LAW
+  REAL_ESTATE
+  TAX_LAW
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSED
+  ARCHIVED
+  DELETED
+}
+
+// Models
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole @default(CLIENT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  ownedCases        Case[]       @relation("CaseOwner")
+  accessibleCases   CaseAccess[] @relation("LawyerAccess")
+  uploadedDocuments Document[]   @relation("DocumentUploader")
+  sentMessages      Message[]    @relation("MessageSender")
+
+  @@map("users")
+  @@index([email])
+  @@index([role])
+}
+
+model Case {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  category    CaseCategory
+  status      CaseStatus   @default(OPEN)
+  priority    Int          @default(2) // 1=Low, 2=Medium, 3=High, 4=Urgent
+  ownerId     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  owner        User         @relation("CaseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  lawyerAccess CaseAccess[] @relation("CaseAccess")
+  documents    Document[]   @relation("CaseDocuments")
+  messages     Message[]    @relation("CaseMessages")
+
+  @@map("cases")
+  @@index([ownerId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model CaseAccess {
+  id        String   @id @default(cuid())
+  caseId    String
+  lawyerId  String
+  grantedAt DateTime @default(now())
+
+  // Relations
+  case   Case @relation("CaseAccess", fields: [caseId], references: [id], onDelete: Cascade)
+  lawyer User @relation("LawyerAccess", fields: [lawyerId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, lawyerId])
+  @@map("case_access")
+  @@index([caseId])
+  @@index([lawyerId])
+}
+
+model Document {
+  id           String         @id @default(cuid())
+  caseId       String
+  originalName String
+  storedName   String         @unique
+  filePath     String?        // Storage path/URL
+  size         Int            // File size in bytes
+  mimeType     String
+  status       DocumentStatus @default(PENDING)
+  uploadedById String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  case       Case @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation("DocumentUploader", fields: [uploadedById], references: [id])
+
+  @@map("documents")
+  @@index([caseId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([mimeType])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  caseId    String
+  senderId  String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  case   Case @relation("CaseMessages", fields: [caseId], references: [id], onDelete: Cascade)
+  sender User @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@map("messages")
+  @@index([caseId])
+  @@index([senderId])
+  @@index([createdAt])
+}
