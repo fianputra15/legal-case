@@ -1,7 +1,14 @@
-import { PrismaClient, UserRole, CaseStatus, CaseCategory } from '@prisma/client';
+import { PrismaClient, UserRole, CaseStatus } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
+import 'dotenv/config';
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Starting database seed...');
@@ -9,10 +16,10 @@ async function main() {
   // Create admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@legalfirm.com' },
+    where: { email: 'admin@legal.com' },
     update: {},
     create: {
-      email: 'admin@legalfirm.com',
+      email: 'admin@legal.com',
       passwordHash: adminPasswordHash,
       firstName: 'System',
       lastName: 'Administrator',
@@ -23,10 +30,10 @@ async function main() {
   // Create sample lawyer
   const lawyerPasswordHash = await bcrypt.hash('lawyer123', 12);
   const lawyer = await prisma.user.upsert({
-    where: { email: 'lawyer@legalfirm.com' },
+    where: { email: 'lawyer@legal.com' },
     update: {},
     create: {
-      email: 'lawyer@legalfirm.com',
+      email: 'lawyer@legal.com',
       passwordHash: lawyerPasswordHash,
       firstName: 'John',
       lastName: 'Smith',
@@ -53,7 +60,7 @@ async function main() {
     data: {
       title: 'Contract Dispute - ABC Corp',
       description: 'Client needs assistance with a contract dispute regarding service delivery terms.',
-      category: CaseCategory.CORPORATE_LAW,
+      category: 'CORPORATE_LAW',
       status: CaseStatus.OPEN,
       priority: 3, // High priority
       ownerId: client.id,
@@ -64,7 +71,7 @@ async function main() {
     data: {
       title: 'Property Purchase Legal Review',
       description: 'Legal review required for residential property purchase in downtown area.',
-      category: CaseCategory.REAL_ESTATE,
+      category: 'REAL_ESTATE',
       status: CaseStatus.IN_PROGRESS,
       priority: 2, // Medium priority
       ownerId: client.id,
@@ -105,8 +112,8 @@ async function main() {
 
   console.log('Database seeded successfully!');
   console.log('Sample credentials:');
-  console.log('Admin: admin@legalfirm.com / admin123');
-  console.log('Lawyer: lawyer@legalfirm.com / lawyer123');
+  console.log('Admin: admin@legal.com / admin123');
+  console.log('Lawyer: lawyer@legal.com / lawyer123');
   console.log('Client: client@example.com / client123');
 }
 
