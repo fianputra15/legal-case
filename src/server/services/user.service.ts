@@ -23,12 +23,13 @@ export class UserService {
    * Create a new user
    */
   async createUser(data: CreateUserDto): Promise<UserEntity> {
-    // TODO: Implement business logic for user creation
-    // Hash password, validate email uniqueness, etc.
+    // Hash password before storing
     const hashedPassword = await AuthUtils.hashPassword(data.password);
+    const { password, ...userData } = data;
+    
     return this.userRepository.create({
-      ...data,
-      password: hashedPassword,
+      ...userData,
+      passwordHash: hashedPassword,
     });
   }
 
@@ -59,7 +60,7 @@ export class UserService {
     const user = await this.userRepository.findByEmail(email);
     if (!user) return null;
 
-    const isValidPassword = await AuthUtils.verifyPassword(password, user.password);
+    const isValidPassword = await AuthUtils.verifyPassword(password, user.passwordHash);
     if (!isValidPassword) return null;
 
     return user;

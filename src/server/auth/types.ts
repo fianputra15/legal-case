@@ -1,8 +1,9 @@
 export interface AuthUser {
   id: string;
   email: string;
-  role: UserRole;
-  permissions: string[];
+  firstName: string;
+  lastName: string;
+  role: string;
 }
 
 export interface LoginRequest {

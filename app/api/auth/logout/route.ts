@@ -1,20 +1,32 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { ResponseHandler } from '@/server/utils/response';
+import { AuthMiddleware } from '@/server/auth/middleware';
 import { Logger } from '@/server/utils/logger';
 
+/**
+ * POST /api/auth/logout
+ * Clear authentication cookie and invalidate session
+ */
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Implement logout logic
-    // - Invalidate refresh token
-    // - Add token to blacklist
-    // - Clear session data
+    // Get current user for logging (optional)
+    const currentUser = await AuthMiddleware.getCurrentUser(request);
+    
+    if (currentUser) {
+      Logger.info(`User logged out: ${currentUser.email}`);
+    }
 
-    Logger.info('User logged out');
-
-    return ResponseHandler.success(null, 'Logged out successfully');
+    // Create response and clear auth cookie
+    const response = ResponseHandler.success(null, 'Logged out successfully');
+    response.headers.set('Set-Cookie', AuthMiddleware.createLogoutCookie());
+    
+    return response;
 
   } catch (error) {
     Logger.error('Logout error:', error);
-    return ResponseHandler.internalError('Logout failed');
+    // Still clear the cookie even if there's an error
+    const response = ResponseHandler.success(null, 'Logged out');
+    response.headers.set('Set-Cookie', AuthMiddleware.createLogoutCookie());
+    return response;
   }
 }

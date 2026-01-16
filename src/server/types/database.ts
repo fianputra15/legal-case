@@ -6,7 +6,7 @@
 export interface UserEntity {
   id: string;
   email: string;
-  password: string;
+  passwordHash: string;
   firstName: string;
   lastName: string;
   role: string;
@@ -17,6 +17,7 @@ export interface UserEntity {
 
 export interface CreateUserDto {
   email: string;
+  password: string;
   firstName: string;
   lastName: string;
   role?: string;
