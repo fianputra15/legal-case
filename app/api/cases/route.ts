@@ -4,22 +4,166 @@ import { validateRequest, createCaseSchema } from '@/server/utils/validation';
 import { CaseService } from '@/server/services/case.service';
 import { CaseRepository } from '@/server/db/repositories/case.repository';
 import { AuthMiddleware } from '@/server/auth/middleware';
+import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
 
 const caseService = new CaseService(new CaseRepository());
 
+/**
+ * @swagger
+ * /api/cases:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: List accessible cases
+ *     description: |
+ *       Retrieve all cases accessible to the authenticated user based on their role:
+ *       - **CLIENT**: Only their own cases
+ *       - **LAWYER**: Cases explicitly granted to them
+ *       - **ADMIN**: All cases in the system
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cases retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     cases:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Case'
+ *                     total:
+ *                       type: integer
+ *                       example: 5
+ *                     userRole:
+ *                       type: string
+ *                       enum: ['CLIENT', 'LAWYER', 'ADMIN']
+ *                       example: 'CLIENT'
+ *             examples:
+ *               client_cases:
+ *                 summary: Client's own cases
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     cases:
+ *                       - id: "clx789def012"
+ *                         title: "Contract Dispute - ABC Corp"
+ *                         category: "CORPORATE_LAW"
+ *                         status: "OPEN"
+ *                         priority: 3
+ *                         ownerId: "clx123abc456"
+ *                         createdAt: "2024-01-15T10:30:00Z"
+ *                         updatedAt: "2024-01-15T10:30:00Z"
+ *                     total: 1
+ *                     userRole: "CLIENT"
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *   post:
+ *     tags:
+ *       - Cases
+ *     summary: Create a new case
+ *     description: Create a new legal case. The authenticated user becomes the case owner.
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Property Purchase Legal Review"
+ *               description:
+ *                 type: string
+ *                 example: "Legal review required for residential property purchase"
+ *               category:
+ *                 type: string
+ *                 enum: ['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER']
+ *                 example: "REAL_ESTATE"
+ *               priority:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 4
+ *                 example: 2
+ *             required: ['title', 'category']
+ *     responses:
+ *       201:
+ *         description: Case created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Case'
+ *                 message:
+ *                   type: string
+ *                   example: "Case created successfully"
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Validation failed"
+ *               message: "Title is required"
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+
+/**
+ * GET /api/cases - List cases accessible to the authenticated user
+ * 
+ * Authorization:
+ * - Clients see only their own cases
+ * - Lawyers see cases granted to them via CaseAccess
+ * - Admins see all cases
+ */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Apply authentication middleware
-    const authResult = await AuthMiddleware.authenticate(request as unknown);
-    if (authResult) return authResult;
+    // Require authentication
+    const authResult = await AuthMiddleware.requireAuth(request);
+    if (authResult instanceof Response) {
+      return authResult;
+    }
 
-    // Extract user ID from authenticated request
-    const userId = 'user_id_placeholder'; // TODO: Get from auth middleware
+    const { user } = authResult;
 
-    const cases = await caseService.getCasesByUser(userId);
+    // Get cases accessible to this user based on role and permissions
+    const accessibleCaseIds = await AuthorizationService.getAccessibleCaseIds(user);
+    
+    // Fetch case data for accessible cases only
+    const cases = await caseService.getCasesByIds(accessibleCaseIds);
 
-    return ResponseHandler.success(cases);
+    Logger.info(`Listed ${cases.length} cases for user ${user.email} (role: ${user.role})`);
+
+    return ResponseHandler.success({
+      cases,
+      total: cases.length,
+      userRole: user.role
+    });
 
   } catch (error) {
     Logger.error('Get cases error:', error);
@@ -27,21 +171,28 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * POST /api/cases - Create a new case
+ * 
+ * Authorization: Authenticated users can create cases
+ * - The authenticated user becomes the case owner
+ */
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Apply authentication middleware
-    const authResult = await AuthMiddleware.authenticate(request as unknown);
-    if (authResult) return authResult;
+    // Require authentication
+    const authResult = await AuthMiddleware.requireAuth(request);
+    if (authResult instanceof Response) {
+      return authResult;
+    }
 
+    const { user } = authResult;
     const body = await request.json();
     const caseData = validateRequest(createCaseSchema, body);
     
-    // Extract user ID from authenticated request
-    const userId = 'user_id_placeholder'; // TODO: Get from auth middleware
+    // Create case with authenticated user as owner
+    const newCase = await caseService.createCase(caseData, user.id);
 
-    const newCase = await caseService.createCase(caseData, userId);
-
-    Logger.info(`Case created: ${newCase.id}`);
+    Logger.info(`Case created: ${newCase.id} by user: ${user.email}`);
 
     return ResponseHandler.created(newCase, 'Case created successfully');
 

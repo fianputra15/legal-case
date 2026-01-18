@@ -25,7 +25,7 @@ export class AuthUtils {
   static async hashPassword(password: string): Promise<string> {
     try {
       return await bcrypt.hash(password, BCRYPT_ROUNDS);
-    } catch (error) {
+    } catch {
       throw new Error('Password hashing failed');
     }
   }
@@ -36,7 +36,7 @@ export class AuthUtils {
   static async verifyPassword(password: string, hash: string): Promise<boolean> {
     try {
       return await bcrypt.compare(password, hash);
-    } catch (error) {
+    } catch {
       // Always return false on error to prevent timing attacks
       return false;
     }
@@ -52,7 +52,7 @@ export class AuthUtils {
         issuer: 'legal-case-system',
         audience: 'legal-case-users',
       });
-    } catch (error) {
+    } catch {
       throw new Error('Token generation failed');
     }
   }
@@ -68,7 +68,7 @@ export class AuthUtils {
       }) as TokenPayload;
       
       return decoded;
-    } catch (error) {
+    } catch {
       // Token is invalid, expired, or malformed
       return null;
     }

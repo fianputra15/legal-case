@@ -97,6 +97,73 @@ export class AuthMiddleware {
   }
 
   /**
+   * Require case access authorization
+   * Returns error response if user cannot access the case
+   * 
+   * @param request - Next.js request object
+   * @param caseId - Case ID to check access for
+   * @returns User object if authorized, or error response
+   */
+  static async requireCaseAccess(request: NextRequest, caseId: string): Promise<{ user: AuthUser } | NextResponse> {
+    const authResult = await this.requireAuth(request);
+    
+    if (authResult instanceof NextResponse) {
+      return authResult; // Authentication failed
+    }
+
+    const { user } = authResult;
+    
+    // Import here to avoid circular dependencies
+    const { AuthorizationService } = await import('./authorization');
+    const accessCheck = await AuthorizationService.canAccessCase(user, caseId);
+    
+    if (!accessCheck.allowed) {
+      // Return 404 instead of 403 to avoid leaking case existence
+      if (accessCheck.reason === 'Case not found') {
+        return ResponseHandler.notFound('Case not found');
+      }
+      return ResponseHandler.forbidden('Access denied');
+    }
+
+    return { user };
+  }
+
+  /**
+   * Require case ownership authorization
+   * Returns error response if user is not the case owner
+   * 
+   * @param request - Next.js request object  
+   * @param caseId - Case ID to check ownership for
+   * @returns User object if owner, or error response
+   */
+  static async requireCaseOwnership(request: NextRequest, caseId: string): Promise<{ user: AuthUser } | NextResponse> {
+    const authResult = await this.requireAuth(request);
+    
+    if (authResult instanceof NextResponse) {
+      return authResult; // Authentication failed
+    }
+
+    const { user } = authResult;
+    
+    // Admin always has ownership-level access
+    if (user.role === 'ADMIN') {
+      return { user };
+    }
+
+    const { AuthorizationService } = await import('./authorization');
+    const ownershipCheck = await AuthorizationService.isCaseOwner(user, caseId);
+    
+    if (!ownershipCheck.allowed) {
+      if (ownershipCheck.reason === 'Case not found') {
+        return ResponseHandler.notFound('Case not found');
+      }
+      return ResponseHandler.forbidden('Only case owners can perform this action');
+    }
+
+    return { user };
+  }
+
+  /**
    * Middleware to check user permissions
    */
   static authorize(permissions: string[]) {

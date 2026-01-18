@@ -4,8 +4,38 @@ import { AuthMiddleware } from '@/server/auth/middleware';
 import { Logger } from '@/server/utils/logger';
 
 /**
- * POST /api/auth/logout
- * Clear authentication cookie and invalidate session
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: User logout
+ *     description: Clear authentication cookie and invalidate user session
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         headers:
+ *           Set-Cookie:
+ *             description: Clears the authentication cookie
+ *             schema:
+ *               type: string
+ *               example: "auth-token=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logged out successfully"
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function POST(request: NextRequest) {
   try {
