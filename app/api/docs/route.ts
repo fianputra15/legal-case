@@ -4,11 +4,10 @@
  * Serves OpenAPI documentation with Redoc at /api/docs
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { swaggerSpec } from '@/server/config/swagger';
+import {  NextResponse } from 'next/server';
 
 // Generate the Redoc HTML page
-function generateRedocHTML(spec: any) {
+function generateRedocHTML() {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -85,9 +84,9 @@ function generateRedocHTML(spec: any) {
 /**
  * GET /api/docs - Serve Redoc UI
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const html = generateRedocHTML(swaggerSpec);
+    const html = generateRedocHTML();
     
     return new NextResponse(html, {
       status: 200,

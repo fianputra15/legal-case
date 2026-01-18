@@ -117,11 +117,7 @@ export class AuthMiddleware {
     const { AuthorizationService } = await import('./authorization');
     const accessCheck = await AuthorizationService.canAccessCase(user, caseId);
     
-    if (!accessCheck.allowed) {
-      // Return 404 instead of 403 to avoid leaking case existence
-      if (accessCheck.reason === 'Case not found') {
-        return ResponseHandler.notFound('Case not found');
-      }
+    if (!accessCheck) {
       return ResponseHandler.forbidden('Access denied');
     }
 
@@ -153,10 +149,7 @@ export class AuthMiddleware {
     const { AuthorizationService } = await import('./authorization');
     const ownershipCheck = await AuthorizationService.isCaseOwner(user, caseId);
     
-    if (!ownershipCheck.allowed) {
-      if (ownershipCheck.reason === 'Case not found') {
-        return ResponseHandler.notFound('Case not found');
-      }
+    if (!ownershipCheck) {
       return ResponseHandler.forbidden('Only case owners can perform this action');
     }
 

@@ -30,7 +30,7 @@ export class UserService {
     return this.userRepository.create({
       ...userData,
       passwordHash: hashedPassword,
-    });
+    } as any);
   }
 
   /**

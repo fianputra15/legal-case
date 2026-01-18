@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { ResponseHandler } from '@/server/utils/response';
 import { validateRequest, loginSchema } from '@/server/utils/validation';
 import { UserService } from '@/server/services/user.service';

@@ -45,6 +45,17 @@ enum DocumentStatus {
   DELETED
 }
 
+enum DocumentType {
+  CONTRACT
+  EVIDENCE
+  CORRESPONDENCE
+  LEGAL_BRIEF
+  COURT_FILING
+  IDENTIFICATION
+  FINANCIAL_RECORD
+  OTHER
+}
+
 // Models
 model User {
   id           String   @id @default(cuid())
@@ -111,13 +122,15 @@ model CaseAccess {
 model Document {
   id           String         @id @default(cuid())
   caseId       String
-  originalName String
-  storedName   String         @unique
-  filePath     String?        // Storage path/URL
+  originalName String         // Original filename from user upload
+  storedName   String         @unique // UUID-based secure filename
+  relativePath String         // Relative path from storage root (no user control)
   size         Int            // File size in bytes
-  mimeType     String
+  mimeType     String         // Validated MIME type
+  documentType DocumentType   @default(OTHER)
   status       DocumentStatus @default(PENDING)
-  uploadedById String
+  checksum     String?        // SHA-256 hash for integrity verification
+  uploadedById String         // User who uploaded the document
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -130,6 +143,8 @@ model Document {
   @@index([uploadedById])
   @@index([status])
   @@index([mimeType])
+  @@index([documentType])
+  @@index([createdAt])
 }
 
 model Message {
