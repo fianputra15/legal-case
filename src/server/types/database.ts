@@ -122,3 +122,12 @@ export interface PaginatedResult<T> {
     totalPages: number;
   };
 }
+
+// Case access DTOs
+export interface GrantCaseAccessDto {
+  lawyerId: string;
+}
+
+export interface RevokeCaseAccessDto {
+  lawyerId: string;
+}

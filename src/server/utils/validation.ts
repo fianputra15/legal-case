@@ -59,6 +59,15 @@ export const loginSchema = z.object({
 
 export const registerSchema = createUserSchema;
 
+// Case access validation schemas
+export const grantCaseAccessSchema = z.object({
+  lawyerId: z.string().min(1, 'Lawyer ID is required'),
+});
+
+export const revokeCaseAccessSchema = z.object({
+  lawyerId: z.string().min(1, 'Lawyer ID is required'),
+});
+
 // Query parameter validation schemas
 export const getCasesQuerySchema = z.object({
   page: z.string().transform(val => parseInt(val, 10)).pipe(z.number().min(1)).default(1),

@@ -1,8 +1,13 @@
 import { CaseRepository } from '../db/repositories/case.repository';
+import { UserRepository } from '../db/repositories/user.repository';
 import { CreateCaseDto, UpdateCaseDto, CaseEntity, CaseFilters, PaginationOptions, PaginatedResult } from '../types/database';
 
 export class CaseService {
-  constructor(private caseRepository: CaseRepository) {}
+  private userRepository: UserRepository;
+  
+  constructor(private caseRepository: CaseRepository) {
+    this.userRepository = new UserRepository();
+  }
 
   /**
    * Get all cases for a user
@@ -83,8 +88,64 @@ export class CaseService {
   /**
    * Get case statistics
    */
-  async getCaseStats(userId: string): Promise<any> {
+  async getCaseStats(userId: string): Promise<{[key: string]: number}> {
     // TODO: Implement case statistics
     return {};
   }
-}
+  /**
+   * Grant lawyer access to a case
+   */
+  async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+    // Validate lawyer exists and has LAWYER role
+    const lawyer = await this.userRepository.findById(lawyerId);
+    if (!lawyer) {
+      return { success: false, message: 'Lawyer not found' };
+    }
+
+    if (lawyer.role !== 'lawyer') {
+      return { success: false, message: 'User must have LAWYER role to be granted case access' };
+    }
+
+    if (!lawyer.isActive) {
+      return { success: false, message: 'Lawyer account is not active' };
+    }
+
+    // Check if access already exists
+    const hasAccess = await this.caseRepository.hasAccess(caseId, lawyerId);
+    if (hasAccess) {
+      return { success: false, message: 'Lawyer already has access to this case' };
+    }
+
+    // Grant access
+    const granted = await this.caseRepository.grantAccess(caseId, lawyerId);
+    if (!granted) {
+      return { success: false, message: 'Failed to grant access' };
+    }
+
+    return { success: true, message: 'Access granted successfully' };
+  }
+
+  /**
+   * Revoke lawyer access from a case
+   */
+  async revokeLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+    // Validate lawyer exists
+    const lawyer = await this.userRepository.findById(lawyerId);
+    if (!lawyer) {
+      return { success: false, message: 'Lawyer not found' };
+    }
+
+    // Check if access exists
+    const hasAccess = await this.caseRepository.hasAccess(caseId, lawyerId);
+    if (!hasAccess) {
+      return { success: false, message: 'Lawyer does not have access to this case' };
+    }
+
+    // Revoke access
+    const revoked = await this.caseRepository.revokeAccess(caseId, lawyerId);
+    if (!revoked) {
+      return { success: false, message: 'Failed to revoke access' };
+    }
+
+    return { success: true, message: 'Access revoked successfully' };
+  }}

@@ -179,6 +179,57 @@ export class CaseRepository {
   }
 
   /**
+   * Grant lawyer access to a case
+   */
+  async grantAccess(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      await prisma.caseAccess.create({
+        data: {
+          caseId,
+          lawyerId,
+        },
+      });
+      return true;
+    } catch (error) {
+      // Handle unique constraint violation (duplicate access)
+      if ((error as any)?.code === 'P2002') {
+        return false; // Access already exists
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Revoke lawyer access from a case
+   */
+  async revokeAccess(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      const result = await prisma.caseAccess.deleteMany({
+        where: {
+          caseId,
+          lawyerId,
+        },
+      });
+      return result.count > 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Check if lawyer has access to a case
+   */
+  async hasAccess(caseId: string, lawyerId: string): Promise<boolean> {
+    const access = await prisma.caseAccess.findFirst({
+      where: {
+        caseId,
+        lawyerId,
+      },
+    });
+    return !!access;
+  }
+
+  /**
    * Map Prisma Case model to CaseEntity
    */
   private mapToEntity(case_: Case): CaseEntity {
