@@ -41,20 +41,15 @@ Extended middleware with authorization helpers:
 - ❌ Cannot delete cases they don't own
 - ❌ Can create new cases (becomes owner)
 
-#### ADMIN Role
-- ✅ Can access all cases
-- ✅ Can modify all cases  
-- ✅ Can delete all cases
-- ✅ Full administrative access
 
 ### Access Control Matrix
 
-| Action | CLIENT (Own Case) | CLIENT (Other Case) | LAWYER (Granted) | LAWYER (Not Granted) | ADMIN |
-|--------|:-----------------:|:------------------:|:----------------:|:-------------------:|:-----:|
-| Read   | ✅                | ❌                 | ✅               | ❌                  | ✅    |
-| Create | ✅                | N/A                | ✅               | N/A                 | ✅    |
-| Update | ✅                | ❌                 | ❌               | ❌                  | ✅    |
-| Delete | ✅                | ❌                 | ❌               | ❌                  | ✅    |
+| Action | CLIENT (Own Case) | CLIENT (Other Case) | LAWYER (Granted) | LAWYER (Not Granted)  |
+|--------|:-----------------:|:------------------:|:----------------:|:-------------------:|
+| Read   | ✅                | ❌                 | ✅               | ❌                  |
+| Create | ✅                | N/A                | ✅               | N/A                 |
+| Update | ✅                | ❌                 | ❌               | ❌                  |
+| Delete | ✅                | ❌                 | ❌               | ❌                  |
 
 ## Error Handling & Security
 
@@ -133,17 +128,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 ### Role-Based Access Control
 
-```typescript
-// Require admin role
-const roleResult = await AuthMiddleware.requireRole(request, ['ADMIN']);
-if (roleResult instanceof NextResponse) {
-  return roleResult;
-}
-
-// Allow multiple roles
-const multiRoleResult = await AuthMiddleware.requireRole(request, ['ADMIN', 'LAWYER']);
-```
-
 ### Listing Accessible Resources
 
 ```typescript
@@ -166,12 +150,12 @@ export async function GET(request: NextRequest) {
 ### 1. Always Use Server-Side Authorization
 ```typescript
 // ❌ Wrong - Never rely on client-side logic
-if (userRole === 'admin') {
+if (userRole === 'lawyer') {
   // Dangerous - client can manipulate this
 }
 
 // ✅ Correct - Always verify on server
-const authResult = await AuthMiddleware.requireRole(request, ['ADMIN']);
+const authResult = await AuthMiddleware.requireRole(request, ['LAWYER']);
 ```
 
 ### 2. Fail Securely
@@ -217,7 +201,7 @@ case_access.caseId -> cases.id
 case_access.lawyerId -> users.id (where role = 'LAWYER')
 
 -- User roles
-users.role IN ('CLIENT', 'LAWYER', 'ADMIN')
+users.role IN ('CLIENT', 'LAWYER')
 ```
 
 This ensures all authorization rules are enforced at the database level with proper foreign key constraints and indexes for performance.

@@ -35,11 +35,6 @@ const userService = new UserService(new UserRepository());
  *               value:
  *                 email: "lawyer@legal.com"
  *                 password: "lawyer123"
- *             admin:
- *               summary: Admin login
- *               value:
- *                 email: "admin@legal.com"
- *                 password: "admin123"
  *     responses:
  *       200:
  *         description: Login successful
@@ -101,6 +96,9 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
 
+    console.log('Login: Generated token for user:', user.email);
+    console.log('Login: Token length:', accessToken.length);
+
     Logger.info(`User logged in: ${email}`);
 
     // Create response with secure httpOnly cookie
@@ -115,7 +113,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Set secure httpOnly cookie
-    response.headers.set('Set-Cookie', AuthMiddleware.createAuthCookie(accessToken));
+    const cookieHeader = AuthMiddleware.createAuthCookie(accessToken);
+    console.log('Login: Setting cookie header:', cookieHeader);
+    response.headers.set('Set-Cookie', cookieHeader);
+    
+    console.log('Login: Response headers:', Object.fromEntries(response.headers.entries()));
     
     return response;
 

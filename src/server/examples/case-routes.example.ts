@@ -17,7 +17,6 @@ import { Logger } from '@/server/utils/logger';
  * Authorization: User must have access to the case
  * - Clients can only see their own cases
  * - Lawyers can see cases granted to them
- * - Admins can see all cases
  */
 export async function GET(
   request: NextRequest,
@@ -56,7 +55,7 @@ export async function GET(
 /**
  * PUT /api/cases/[id] - Update a case
  * 
- * Authorization: User must own the case (or be admin)
+ * Authorization: User must own the case
  * Only case owners can modify their cases
  */
 export async function PUT(
@@ -94,7 +93,7 @@ export async function PUT(
 /**
  * DELETE /api/cases/[id] - Delete a case
  * 
- * Authorization: User must own the case (or be admin)
+ * Authorization: User must own the case
  * Only case owners can delete their cases
  */
 export async function DELETE(
@@ -139,7 +138,6 @@ export async function DELETE(
  * Authorization: Returns only cases the user can access
  * - Clients see only their own cases
  * - Lawyers see cases granted to them
- * - Admins see all cases
  */
 export async function GET_LIST(request: NextRequest) {
   try {
@@ -174,7 +172,7 @@ export async function GET_LIST(request: NextRequest) {
 /**
  * POST /api/cases/[id]/grant-access - Grant lawyer access to a case
  * 
- * Authorization: User must own the case (or be admin)
+ * Authorization: User must own the case
  * Only case owners can grant access to lawyers
  */
 export async function POST_GRANT_ACCESS(

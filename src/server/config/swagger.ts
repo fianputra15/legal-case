@@ -88,7 +88,7 @@ const options: swaggerJSDoc.Options = {
             },
             role: {
               type: 'string',
-              enum: ['CLIENT', 'LAWYER', 'ADMIN'],
+              enum: ['CLIENT', 'LAWYER'],
               example: 'CLIENT'
             }
           },

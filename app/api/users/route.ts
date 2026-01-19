@@ -10,11 +10,10 @@ const userService = new UserService(new UserRepository());
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Apply authentication middleware with admin check
     const authResult = await AuthMiddleware.authenticate(request as unknown);
     if (authResult) return authResult;
 
-    // TODO: Check if user has admin privileges
+    // TODO: Check if user has client or lawyer privileges
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -39,7 +38,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Apply authentication middleware with admin check
     const authResult = await AuthMiddleware.authenticate(request as unknown);
     if (authResult) return authResult;
 

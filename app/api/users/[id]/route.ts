@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const authResult = await AuthMiddleware.authenticate(request as unknown);
     if (authResult) return authResult;
 
-    // TODO: Check authorization (user can only view their own profile or admin can view all)
+    // TODO: Check authorization (user can only view their own profile can view all)
     const user = await userService.getUserById(params.id);
 
     if (!user) {
@@ -42,7 +42,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const authResult = await AuthMiddleware.authenticate(request as unknown);
     if (authResult) return authResult;
 
-    // TODO: Check authorization (user can only update their own profile or admin can update all)
+    // TODO: Check authorization (user can only update their own profile)
 
     const body = await request.json();
     const updateData = validateRequest(updateUserSchema, body);
@@ -68,7 +68,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    // TODO: Apply authentication middleware with admin check
     const authResult = await AuthMiddleware.authenticate(request as unknown);
     if (authResult) return authResult;
 

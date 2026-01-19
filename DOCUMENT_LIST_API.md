@@ -156,7 +156,6 @@ curl -H "Cookie: auth-token=your-jwt-token" \
 
 | User Role | Access Rules |
 |-----------|-------------|
-| **ADMIN** | Can list documents from any case |
 | **CLIENT** | Can list documents from cases they own |
 | **LAWYER** | Can list documents from cases where they have access |
 

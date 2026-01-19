@@ -219,7 +219,6 @@ const case_ = await prisma.case.update({
 | CLIENT (Owner) | ✅ 200 OK | ❌ 403/404 | Update allowed only for own cases |
 | CLIENT (Non-owner) | ❌ 403 Forbidden | ❌ 403/404 | Must own the case |
 | LAWYER | ❌ 403 Forbidden | ❌ 403 Forbidden | Lawyers cannot update any cases |
-| ADMIN | ❌ 403 Forbidden | ❌ 403 Forbidden | Admins cannot update cases |
 
 ### **Validation Test Cases**
 ```bash

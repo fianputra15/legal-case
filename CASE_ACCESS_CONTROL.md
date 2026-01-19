@@ -233,10 +233,8 @@ curl -X DELETE "http://localhost:3000/api/cases/clx1a2b3c4d5e6f7g8h9i0j1/access"
 |-----------|------------|-------------|---------|
 | CLIENT (Owner) | ✅ Yes | LAWYER | ✅ 200 OK |
 | CLIENT (Owner) | ✅ Yes | CLIENT | ❌ 400 Bad Request |
-| CLIENT (Owner) | ✅ Yes | ADMIN | ❌ 400 Bad Request |
 | CLIENT (Non-owner) | ❌ No | LAWYER | ❌ 403 Forbidden |
 | LAWYER | N/A | LAWYER | ❌ 403 Forbidden |
-| ADMIN | N/A | LAWYER | ❌ 403 Forbidden |
 
 ### **Edge Cases Handled**
 ```bash

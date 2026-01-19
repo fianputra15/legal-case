@@ -9,7 +9,6 @@ export interface User extends BaseEntity {
 }
 
 export enum UserRole {
-  ADMIN = 'admin',
   LAWYER = 'lawyer',
   CLIENT = 'client',
   PARALEGAL = 'paralegal',

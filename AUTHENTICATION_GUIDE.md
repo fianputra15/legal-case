@@ -40,7 +40,7 @@ if (authResult instanceof Response) {
 const { user } = authResult; // User is authenticated
 
 // Require specific role
-const roleResult = await AuthMiddleware.requireRole(request, ['ADMIN', 'LAWYER']);
+const roleResult = await AuthMiddleware.requireRole(request, ['LAWYER']);
 if (roleResult instanceof Response) {
   return roleResult; // Insufficient permissions
 }
@@ -60,7 +60,6 @@ const { user } = roleResult; // User has required role
    JWT_SECRET=your_super_secret_jwt_key
 
 7. SAMPLE CREDENTIALS (from seed):
-   Admin: admin@legal.com / admin123
    Lawyer: lawyer@legal.com / lawyer123
    Client: client@example.com / client123
 */
@@ -80,16 +79,4 @@ export async function GET(request: NextRequest) {
     message: `Hello ${user.firstName}!`,
     userRole: user.role 
   });
-}
-
-// Example role-protected route:
-export async function DELETE(request: NextRequest) {
-  // Only admin can delete
-  const roleResult = await AuthMiddleware.requireRole(request, ['ADMIN']);
-  if (roleResult instanceof Response) {
-    return roleResult;
-  }
-  
-  // Admin-only logic here
-  return ResponseHandler.success({ message: 'Deleted successfully' });
 }

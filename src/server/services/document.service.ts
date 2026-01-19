@@ -268,7 +268,6 @@ export class DocumentService {
   
   /**
    * Hard delete document (remove from Supabase storage and database)
-   * Use with extreme caution - for admin cleanup only
    */
   static async hardDeleteDocument(documentId: string): Promise<void> {
     const document = await prisma.document.findUnique({

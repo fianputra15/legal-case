@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { AuthProvider } from '@/shared/lib/auth-context';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -8,18 +9,12 @@ interface AppProvidersProps {
 
 /**
  * App-level providers wrapper
- * Add your global providers here (Theme, React Query, Auth, etc.)
+ * Includes AuthProvider for authentication management
  */
 export default function AppProviders({ children }: AppProvidersProps) {
   return (
-    // Add your providers here
-    // <ThemeProvider>
-    //   <QueryProvider>
-    //     <AuthProvider>
-    //       {children}
-    //     </AuthProvider>
-    //   </QueryProvider>
-    // </ThemeProvider>
-    <>{children}</>
+    <AuthProvider>
+      {children}
+    </AuthProvider>
   );
 }

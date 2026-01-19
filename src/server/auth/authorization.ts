@@ -30,7 +30,6 @@ export class AuthorizationService {
    * Check if user can access a specific case
    * 
    * Security Rules:
-   * - ADMIN: Full access to all cases
    * - CLIENT: Can only access cases they own (ownerId === user.id)  
    * - LAWYER: Can access cases explicitly granted via CaseAccess table
    * 
@@ -43,11 +42,6 @@ export class AuthorizationService {
    */
   static async canAccessCase(user: AuthUser, caseId: string): Promise<boolean> {
     try {
-      // Admin bypass - full access
-      if (user.role === 'ADMIN') {
-        return true;
-      }
-
       // Single database query with role-based conditions
       const caseRecord = await prisma.case.findFirst({
         where: {
@@ -86,7 +80,6 @@ export class AuthorizationService {
    * Check if user owns a specific case
    * 
    * Security Rules:
-   * - ADMIN: Considered owner of all cases (administrative privileges)
    * - CLIENT: Must be the actual owner (ownerId === user.id)
    * - LAWYER: Cannot own cases (can only have access granted)
    * 
@@ -96,16 +89,7 @@ export class AuthorizationService {
    */
   static async isCaseOwner(user: AuthUser, caseId: string): Promise<boolean> {
     try {
-      // Admin has ownership-level privileges on all cases
-      if (user.role === 'ADMIN') {
-        // Still verify case exists to maintain consistent behavior
-        const caseExists = await prisma.case.findUnique({
-          where: { id: caseId },
-          select: { id: true }
-        });
-        return !!caseExists;
-      }
-
+    
       // Lawyers cannot own cases, only access them
       if (user.role === 'LAWYER') {
         return false;
@@ -147,13 +131,6 @@ export class AuthorizationService {
    */
   static async getAccessibleCaseIds(user: AuthUser): Promise<string[]> {
     try {
-      if (user.role === 'ADMIN') {
-        const cases = await prisma.case.findMany({
-          select: { id: true }
-        });
-        return cases.map(c => c.id);
-      }
-
       if (user.role === 'CLIENT') {
         const cases = await prisma.case.findMany({
           where: { ownerId: user.id },
@@ -189,15 +166,6 @@ export class AuthorizationService {
     if (caseIds.length === 0) return [];
 
     try {
-      if (user.role === 'ADMIN') {
-        // Admin can access all valid cases
-        const validCases = await prisma.case.findMany({
-          where: { id: { in: caseIds } },
-          select: { id: true }
-        });
-        return validCases.map(c => c.id);
-      }
-
       const accessibleCases = await prisma.case.findMany({
         where: {
           id: { in: caseIds },

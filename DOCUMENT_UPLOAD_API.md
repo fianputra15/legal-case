@@ -157,7 +157,6 @@ curl -X POST \
 
 | User Role | Access Rules |
 |-----------|-------------|
-| **ADMIN** | Can upload to any case |
 | **CLIENT** | Can upload to cases they own |
 | **LAWYER** | Can upload to cases where they have explicit access granted |
 

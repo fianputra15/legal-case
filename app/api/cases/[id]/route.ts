@@ -82,7 +82,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 /**
  * PUT /api/cases/[id] - Update a specific case
  * 
- * Authorization: User must own the case (or be admin)
+ * Authorization: User must own the case
  * - Only case owners can modify their cases
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
@@ -118,7 +118,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 /**
  * DELETE /api/cases/[id] - Delete a specific case
  * 
- * Authorization: User must own the case (or be admin)
+ * Authorization: User must own the case
  * - Only case owners can delete their cases
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {

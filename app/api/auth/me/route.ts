@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { ResponseHandler } from '@/server/utils/response';
 import { AuthMiddleware } from '@/server/auth/middleware';
-import { AuthUser } from '@/server/auth/types';
 import { Logger } from '@/server/utils/logger';
 
 /**

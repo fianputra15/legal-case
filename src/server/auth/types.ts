@@ -24,7 +24,6 @@ export interface AuthTokens {
 }
 
 export enum UserRole {
-  ADMIN = 'admin',
   LAWYER = 'lawyer',
   CLIENT = 'client',
 }

@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { user } = authResult;
     
-    // Only CLIENT role can grant access (prevent lawyers/admins from granting access)
+    // Only CLIENT role can grant access (prevent lawyers from granting access)
     if (user.role !== 'CLIENT') {
       Logger.warn(`Non-client user ${user.email} (${user.role}) attempted to grant access to case ${caseId}`);
       return ResponseHandler.forbidden('Only case owners can grant lawyer access');
@@ -149,7 +149,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { user } = authResult;
     
-    // Only CLIENT role can revoke access (prevent lawyers/admins from revoking access)
+    // Only CLIENT role can revoke access (prevent lawyers from revoking access)
     if (user.role !== 'CLIENT') {
       Logger.warn(`Non-client user ${user.email} (${user.role}) attempted to revoke access from case ${caseId}`);
       return ResponseHandler.forbidden('Only case owners can revoke lawyer access');

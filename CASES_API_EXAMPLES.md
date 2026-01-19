@@ -10,7 +10,6 @@ Retrieves cases accessible to the authenticated user with support for filtering,
 - **Authorization Rules**:
   - **CLIENT**: Only sees their own cases (where they are the owner)
   - **LAWYER**: Only sees cases they have been granted access to via CaseAccess table
-  - **ADMIN**: Sees all cases in the system
 - **401 Unauthorized**: If not authenticated
 
 ### Endpoint

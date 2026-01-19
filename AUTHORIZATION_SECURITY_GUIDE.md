@@ -7,7 +7,6 @@
 **Purpose**: Determines if a user can access a specific case
 
 **Rules**:
-- **ADMIN**: Full access to all cases (administrative privileges)
 - **CLIENT**: Can only access cases they own (`ownerId === user.id`)
 - **LAWYER**: Can access cases explicitly granted via `CaseAccess` table
 
@@ -30,13 +29,11 @@ if (!hasAccess) {
 **Purpose**: Determines if a user owns a specific case (has modification rights)
 
 **Rules**:
-- **ADMIN**: Considered owner of all cases (administrative override)
 - **CLIENT**: Must be actual owner (`ownerId === user.id`)
 - **LAWYER**: Cannot own cases (can only have access granted)
 
 **Security Features**:
 - Explicit role-based ownership logic
-- Admin verification still checks case existence
 - Logs ownership violation attempts
 - Fails secure on errors
 
@@ -185,7 +182,6 @@ Logger.warn(`CASE DELETION: ${caseId} by ${user.email} at ${new Date().toISOStri
 
 ### 5. **Role-Based Access Control (RBAC)**
 - Clear separation of privileges by role
-- Admin bypass with proper validation
 - Explicit deny for undefined roles
 
 ### 6. **Database Security Integration**
@@ -201,8 +197,6 @@ WHERE c.id = $1
       SELECT 1 FROM case_access ca 
       WHERE ca.case_id = c.id AND ca.lawyer_id = $userId
     ))
-    -- Admin access: all cases
-    OR $userRole = 'ADMIN'
   );
 ```
 

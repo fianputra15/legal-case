@@ -8,7 +8,7 @@ This project uses **Prisma ORM** with **PostgreSQL** for database management. Th
 
 ### Key Entities
 
-1. **User** - System users (Admin, Lawyer, Client)
+1. **User** - System users (Lawyer, Client)
 2. **Case** - Legal cases with categories and status tracking
 3. **CaseAccess** - Junction table for lawyer-case access control
 4. **Document** - File attachments for cases
@@ -16,7 +16,7 @@ This project uses **Prisma ORM** with **PostgreSQL** for database management. Th
 
 ### Enums Used
 
-- `UserRole`: ADMIN, LAWYER, CLIENT
+- `UserRole`: LAWYER, CLIENT
 - `CaseStatus`: OPEN, IN_PROGRESS, UNDER_REVIEW, AWAITING_CLIENT, CLOSED, ARCHIVED
 - `CaseCategory`: CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, etc.
 - `DocumentStatus`: PENDING, PROCESSED, ARCHIVED, DELETED
@@ -111,7 +111,6 @@ npm run db:seed
 ```
 
 This creates sample data:
-- Admin user: admin@legalfirm.com / admin123
 - Lawyer user: lawyer@legalfirm.com / lawyer123
 - Client user: client@example.com / client123
 

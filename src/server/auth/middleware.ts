@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUser } from './types';
-import { AuthUtils, TokenPayload } from './utils';
+import { AuthUtils } from './utils';
 import { UserRepository } from '../db/repositories/user.repository';
 import { ResponseHandler } from '../utils/response';
 
@@ -21,7 +21,6 @@ export class AuthMiddleware {
       if (!token) {
         return null;
       }
-
       const payload = await AuthUtils.verifyToken(token);
       if (!payload) {
         return null;
@@ -33,13 +32,14 @@ export class AuthMiddleware {
         return null;
       }
 
-      return {
+      const authUser = {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
       };
+      return authUser;
     } catch (error) {
       // Always return null on error - no authentication required
       return null;
@@ -85,8 +85,12 @@ export class AuthMiddleware {
    */
   static createAuthCookie(token: string): string {
     const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+    const isDevelopment = process.env.NODE_ENV === 'development';
     
-    return `auth-token=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}; Path=/`;
+    // In development, don't require Secure flag for localhost
+    const secureFlag = isDevelopment ? '' : ' Secure;';
+    
+    return `auth-token=${token}; HttpOnly;${secureFlag} SameSite=Strict; Max-Age=${maxAge}; Path=/`;
   }
 
   /**

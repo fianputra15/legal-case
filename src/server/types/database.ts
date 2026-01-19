@@ -81,7 +81,6 @@ export interface UpdateMessageDto {
 
 // Enums
 export enum UserRole {
-  ADMIN = 'admin',
   LAWYER = 'lawyer',
   CLIENT = 'client',
 }

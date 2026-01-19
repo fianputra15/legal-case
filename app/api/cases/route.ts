@@ -21,7 +21,6 @@ const caseService = new CaseService(new CaseRepository());
  *       Retrieve all cases accessible to the authenticated user based on their role:
  *       - **CLIENT**: Only their own cases
  *       - **LAWYER**: Cases explicitly granted to them
- *       - **ADMIN**: All cases in the system
  *     security:
  *       - BearerAuth: []
  *       - CookieAuth: []
@@ -147,7 +146,6 @@ const caseService = new CaseService(new CaseRepository());
  * Authorization:
  * - Clients see only their own cases
  * - Lawyers see cases explicitly granted to them
- * - Admins see all cases
  */
 export async function GET(request: NextRequest) {
   try {

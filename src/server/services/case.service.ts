@@ -95,7 +95,7 @@ export class CaseService {
   /**
    * Grant lawyer access to a case
    */
-  async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
     // Validate lawyer exists and has LAWYER role
     const lawyer = await this.userRepository.findById(lawyerId);
     if (!lawyer) {

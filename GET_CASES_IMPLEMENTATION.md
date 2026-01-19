@@ -12,7 +12,6 @@
 ### **2. Authorization Rules**
 - ✅ **CLIENT**: Only sees own cases (ownerId = user.id)
 - ✅ **LAWYER**: Only sees cases granted via CaseAccess table
-- ✅ **ADMIN**: Sees all cases (full access)
 - ✅ Pre-filtering at authorization level for security
 
 ### **3. Pagination Metadata**
