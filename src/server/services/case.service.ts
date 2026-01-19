@@ -24,9 +24,9 @@ export class CaseService {
 
   /**
    * Get a specific case by ID
+   * Note: Authorization must be checked at the route level before calling this method
    */
-  async getCaseById(id: string, userId: string): Promise<CaseEntity | null> {
-    // TODO: Add authorization check
+  async getCaseById(id: string): Promise<CaseEntity | null> {
     return this.caseRepository.findById(id);
   }
 
