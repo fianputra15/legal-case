@@ -1,4 +1,4 @@
-import { CaseEntity, CreateCaseDto, UpdateCaseDto } from '../../types/database';
+import { CaseEntity, CreateCaseDto, UpdateCaseDto, CaseFilters, PaginationOptions, PaginatedResult } from '../../types/database';
 import { prisma } from '../client';
 import { Case, CaseStatus, CaseCategory } from '@prisma/client';
 
@@ -22,6 +22,72 @@ export class CaseRepository {
       orderBy: { createdAt: 'desc' },
     });
     return cases.map(this.mapToEntity);
+  }
+
+  /**
+   * Find cases with filtering and pagination
+   */
+  async findWithFilters(
+    accessibleCaseIds: string[],
+    filters: CaseFilters,
+    pagination: PaginationOptions
+  ): Promise<PaginatedResult<CaseEntity>> {
+    if (accessibleCaseIds.length === 0) {
+      return {
+        data: [],
+        pagination: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    // Build where clause
+    const whereClause: any = {
+      id: { in: accessibleCaseIds },
+    };
+
+    if (filters.search) {
+      whereClause.title = {
+        contains: filters.search,
+        mode: 'insensitive',
+      };
+    }
+
+    if (filters.status) {
+      whereClause.status = filters.status as CaseStatus;
+    }
+
+    if (filters.category) {
+      whereClause.category = filters.category as CaseCategory;
+    }
+
+    // Get total count for pagination
+    const total = await prisma.case.count({ where: whereClause });
+
+    // Calculate pagination
+    const totalPages = Math.ceil(total / pagination.limit);
+    const skip = (pagination.page - 1) * pagination.limit;
+
+    // Get paginated results
+    const cases = await prisma.case.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: pagination.limit,
+    });
+
+    return {
+      data: cases.map(this.mapToEntity),
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages,
+      },
+    };
   }
 
   /**

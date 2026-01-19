@@ -56,6 +56,15 @@ export const loginSchema = z.object({
 
 export const registerSchema = createUserSchema;
 
+// Query parameter validation schemas
+export const getCasesQuerySchema = z.object({
+  page: z.string().transform(val => parseInt(val, 10)).pipe(z.number().min(1)).default('1'),
+  limit: z.string().transform(val => parseInt(val, 10)).pipe(z.number().min(1).max(100)).default('10'),
+  search: z.string().optional(),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'UNDER_REVIEW', 'AWAITING_CLIENT', 'CLOSED', 'ARCHIVED']).optional(),
+  category: z.enum(['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER']).optional(),
+});
+
 /**
  * Validation helper function
  */

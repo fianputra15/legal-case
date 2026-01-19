@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
 import { ResponseHandler } from '@/server/utils/response';
-import { validateRequest, createCaseSchema } from '@/server/utils/validation';
+import { validateRequest, createCaseSchema, getCasesQuerySchema } from '@/server/utils/validation';
 import { CaseService } from '@/server/services/case.service';
 import { CaseRepository } from '@/server/db/repositories/case.repository';
 import { AuthMiddleware } from '@/server/auth/middleware';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
+import { CaseFilters, PaginationOptions } from '@/server/types/database';
 
 const caseService = new CaseService(new CaseRepository());
 
@@ -134,11 +135,18 @@ const caseService = new CaseService(new CaseRepository());
  */
 
 /**
- * GET /api/cases - List cases accessible to the authenticated user
+ * GET /api/cases - List cases accessible to the authenticated user with filtering and pagination
+ * 
+ * Query Parameters:
+ * - page: Page number (default: 1)
+ * - limit: Items per page (default: 10, max: 100)
+ * - search: Search by title (case-insensitive)
+ * - status: Filter by case status
+ * - category: Filter by case category
  * 
  * Authorization:
  * - Clients see only their own cases
- * - Lawyers see cases granted to them via CaseAccess
+ * - Lawyers see cases explicitly granted to them
  * - Admins see all cases
  */
 export async function GET(request: NextRequest) {
@@ -151,18 +159,70 @@ export async function GET(request: NextRequest) {
 
     const { user } = authResult;
 
+    // Parse and validate query parameters
+    const { searchParams } = new URL(request.url);
+    const queryParams = Object.fromEntries(searchParams.entries());
+    
+    let validatedQuery;
+    try {
+      validatedQuery = validateRequest(getCasesQuerySchema, queryParams);
+    } catch (error) {
+      Logger.error('Invalid query parameters:', error);
+      return ResponseHandler.badRequest(error instanceof Error ? error.message : 'Invalid query parameters');
+    }
+
+    // Extract pagination options
+    const pagination: PaginationOptions = {
+      page: validatedQuery.page,
+      limit: validatedQuery.limit,
+    };
+
+    // Extract filters
+    const filters: CaseFilters = {
+      ...(validatedQuery.search && { search: validatedQuery.search }),
+      ...(validatedQuery.status && { status: validatedQuery.status }),
+      ...(validatedQuery.category && { category: validatedQuery.category }),
+    };
+
     // Get cases accessible to this user based on role and permissions
     const accessibleCaseIds = await AuthorizationService.getAccessibleCaseIds(user);
     
-    // Fetch case data for accessible cases only
-    const cases = await caseService.getCasesByIds(accessibleCaseIds);
+    // Fetch filtered and paginated case data
+    const result = await caseService.getCasesWithFilters(accessibleCaseIds, filters, pagination);
 
-    Logger.info(`Listed ${cases.length} cases for user ${user.email} (role: ${user.role})`);
+    // Handle edge cases
+    if (result.pagination.total === 0) {
+      Logger.info(`No cases found for user ${user.email} with current filters`);
+      return ResponseHandler.success({
+        cases: [],
+        pagination: result.pagination,
+        userRole: user.role,
+        appliedFilters: filters,
+      });
+    }
+
+    // Handle out-of-range pages
+    if (pagination.page > result.pagination.totalPages) {
+      Logger.info(`Page ${pagination.page} out of range for user ${user.email} (max: ${result.pagination.totalPages})`);
+      return ResponseHandler.success({
+        cases: [],
+        pagination: {
+          ...result.pagination,
+          page: pagination.page, // Keep requested page in response
+        },
+        userRole: user.role,
+        appliedFilters: filters,
+        message: `Page ${pagination.page} is out of range. Total pages available: ${result.pagination.totalPages}`,
+      });
+    }
+
+    Logger.info(`Listed ${result.data.length} cases (page ${pagination.page}/${result.pagination.totalPages}) for user ${user.email} (role: ${user.role})`);
 
     return ResponseHandler.success({
-      cases,
-      total: cases.length,
-      userRole: user.role
+      cases: result.data,
+      pagination: result.pagination,
+      userRole: user.role,
+      appliedFilters: filters,
     });
 
   } catch (error) {

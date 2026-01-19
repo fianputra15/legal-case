@@ -99,3 +99,26 @@ export enum CasePriority {
   HIGH = 'high',
   URGENT = 'urgent',
 }
+
+// Query and pagination interfaces
+export interface CaseFilters {
+  search?: string;
+  status?: string;
+  category?: string;
+  ownerId?: string;
+}
+
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

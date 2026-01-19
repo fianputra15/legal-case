@@ -1,5 +1,5 @@
 import { CaseRepository } from '../db/repositories/case.repository';
-import { CreateCaseDto, UpdateCaseDto, CaseEntity } from '../types/database';
+import { CreateCaseDto, UpdateCaseDto, CaseEntity, CaseFilters, PaginationOptions, PaginatedResult } from '../types/database';
 
 export class CaseService {
   constructor(private caseRepository: CaseRepository) {}
@@ -8,8 +8,18 @@ export class CaseService {
    * Get all cases for a user
    */
   async getCasesByUser(userId: string): Promise<CaseEntity[]> {
-    // TODO: Implement business logic for getting user cases
     return this.caseRepository.findByUserId(userId);
+  }
+
+  /**
+   * Get cases with filtering and pagination
+   */
+  async getCasesWithFilters(
+    accessibleCaseIds: string[],
+    filters: CaseFilters,
+    pagination: PaginationOptions
+  ): Promise<PaginatedResult<CaseEntity>> {
+    return this.caseRepository.findWithFilters(accessibleCaseIds, filters, pagination);
   }
 
   /**
