@@ -45,7 +45,12 @@ export class CaseRepository {
     }
 
     // Build where clause
-    const whereClause: any = {
+    const whereClause: {
+      id: { in: string[] };
+      title?: { contains: string; mode: 'insensitive' };
+      status?: CaseStatus;
+      category?: CaseCategory;
+    } = {
       id: { in: accessibleCaseIds },
     };
 
@@ -110,8 +115,34 @@ export class CaseRepository {
    * Update case
    */
   async update(id: string, data: UpdateCaseDto): Promise<CaseEntity | null> {
-    // TODO: Implement database update
-    return null;
+    try {
+      const updateData: {
+        title?: string;
+        status?: CaseStatus;
+        description?: string;
+      } = {};
+      
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.status !== undefined) updateData.status = data.status as CaseStatus;
+      if (data.description !== undefined) updateData.description = data.description;
+      
+      // Only proceed if there are fields to update
+      if (Object.keys(updateData).length === 0) {
+        // Return current case if no updates provided
+        return this.findById(id);
+      }
+
+      const case_ = await prisma.case.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return this.mapToEntity(case_);
+    } catch (error) {
+      // Handle case not found or other errors
+      console.log(error);
+      return null;
+    }
   }
 
   /**

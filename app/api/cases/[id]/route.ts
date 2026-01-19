@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const updateData = validateRequest(updateCaseSchema, body);
 
-    const updatedCase = await caseService.updateCase(caseId, updateData, user.id);
+    const updatedCase = await caseService.updateCase(caseId, updateData);
 
     if (!updatedCase) {
       return ResponseHandler.notFound('Case not found');
@@ -145,5 +145,107 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     Logger.error('Delete case error:', error);
     return ResponseHandler.internalError('Failed to delete case');
+  }
+}
+
+/**
+ * PATCH /api/cases/[id] - Partially update a specific case
+ * 
+ * Authorization: User must own the case (CLIENT role only)
+ * - Only case owners (clients) can modify their cases
+ * - Lawyers are explicitly prevented from updating cases
+ * 
+ * Allowed Updates:
+ * - title: Case title (string, 1-255 characters)
+ * - category: Case category (enum)
+ * - status: Case status (enum)
+ * 
+ * Status Code Strategy:
+ * - 401: Not authenticated
+ * - 403: Not case owner or not a client
+ * - 404: Case not found
+ * - 400: Invalid input data
+ * - 200: Success
+ */
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  try {
+    const caseId = params.id;
+    
+    // Validate case ID format
+    if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {
+      return ResponseHandler.notFound('Case not found');
+    }
+
+    // Require authentication first
+    const authResult = await AuthMiddleware.requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Returns 401 if not authenticated
+    }
+
+    const { user } = authResult;
+    
+    // Only CLIENT role can update cases (prevent lawyers from updating)
+    if (user.role !== 'CLIENT') {
+      Logger.warn(`Non-client user ${user.email} (${user.role}) attempted to update case ${caseId}`);
+      return ResponseHandler.forbidden('Only case owners can update cases');
+    }
+    
+    // Check case ownership using AuthorizationService
+    const isOwner = await AuthorizationService.isCaseOwner(user, caseId);
+    
+    if (!isOwner) {
+      // For ownership checks, we can be more specific about the error
+      // since we're checking ownership, not just access
+      const hasAccess = await AuthorizationService.canAccessCase(user, caseId);
+      if (!hasAccess) {
+        // Case doesn't exist or no access at all
+        Logger.warn(`User ${user.email} attempted to update non-existent or inaccessible case ${caseId}`);
+        return ResponseHandler.notFound('Case not found');
+      } else {
+        // Case exists but user is not the owner
+        Logger.warn(`User ${user.email} attempted to update case ${caseId} without ownership`);
+        return ResponseHandler.forbidden('Only case owners can update cases');
+      }
+    }
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      Logger.error('Invalid JSON in update case request:', error);
+      return ResponseHandler.badRequest('Invalid JSON format');
+    }
+
+    // Validate update data against schema
+    let updateData;
+    try {
+      updateData = validateRequest(updateCaseSchema, body);
+    } catch (error) {
+      Logger.error('Validation failed for update case:', error);
+      return ResponseHandler.badRequest(error instanceof Error ? error.message : 'Validation failed');
+    }
+
+    // Perform the update
+    const updatedCase = await caseService.updateCase(caseId, updateData);
+
+    if (!updatedCase) {
+      // This should rarely happen due to ownership check above,
+      // but handles race conditions (e.g., case deleted between checks)
+      Logger.warn(`Case ${caseId} disappeared during update by user ${user.email}`);
+      return ResponseHandler.notFound('Case not found');
+    }
+
+    Logger.info(`Case ${caseId} successfully updated by owner ${user.email}`);
+
+    return ResponseHandler.success(updatedCase, 'Case updated successfully');
+
+  } catch (error) {
+    Logger.error('Update case error:', error);
+    // Handle specific business logic errors
+    if (error instanceof Error && (error.message.includes('required') || error.message.includes('empty') || error.message.includes('provided'))) {
+      return ResponseHandler.badRequest(error.message);
+    }
+    return ResponseHandler.internalError('Failed to update case');
   }
 }

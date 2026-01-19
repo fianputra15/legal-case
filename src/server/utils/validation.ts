@@ -31,11 +31,14 @@ export const createCaseSchema = z.object({
 });
 
 export const updateCaseSchema = z.object({
-  title: z.string().min(1, 'Title is required').optional(),
+  title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters').optional(),
+  category: z.enum(['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER'], {
+    message: 'Invalid category. Must be one of: CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, IMMIGRATION_LAW, INTELLECTUAL_PROPERTY, LABOR_LAW, REAL_ESTATE, TAX_LAW, OTHER'
+  }).optional(),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'UNDER_REVIEW', 'AWAITING_CLIENT', 'CLOSED', 'ARCHIVED'], {
+    message: 'Invalid status. Must be one of: OPEN, IN_PROGRESS, UNDER_REVIEW, AWAITING_CLIENT, CLOSED, ARCHIVED'
+  }).optional(),
   description: z.string().optional(),
-  status: z.enum(['open', 'in_progress', 'closed', 'archived']).optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
-  assignedLawyerId: z.string().uuid().optional(),
 });
 
 // Message validation schemas

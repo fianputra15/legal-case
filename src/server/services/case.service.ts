@@ -54,10 +54,20 @@ export class CaseService {
 
   /**
    * Update an existing case
+   * Note: Authorization must be checked at the route level before calling this method
    */
-  async updateCase(id: string, data: UpdateCaseDto, userId: string): Promise<CaseEntity | null> {
-    // TODO: Add authorization check
-    // TODO: Implement business logic for case updates
+  async updateCase(id: string, data: UpdateCaseDto): Promise<CaseEntity | null> {
+    // Validate at least one field is being updated
+    const hasUpdates = Object.values(data).some(value => value !== undefined);
+    if (!hasUpdates) {
+      throw new Error('At least one field must be provided for update');
+    }
+
+    // Validate title if provided
+    if (data.title !== undefined && (!data.title || data.title.trim().length === 0)) {
+      throw new Error('Title cannot be empty');
+    }
+
     return this.caseRepository.update(id, data);
   }
 
