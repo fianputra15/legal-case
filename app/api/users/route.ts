@@ -52,8 +52,6 @@ export async function POST(request: NextRequest) {
 
     const newUser = await userService.createUser(userData);
 
-    Logger.info(`User created by admin: ${userData.email}`);
-
     return ResponseHandler.created({
       id: newUser.id,
       email: newUser.email,

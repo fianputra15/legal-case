@@ -145,11 +145,6 @@ export class AuthMiddleware {
 
     const { user } = authResult;
     
-    // Admin always has ownership-level access
-    if (user.role === 'ADMIN') {
-      return { user };
-    }
-
     const { AuthorizationService } = await import('./authorization');
     const ownershipCheck = await AuthorizationService.isCaseOwner(user, caseId);
     
