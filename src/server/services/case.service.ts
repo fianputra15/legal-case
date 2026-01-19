@@ -23,10 +23,23 @@ export class CaseService {
   /**
    * Create a new case
    */
-  async createCase(data: CreateCaseDto, userId: string): Promise<CaseEntity> {
-    // TODO: Implement business logic for case creation
-    // Validate data, set default values, etc.
-    return this.caseRepository.create({ ...data, userId });
+  async createCase(data: CreateCaseDto, ownerId: string): Promise<CaseEntity> {
+    // Validate input data structure
+    if (!data.title?.trim()) {
+      throw new Error('Case title is required');
+    }
+    if (!data.category) {
+      throw new Error('Case category is required');
+    }
+
+    // Set default status if not provided
+    const caseData = {
+      ...data,
+      status: data.status || 'OPEN',
+      ownerId,
+    };
+
+    return this.caseRepository.create(caseData);
   }
 
   /**

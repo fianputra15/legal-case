@@ -1,28 +1,43 @@
 import { CaseEntity, CreateCaseDto, UpdateCaseDto } from '../../types/database';
+import { prisma } from '../client';
+import { Case, CaseStatus, CaseCategory } from '@prisma/client';
 
 export class CaseRepository {
   /**
    * Find case by ID
    */
   async findById(id: string): Promise<CaseEntity | null> {
-    // TODO: Implement database query
-    return null;
+    const case_ = await prisma.case.findUnique({
+      where: { id },
+    });
+    return case_ ? this.mapToEntity(case_) : null;
   }
 
   /**
-   * Find cases by user ID
+   * Find cases by user ID (owner)
    */
   async findByUserId(userId: string): Promise<CaseEntity[]> {
-    // TODO: Implement database query
-    return [];
+    const cases = await prisma.case.findMany({
+      where: { ownerId: userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return cases.map(this.mapToEntity);
   }
 
   /**
    * Create new case
    */
-  async create(data: CreateCaseDto & { userId: string }): Promise<CaseEntity> {
-    // TODO: Implement database insertion
-    throw new Error('Not implemented');
+  async create(data: CreateCaseDto & { ownerId: string }): Promise<CaseEntity> {
+    const case_ = await prisma.case.create({
+      data: {
+        title: data.title,
+        category: data.category as CaseCategory,
+        status: (data.status as CaseStatus) || CaseStatus.OPEN,
+        description: data.description,
+        ownerId: data.ownerId,
+      },
+    });
+    return this.mapToEntity(case_);
   }
 
   /**
@@ -61,7 +76,25 @@ export class CaseRepository {
    * Count cases by user
    */
   async countByUserId(userId: string): Promise<number> {
-    // TODO: Implement count query
-    return 0;
+    return prisma.case.count({
+      where: { ownerId: userId },
+    });
+  }
+
+  /**
+   * Map Prisma Case model to CaseEntity
+   */
+  private mapToEntity(case_: Case): CaseEntity {
+    return {
+      id: case_.id,
+      title: case_.title,
+      description: case_.description || undefined,
+      category: case_.category,
+      status: case_.status,
+      priority: case_.priority,
+      ownerId: case_.ownerId,
+      createdAt: case_.createdAt,
+      updatedAt: case_.updatedAt,
+    };
   }
 }

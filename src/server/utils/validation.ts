@@ -22,9 +22,12 @@ export const updateUserSchema = z.object({
 
 // Case validation schemas
 export const createCaseSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters'),
+  category: z.enum(['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER'], {
+    errorMap: () => ({ message: 'Invalid category. Must be one of: CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, IMMIGRATION_LAW, INTELLECTUAL_PROPERTY, LABOR_LAW, REAL_ESTATE, TAX_LAW, OTHER' })
+  }),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'UNDER_REVIEW', 'AWAITING_CLIENT', 'CLOSED', 'ARCHIVED']).optional(),
   description: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
 });
 
 export const updateCaseSchema = z.object({

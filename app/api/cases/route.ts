@@ -174,30 +174,52 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/cases - Create a new case
  * 
- * Authorization: Authenticated users can create cases
+ * Authorization: Only CLIENT role users can create cases
  * - The authenticated user becomes the case owner
+ * - Required fields: title, category
+ * - Optional fields: status (defaults to OPEN)
  */
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication
-    const authResult = await AuthMiddleware.requireAuth(request);
+    // Require CLIENT role specifically
+    const authResult = await AuthMiddleware.requireRole(request, ['CLIENT']);
     if (authResult instanceof Response) {
       return authResult;
     }
 
     const { user } = authResult;
-    const body = await request.json();
-    const caseData = validateRequest(createCaseSchema, body);
     
-    // Create case with authenticated user as owner
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      Logger.error('Invalid JSON in create case request:', error);
+      return ResponseHandler.badRequest('Invalid JSON format');
+    }
+
+    // Validate input against schema
+    let caseData;
+    try {
+      caseData = validateRequest(createCaseSchema, body);
+    } catch (error) {
+      Logger.error('Validation failed for create case:', error);
+      return ResponseHandler.badRequest(error instanceof Error ? error.message : 'Validation failed');
+    }
+    
+    // Create case with authenticated client as owner
     const newCase = await caseService.createCase(caseData, user.id);
 
-    Logger.info(`Case created: ${newCase.id} by user: ${user.email}`);
+    Logger.info(`Case created: ${newCase.id} by client: ${user.email}`);
 
     return ResponseHandler.created(newCase, 'Case created successfully');
 
   } catch (error) {
     Logger.error('Create case error:', error);
+    // Don't expose internal errors to client
+    if (error instanceof Error && (error.message.includes('required') || error.message.includes('Invalid'))) {
+      return ResponseHandler.badRequest(error.message);
+    }
     return ResponseHandler.internalError('Failed to create case');
   }
 }

@@ -36,18 +36,19 @@ export interface CaseEntity {
   id: string;
   title: string;
   description?: string;
+  category: string;
   status: string;
-  priority: string;
-  userId: string;
-  assignedLawyerId?: string;
+  priority: number;
+  ownerId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateCaseDto {
   title: string;
+  category: string;
+  status?: string;
   description?: string;
-  priority?: string;
 }
 
 export interface UpdateCaseDto {
