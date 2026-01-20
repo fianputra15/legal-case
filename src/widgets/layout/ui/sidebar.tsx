@@ -32,14 +32,14 @@ function NavItem({ href, icon, label, badge }: NavItemProps) {
       className={cn(
         'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group',
         isActive
-          ? 'bg-active text-text-primary'
-          : 'text-text-sub hover:bg-active hover:text-text-primary'
+          ? 'bg-light'
+          : 'hover:bg-active hover:text-text-primary'
       )}
     >
       <div className={cn('shrink-0', isActive ? 'text-text-primary' : 'text-text-sub group-hover:text-text-primary')}>
         <Image src={icon as StaticImport} alt={label} className="w-5 h-5" />
       </div>
-      <span className="font-medium">{label}</span>
+      <span className={`font-medium ${isActive ? 'text-strong950' : 'text-sub600'}`}>{label}</span>
       {badge && (
         <span className="ml-auto px-2 py-1 text-xs bg-text-badge/10 text-text-badge rounded-full">
           {badge}
@@ -51,12 +51,12 @@ function NavItem({ href, icon, label, badge }: NavItemProps) {
 
 export default function Sidebar({ children }: SidebarProps) {
   return (
-    <aside className="w-64 bg-brand border-r border-active flex flex-col">
-      <div className="p-6">
+    <aside className="bg-transparent border-active flex flex-col h-full">
+      <div className="p-4">
        <Image src={SibylIcon} alt="Legal Case Management" width={47} height={23} />
       </div>
       
-      <nav className="flex-1 px-4 space-y-1">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         <NavItem
           href="/"
           icon={
@@ -86,22 +86,6 @@ export default function Sidebar({ children }: SidebarProps) {
         {/* Additional navigation items from children */}
         {children}
       </nav>
-      
-      <div className="p-4 border-t border-active">
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-weak">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">JD</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-text-primary truncate">
-              John Doe
-            </p>
-            <p className="text-xs text-text-sub truncate">
-              Senior Lawyer
-            </p>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

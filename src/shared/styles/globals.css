@@ -1,18 +1,83 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  /* Fonts */
+  --font-display: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-body: var(--font-dm-sans), "DM Sans", sans-serif;
+  
+  /* Breakpoints */
+  --breakpoint-3xl: 1920px;
+  
+  /* Custom Colors - Legal Case Management */
+  --color-light: #EBE8E2;
+  --color-weak50: #F5F3F1;
+  --color-strong900: #1F1D1B;
+  --color-strong950: #171717;
+  --color-sub600: #66635D;
+  --color-base: #827E77;
+  --color-lighter: #EBFFEF;
+  --color-brand: #FF6A2B;
+  --color-soft400: #9F9B92;
+  --color-dark: #12110F;
+  --color-biege: #CED1B6;
+  
+  /* Brand Color Palette */
+  --color-brand-orange-50: #fff7ed;
+  --color-brand-orange-100: #ffedd5;
+  --color-brand-orange-200: #fed7aa;
+  --color-brand-orange-300: #fdba74;
+  --color-brand-orange-400: #fb923c;
+  --color-brand-orange-500: #FF6A2B;
+  --color-brand-orange-600: #ea580c;
+  --color-brand-orange-700: #c2410c;
+  --color-brand-orange-800: #9a3412;
+  --color-brand-orange-900: #7c2d12;
+  
+  /* Brand Gray Palette */
+  --color-brand-gray-50: #F5F3F1;
+  --color-brand-gray-100: #EBE8E2;
+  --color-brand-gray-200: #e7e5e4;
+  --color-brand-gray-300: #d6d3d1;
+  --color-brand-gray-400: #9F9B92;
+  --color-brand-gray-500: #827E77;
+  --color-brand-gray-600: #66635D;
+  --color-brand-gray-700: #44403c;
+  --color-brand-gray-800: #1F1D1B;
+  --color-brand-gray-900: #171717;
+  
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+  
+  /* Animation Easings */
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-weak50);
+  font-family: var(--font-body);
+  color: var(--color-strong900);
 }
