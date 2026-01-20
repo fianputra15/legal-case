@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib';
 import BrowseIcon from '../../../../public/icons/page-text-search.svg'
 import FolderPaperIcon from '../../../../public/icons/folder-paper.svg'
 import MessagesIcon from '../../../../public/icons/bubble.svg'
+import SibylIcon from '../../../../public/icons/Sibyl.svg'
 import Image from 'next/image';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 
@@ -52,9 +53,7 @@ export default function Sidebar({ children }: SidebarProps) {
   return (
     <aside className="w-64 bg-brand border-r border-active flex flex-col">
       <div className="p-6">
-        <h1 className="text-xl font-semibold text-text-primary">
-          Legal Workspace
-        </h1>
+       <Image src={SibylIcon} alt="Legal Case Management" width={47} height={23} />
       </div>
       
       <nav className="flex-1 px-4 space-y-1">

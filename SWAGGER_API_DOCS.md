@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
 The API returns `404` for both non-existent resources and unauthorized access to prevent attackers from discovering resource IDs.
 
 ### Role-Based Examples
-Documentation includes examples for different user roles (CLIENT, LAWYER, ADMIN) showing how responses vary based on permissions.
+Documentation includes examples for different user roles (CLIENT, LAWYER) showing how responses vary based on permissions.
 
 ### Authentication Flow Documentation
 Clear documentation of the authentication flow:

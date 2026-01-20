@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUser } from './types';
 import { AuthUtils } from './utils';
+import { sessionStore } from './session-store';
 import { UserRepository } from '../db/repositories/user.repository';
 import { ResponseHandler } from '../utils/response';
 
@@ -12,23 +13,26 @@ const userRepository = new UserRepository();
 
 export class AuthMiddleware {
   /**
-   * Get current user from request token (no authentication required)
-   * Returns null if token is invalid or missing
+   * Get current user from session (no authentication required)
+   * Returns null if session is invalid or missing
    */
   static async getCurrentUser(request: NextRequest): Promise<AuthUser | null> {
     try {
-      const token = AuthUtils.extractTokenFromRequest(request);
-      if (!token) {
+      const sessionId = AuthUtils.extractSessionIdFromRequest(request);
+      if (!sessionId) {
         return null;
       }
-      const payload = await AuthUtils.verifyToken(token);
-      if (!payload) {
+      
+      const sessionData = sessionStore.get(sessionId);
+      if (!sessionData || !AuthUtils.isSessionValid(sessionData)) {
         return null;
       }
 
       // Fetch current user data to ensure it's still valid
-      const user = await userRepository.findById(payload.userId);
+      const user = await userRepository.findById(sessionData.userId);
       if (!user) {
+        // User no longer exists, remove session
+        sessionStore.delete(sessionId);
         return null;
       }
 
@@ -81,23 +85,23 @@ export class AuthMiddleware {
   }
 
   /**
-   * Create secure httpOnly cookie for JWT token
+   * Create secure httpOnly cookie for session ID
    */
-  static createAuthCookie(token: string): string {
+  static createSessionCookie(sessionId: string): string {
     const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
     const isDevelopment = process.env.NODE_ENV === 'development';
     
     // In development, don't require Secure flag for localhost
     const secureFlag = isDevelopment ? '' : ' Secure;';
     
-    return `auth-token=${token}; HttpOnly;${secureFlag} SameSite=Strict; Max-Age=${maxAge}; Path=/`;
+    return `session-id=${sessionId}; HttpOnly;${secureFlag} SameSite=Strict; Max-Age=${maxAge}; Path=/`;
   }
 
   /**
-   * Create cookie to clear authentication
+   * Create cookie to clear session
    */
   static createLogoutCookie(): string {
-    return 'auth-token=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/';
+    return 'session-id=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/';
   }
 
   /**

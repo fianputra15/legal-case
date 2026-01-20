@@ -1,27 +1,26 @@
 /**
  * Authentication and authorization utilities
- * Using JWT with httpOnly cookies for security
+ * Using session-based authentication with httpOnly cookies
  */
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = '7d';
 const BCRYPT_ROUNDS = 12;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'fallback-session-secret';
+const SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Log JWT_SECRET status at startup
-console.log('AuthUtils: JWT_SECRET loaded:', !!JWT_SECRET);
-if (!JWT_SECRET) {
-  console.error('AuthUtils: WARNING - JWT_SECRET is not set in environment variables!');
+// Log SESSION_SECRET status at startup
+console.log('AuthUtils: SESSION_SECRET loaded:', !!SESSION_SECRET);
+if (!SESSION_SECRET || SESSION_SECRET === 'fallback-session-secret') {
+  console.error('AuthUtils: WARNING - SESSION_SECRET is not set in environment variables!');
 }
 
-export interface TokenPayload {
+export interface SessionData {
   userId: string;
   email: string;
   role: string;
-  iat?: number;
-  exp?: number;
+  createdAt: number;
+  expiresAt: number;
 }
 
 export class AuthUtils {
@@ -49,55 +48,45 @@ export class AuthUtils {
   }
 
   /**
-   * Generate JWT token with expiration and secure payload
+   * Generate session ID with secure random bytes
    */
-  static async generateToken(payload: Omit<TokenPayload, 'iat' | 'exp'>): Promise<string> {
-    try {
-      return jwt.sign(payload, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-        issuer: 'legal-case-system',
-        audience: 'legal-case-users',
-      });
-    } catch {
-      throw new Error('Token generation failed');
-    }
+  static generateSessionId(): string {
+    return crypto.randomBytes(32).toString('hex');
   }
 
   /**
-   * Verify JWT token and return payload if valid
+   * Create session data with expiration
    */
-  static async verifyToken(token: string): Promise<TokenPayload | null> {
-    try {
-      console.log('verifyToken: Starting token verification');
-      console.log('verifyToken: Token length:', token.length);
-      console.log('verifyToken: JWT_SECRET available:', !!JWT_SECRET);
-      
-      if (!JWT_SECRET) {
-        console.error('verifyToken: JWT_SECRET is not set!');
-        return null;
-      }
-      
-      const decoded = jwt.verify(token, JWT_SECRET, {
-        issuer: 'legal-case-system',
-        audience: 'legal-case-users',
-      }) as TokenPayload;
-      
-      console.log('verifyToken: Token verified successfully');
-      console.log('verifyToken: Decoded payload:', { 
-        userId: decoded.userId, 
-        email: decoded.email, 
-        role: decoded.role,
-        exp: decoded.exp 
-      });
-      
-      return decoded;
-    } catch (error) {
-      console.error('verifyToken: Token verification failed:', error);
-      console.error('verifyToken: Error name:', error.name);
-      console.error('verifyToken: Error message:', error.message);
-      // Token is invalid, expired, or malformed
-      return null;
+  static createSession(payload: Omit<SessionData, 'createdAt' | 'expiresAt'>): SessionData {
+    const now = Date.now();
+    return {
+      ...payload,
+      createdAt: now,
+      expiresAt: now + SESSION_MAX_AGE,
+    };
+  }
+
+  /**
+   * Verify session data is valid and not expired
+   */
+  static isSessionValid(session: SessionData | null): boolean {
+    if (!session) {
+      console.log('isSessionValid: No session data');
+      return false;
     }
+    
+    const now = Date.now();
+    const isExpired = now > session.expiresAt;
+    
+    console.log('isSessionValid: Session check:', {
+      userId: session.userId,
+      email: session.email,
+      role: session.role,
+      expired: isExpired,
+      expiresAt: new Date(session.expiresAt).toISOString()
+    });
+    
+    return !isExpired;
   }
 
   /**
@@ -108,51 +97,42 @@ export class AuthUtils {
   }
 
   /**
-   * Extract token from Authorization header or cookies
+   * Extract session ID from cookies
    */
-  static extractTokenFromRequest(request: Request): string | null {
-    console.log('extractTokenFromRequest: Starting token extraction');
-    console.log('extractTokenFromRequest: Request URL:', request.url);
+  static extractSessionIdFromRequest(request: Request): string | null {
+    console.log('extractSessionIdFromRequest: Starting session extraction');
+    console.log('extractSessionIdFromRequest: Request URL:', request.url);
     
-    // Try Authorization header first
-    const authHeader = request.headers.get('authorization');
-    console.log('extractTokenFromRequest: Authorization header:', authHeader);
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      console.log('extractTokenFromRequest: Found Bearer token:', token ? 'present' : 'missing');
-      return token;
-    }
-    
-    // Try httpOnly cookie as fallback
+    // Try httpOnly cookie
     const cookies = request.headers.get('cookie');
-    console.log('extractTokenFromRequest: Raw cookie header:', cookies);
+    console.log('extractSessionIdFromRequest: Raw cookie header:', cookies);
     
     if (cookies) {
       // Parse all cookies for debugging
       const cookieEntries = cookies.split(';').map(c => c.trim());
-      console.log('extractTokenFromRequest: All cookies:', cookieEntries);
+      console.log('extractSessionIdFromRequest: All cookies:', cookieEntries);
       
-      // Look for our auth token specifically
-      const authTokenCookie = cookieEntries.find(cookie => cookie.startsWith('auth-token='));
-      console.log('extractTokenFromRequest: Auth token cookie:', authTokenCookie);
+      // Look for our session cookie
+      const sessionCookie = cookieEntries.find(cookie => cookie.startsWith('session-id='));
+      console.log('extractSessionIdFromRequest: Session cookie:', sessionCookie);
       
-      if (authTokenCookie) {
-        const token = authTokenCookie.split('=')[1];
-        console.log('extractTokenFromRequest: Extracted token from cookie:', token ? 'present' : 'missing');
-        console.log('extractTokenFromRequest: Token length:', token ? token.length : 0);
-        return token;
+      if (sessionCookie) {
+        const sessionId = sessionCookie.split('=')[1];
+        console.log('extractSessionIdFromRequest: Extracted session ID:', sessionId ? 'present' : 'missing');
+        console.log('extractSessionIdFromRequest: Session ID length:', sessionId ? sessionId.length : 0);
+        return sessionId;
       }
       
       // Also try the regex method as fallback
-      const tokenMatch = cookies.match(/auth-token=([^;]+)/);
-      console.log('extractTokenFromRequest: Regex match result:', tokenMatch);
-      if (tokenMatch) {
-        console.log('extractTokenFromRequest: Found token via regex:', tokenMatch[1] ? 'present' : 'missing');
-        return tokenMatch[1];
+      const sessionMatch = cookies.match(/session-id=([^;]+)/);
+      console.log('extractSessionIdFromRequest: Regex match result:', sessionMatch);
+      if (sessionMatch) {
+        console.log('extractSessionIdFromRequest: Found session ID via regex:', sessionMatch[1] ? 'present' : 'missing');
+        return sessionMatch[1];
       }
     }
     
-    console.log('extractTokenFromRequest: No token found');
+    console.log('extractSessionIdFromRequest: No session ID found');
     return null;
   }
 }

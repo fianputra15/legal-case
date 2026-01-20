@@ -66,7 +66,6 @@ The `canAccessCase()` method handles:
 
 ```typescript
 // AuthorizationService.canAccessCase() handles:
-// - ADMIN: Full access to all cases
 // - CLIENT: Access only to owned cases (ownerId === user.id)
 // - LAWYER: Access to explicitly granted cases via CaseAccess table
 ```
@@ -196,15 +195,14 @@ Logger.error('Get case error:', error);
 SELECT id FROM cases 
 WHERE id = ? AND (
   (role = 'CLIENT' AND ownerId = ?) OR
-  (role = 'LAWYER' AND EXISTS(SELECT 1 FROM case_access WHERE caseId = ? AND lawyerId = ?)) OR
-  (role = 'ADMIN')
+  (role = 'LAWYER' AND EXISTS(SELECT 1 FROM case_access WHERE caseId = ? AND lawyerId = ?))
 )
 ```
 
 ## 🧪 **Testing Scenarios**
 
 ### **Authorization Matrix**
-| User Role | Own Case | Other Client's Case | Granted Lawyer Case | Any Case (Admin) |
+| User Role | Own Case | Other Client's Case | Granted Lawyer Case |
 |-----------|----------|-------------------|-------------------|------------------|
 | CLIENT    | ✅ 200   | ❌ 404            | ❌ 404            | ❌ 404           |
 | LAWYER    | ❌ 404   | ❌ 404            | ✅ 200            | ❌ 404           |

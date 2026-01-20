@@ -46,10 +46,6 @@ export interface AuthResponse {
     lastName: string;
     role: string;
   };
-  tokens: {
-    accessToken: string;
-    refreshToken: string;
-  };
 }
 
 // User API types

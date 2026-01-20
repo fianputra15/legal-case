@@ -2,9 +2,105 @@
 
 import { useAuth } from '@/shared/lib/auth';
 import { AppHeader } from '@/shared/ui/app-header';
+import { useState, useEffect } from 'react';
+import { apiClient } from '@/shared/api';
+
+interface Case {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CaseStats {
+  total: number;
+  open: number;
+  in_progress: number;
+  closed: number;
+  recent: Case[];
+}
 
 export default function HomePage() {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const [cases, setCases] = useState<Case[]>([]);
+  const [caseStats, setCaseStats] = useState<CaseStats | null>(null);
+  const [casesLoading, setCasesLoading] = useState(false);
+  const [casesError, setCasesError] = useState<string | null>(null);
+
+  // Fetch cases when user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      return;
+    }
+
+    const fetchCases = async () => {
+      setCasesLoading(true);
+      setCasesError(null);
+      
+      try {
+        console.log('HomePage: Fetching cases for authenticated user');
+        
+        // Fetch recent cases (limit to 5 for homepage)
+        const response = await apiClient.get('/api/cases?limit=5&page=1');
+        
+        if (response.success && response.data) {
+          setCases(response.data.cases || []);
+          
+          // Calculate stats from the cases
+          const allCases = response.data.cases || [];
+          const stats: CaseStats = {
+            total: response.data.pagination?.total || allCases.length,
+            open: allCases.filter((c: Case) => c.status === 'OPEN').length,
+            in_progress: allCases.filter((c: Case) => c.status === 'IN_PROGRESS').length,
+            closed: allCases.filter((c: Case) => c.status === 'CLOSED').length,
+            recent: allCases.slice(0, 3) // Show 3 most recent
+          };
+          
+          setCaseStats(stats);
+        }
+      } catch (error: any) {
+        console.error('HomePage: Error fetching cases:', error);
+        setCasesError(error?.message || 'Failed to load cases');
+      } finally {
+        setCasesLoading(false);
+      }
+    };
+
+    // Add delay to ensure authentication is fully processed
+    const timer = setTimeout(fetchCases, 500);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'OPEN': return 'bg-green-100 text-green-800';
+      case 'IN_PROGRESS': return 'bg-yellow-100 text-yellow-800';
+      case 'CLOSED': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'CORPORATE_LAW': return 'bg-blue-100 text-blue-800';
+      case 'CRIMINAL_LAW': return 'bg-red-100 text-red-800';
+      case 'FAMILY_LAW': return 'bg-purple-100 text-purple-800';
+      case 'REAL_ESTATE': return 'bg-green-100 text-green-800';
+      case 'INTELLECTUAL_PROPERTY': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,7 +118,7 @@ export default function HomePage() {
                 Secure, efficient, and comprehensive case management for legal professionals and their clients.
               </p>
               
-              {loading ? (
+              {authLoading ? (
                 <div className="mt-5 flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
@@ -60,6 +156,111 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Case Statistics Section - Only for authenticated users */}
+        {isAuthenticated && user && (
+          <div className="bg-white border-t border-gray-200">
+            <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Welcome back, {user.firstName}!
+                </h2>
+                <p className="mt-2 text-gray-600">
+                  Here's an overview of your cases as a {user.role.toLowerCase()}
+                </p>
+              </div>
+
+              {casesLoading ? (
+                <div className="flex justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : casesError ? (
+                <div className="text-center">
+                  <div className="text-red-600 mb-4">Failed to load case data</div>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : caseStats ? (
+                <div>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-blue-50 p-6 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-blue-600">{caseStats.total}</div>
+                      <div className="text-blue-800 font-medium">Total Cases</div>
+                    </div>
+                    <div className="bg-green-50 p-6 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-green-600">{caseStats.open}</div>
+                      <div className="text-green-800 font-medium">Open Cases</div>
+                    </div>
+                    <div className="bg-yellow-50 p-6 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-yellow-600">{caseStats.in_progress}</div>
+                      <div className="text-yellow-800 font-medium">In Progress</div>
+                    </div>
+                    <div className="bg-gray-50 p-6 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-gray-600">{caseStats.closed}</div>
+                      <div className="text-gray-800 font-medium">Closed Cases</div>
+                    </div>
+                  </div>
+
+                  {/* Recent Cases */}
+                  {caseStats.recent.length > 0 && (
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Recent Cases</h3>
+                        <a href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+                          View All →
+                        </a>
+                      </div>
+                      
+                      <div className="bg-white shadow rounded-lg overflow-hidden">
+                        <div className="divide-y divide-gray-200">
+                          {caseStats.recent.map((caseItem) => (
+                            <div key={caseItem.id} className="p-6 hover:bg-gray-50">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <h4 className="text-lg font-medium text-gray-900 mb-2">
+                                    {caseItem.title}
+                                  </h4>
+                                  <div className="flex items-center space-x-4">
+                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(caseItem.category)}`}>
+                                      {caseItem.category.replace('_', ' ')}
+                                    </span>
+                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(caseItem.status)}`}>
+                                      {caseItem.status.replace('_', ' ')}
+                                    </span>
+                                    <span className="text-sm text-gray-500">
+                                      Created {formatDate(caseItem.createdAt)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    Priority: {caseItem.priority}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center text-gray-600">
+                  <p>No cases found. Start by creating your first case.</p>
+                  <a href="/dashboard" className="mt-2 inline-block text-blue-600 hover:text-blue-800 font-medium">
+                    Go to Dashboard →
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Features Section */}
         <div id="features" className="py-12 bg-gray-50">
@@ -135,25 +336,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Authentication Status */}
-        {isAuthenticated && user && (
-          <div className="bg-blue-50 border-t border-blue-200">
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-blue-900">
-                  Welcome back, {user.firstName}!
-                </h3>
-                <p className="mt-1 text-blue-700">
-                  You're signed in as a {user.role.toLowerCase()}. 
-                  <a href="/dashboard" className="font-medium underline hover:no-underline ml-1">
-                    Go to your dashboard
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

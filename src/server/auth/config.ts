@@ -1,13 +1,11 @@
 export const authConfig = {
-  jwt: {
-    secret: process.env.JWT_SECRET || 'fallback-secret',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  session: {
+    secret: process.env.SESSION_SECRET || 'fallback-session-secret',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    cookieName: 'session-id',
   },
   bcrypt: {
     rounds: parseInt(process.env.BCRYPT_ROUNDS || '12'),
-  },
-  session: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 };
 

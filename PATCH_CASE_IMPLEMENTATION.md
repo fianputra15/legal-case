@@ -7,7 +7,7 @@
 
 ### **Authorization Requirements**
 1. **Authentication**: Valid JWT token required (401 if missing)
-2. **Role Restriction**: Only `CLIENT` role users can update cases (403 for lawyers/admins)
+2. **Role Restriction**: Only `CLIENT` role users can update cases (403 for lawyers)
 3. **Ownership**: User must own the case (403 if not owner, 404 if case doesn't exist)
 
 ## 🔒 **Security & Authorization Flow**
@@ -37,7 +37,6 @@ if (!isOwner) {
 | Scenario | Status Code | Response Message | Security Consideration |
 |----------|-------------|------------------|------------------------|
 | Not authenticated | `401 Unauthorized` | "Authentication required" | Standard auth failure |
-| Wrong role (LAWYER/ADMIN) | `403 Forbidden` | "Only case owners can update cases" | Role enforcement |
 | Case doesn't exist | `404 Not Found` | "Case not found" | No information leakage |
 | Not case owner | `403 Forbidden` | "Only case owners can update cases" | Clear ownership requirement |
 | Invalid JSON | `400 Bad Request` | "Invalid JSON format" | Input validation |

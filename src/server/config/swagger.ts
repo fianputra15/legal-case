@@ -52,17 +52,11 @@ const options: swaggerJSDoc.Options = {
     ],
     components: {
       securitySchemes: {
-        BearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          description: 'JWT token obtained from /api/auth/login'
-        },
         CookieAuth: {
           type: 'apiKey',
           in: 'cookie',
-          name: 'auth-token',
-          description: 'HttpOnly cookie set automatically after login'
+          name: 'session-id',
+          description: 'HttpOnly session cookie set automatically after login'
         }
       },
       schemas: {
@@ -639,9 +633,6 @@ const options: swaggerJSDoc.Options = {
       }
     },
     security: [
-      {
-        BearerAuth: []
-      },
       {
         CookieAuth: []
       }

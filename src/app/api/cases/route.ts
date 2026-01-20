@@ -47,7 +47,7 @@ const caseService = new CaseService(new CaseRepository());
  *                       example: 5
  *                     userRole:
  *                       type: string
- *                       enum: ['CLIENT', 'LAWYER', 'ADMIN']
+ *                       enum: ['CLIENT', 'LAWYER']
  *                       example: 'CLIENT'
  *             examples:
  *               client_cases:

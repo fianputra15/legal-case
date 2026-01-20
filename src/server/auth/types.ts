@@ -18,20 +18,15 @@ export interface RegisterRequest {
   lastName: string;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
+export interface SessionData {
+  userId: string;
+  email: string;
+  role: UserRole;
+  createdAt: number;
+  expiresAt: number;
 }
 
 export enum UserRole {
   LAWYER = 'lawyer',
   CLIENT = 'client',
-}
-
-export interface JWTPayload {
-  userId: string;
-  email: string;
-  role: UserRole;
-  iat: number;
-  exp: number;
 }

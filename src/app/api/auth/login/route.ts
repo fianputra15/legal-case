@@ -5,6 +5,7 @@ import { UserService } from '@/server/services/user.service';
 import { UserRepository } from '@/server/db/repositories/user.repository';
 import { AuthUtils } from '@/server/auth/utils';
 import { AuthMiddleware } from '@/server/auth/middleware';
+import { sessionStore } from '@/server/auth/session-store';
 import { Logger } from '@/server/utils/logger';
 
 const userService = new UserService(new UserRepository());
@@ -16,7 +17,7 @@ const userService = new UserService(new UserRepository());
  *     tags:
  *       - Authentication
  *     summary: User login
- *     description: Authenticate user credentials and set secure httpOnly cookie with JWT token
+ *     description: Authenticate user credentials and set secure httpOnly cookie with session ID
  *     security: []
  *     requestBody:
  *       required: true
@@ -40,10 +41,10 @@ const userService = new UserService(new UserRepository());
  *         description: Login successful
  *         headers:
  *           Set-Cookie:
- *             description: HttpOnly authentication cookie
+ *             description: HttpOnly session cookie
  *             schema:
  *               type: string
- *               example: "auth-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Strict; Max-Age=604800; Path=/"
+ *               example: "session-id=a1b2c3d4e5f6...; HttpOnly; Secure; SameSite=Strict; Max-Age=604800; Path=/"
  *         content:
  *           application/json:
  *             schema:
@@ -89,15 +90,19 @@ export async function POST(request: NextRequest) {
       return ResponseHandler.unauthorized('Invalid credentials');
     }
 
-    // Generate secure JWT token
-    const accessToken = await AuthUtils.generateToken({
+    // Create session data
+    const sessionData = AuthUtils.createSession({
       userId: user.id,
       email: user.email,
       role: user.role,
     });
 
-    console.log('Login: Generated token for user:', user.email);
-    console.log('Login: Token length:', accessToken.length);
+    // Generate secure session ID
+    const sessionId = AuthUtils.generateSessionId();
+    sessionStore.set(sessionId, sessionData);
+
+    console.log('Login: Created session for user:', user.email);
+    console.log('Login: Session ID length:', sessionId.length);
 
     Logger.info(`User logged in: ${email}`);
 
@@ -112,8 +117,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Set secure httpOnly cookie
-    const cookieHeader = AuthMiddleware.createAuthCookie(accessToken);
+    // Set secure httpOnly cookie with session ID
+    const cookieHeader = AuthMiddleware.createSessionCookie(sessionId);
     console.log('Login: Setting cookie header:', cookieHeader);
     response.headers.set('Set-Cookie', cookieHeader);
     

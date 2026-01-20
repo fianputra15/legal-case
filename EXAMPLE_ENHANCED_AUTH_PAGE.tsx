@@ -339,7 +339,7 @@ function DashboardContent() {
 export default function EnhancedAuthExamplePage() {
   return (
     <RequireAuth 
-      roles={['CLIENT', 'LAWYER', 'ADMIN']}
+      roles={['CLIENT', 'LAWYER']}
       fallback={
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">

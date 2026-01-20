@@ -10,7 +10,7 @@ export const documentUploadExamples = {
   /**
    * Example 1: Upload PDF contract
    */
-  async uploadPDFContract(caseId: string, authToken: string) {
+  async uploadPDFContract(caseId: string) {
     const formData = new FormData();
     
     // Simulate a PDF file (in real usage, this would be from file input)
@@ -20,9 +20,7 @@ export const documentUploadExamples = {
     
     const response = await fetch(`/api/cases/${caseId}/documents`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authToken}`
-      },
+      credentials: 'include', // Include session cookie
       body: formData
     });
     
@@ -179,23 +177,24 @@ export function DocumentUpload({ caseId, onSuccess, onError }: DocumentUploadPro
  */
 export const curlExamples = {
   
-  // Upload with Bearer token
-  bearerToken: `curl -X POST \\
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  // Upload with session cookie authentication
+  sessionAuth: `curl -X POST \\
+  -H "Cookie: session-id=YOUR_SESSION_ID" \\
   -F "file=@/path/to/document.pdf" \\
   -F "documentType=CONTRACT" \\
   http://localhost:3000/api/cases/CASE_ID/documents`,
   
-  // Upload with cookie authentication
-  cookieAuth: `curl -X POST \\
-  -H "Cookie: auth-token=YOUR_JWT_TOKEN" \\
+  // Alternative: Upload with credentials include
+  withCredentials: `curl -X POST \\
+  --cookie-jar cookies.txt \\
+  --cookie cookies.txt \\
   -F "file=@/path/to/evidence.jpg" \\
   -F "documentType=EVIDENCE" \\
   http://localhost:3000/api/cases/CASE_ID/documents`,
   
   // Test error handling
   invalidFile: `curl -X POST \\
-  -H "Cookie: auth-token=YOUR_JWT_TOKEN" \\
+  -H "Cookie: session-id=YOUR_SESSION_ID" \\
   -F "file=@/path/to/malicious.exe" \\
   http://localhost:3000/api/cases/CASE_ID/documents`
 };

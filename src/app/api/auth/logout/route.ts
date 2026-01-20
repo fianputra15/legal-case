@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ResponseHandler } from '@/server/utils/response';
 import { AuthMiddleware } from '@/server/auth/middleware';
+import { sessionStore } from '@/server/auth/session-store';
+import { AuthUtils } from '@/server/auth/utils';
 import { Logger } from '@/server/utils/logger';
 
 /**
@@ -10,19 +12,18 @@ import { Logger } from '@/server/utils/logger';
  *     tags:
  *       - Authentication
  *     summary: User logout
- *     description: Clear authentication cookie and invalidate user session
+ *     description: Clear session cookie and invalidate user session
  *     security:
- *       - BearerAuth: []
  *       - CookieAuth: []
  *     responses:
  *       200:
  *         description: Logout successful
  *         headers:
  *           Set-Cookie:
- *             description: Clears the authentication cookie
+ *             description: Clears the session cookie
  *             schema:
  *               type: string
- *               example: "auth-token=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/"
+ *               example: "session-id=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/"
  *         content:
  *           application/json:
  *             schema:
@@ -39,14 +40,23 @@ import { Logger } from '@/server/utils/logger';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Get current session ID
+    const sessionId = AuthUtils.extractSessionIdFromRequest(request);
+    
     // Get current user for logging (optional)
     const currentUser = await AuthMiddleware.getCurrentUser(request);
+    
+    // Remove session from store if it exists
+    if (sessionId) {
+      sessionStore.delete(sessionId);
+      Logger.info('Session removed from store:', { sessionId });
+    }
     
     if (currentUser) {
       Logger.info(`User logged out: ${currentUser.email}`);
     }
 
-    // Create response and clear auth cookie
+    // Create response and clear session cookie
     const response = ResponseHandler.success(null, 'Logged out successfully');
     response.headers.set('Set-Cookie', AuthMiddleware.createLogoutCookie());
     
