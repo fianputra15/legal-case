@@ -1,171 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthUser } from './types';
-import { AuthUtils } from './utils';
-import { sessionStore } from './session-store';
-import { UserRepository } from '../db/repositories/user.repository';
-import { ResponseHandler } from '../utils/response';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 
-export interface AuthenticatedRequest extends NextRequest {
-  user?: AuthUser;
+
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get("token")?.value;
+
+  const protectedPaths = [ "/", "/my-cases", "/messages"]; // protect these routes
+  const pathname = req.nextUrl.pathname;
+
+  if (protectedPaths.some(path => pathname.startsWith(path))) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    try {
+      jwt.verify(token, process.env.JWT_SECRET!);
+    } catch {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
-const userRepository = new UserRepository();
-
-export class AuthMiddleware {
-  /**
-   * Get current user from session (no authentication required)
-   * Returns null if session is invalid or missing
-   */
-  static async getCurrentUser(request: NextRequest): Promise<AuthUser | null> {
-    try {
-      const sessionId = AuthUtils.extractSessionIdFromRequest(request);
-      if (!sessionId) {
-        return null;
-      }
-      
-      const sessionData = sessionStore.get(sessionId);
-      if (!sessionData || !AuthUtils.isSessionValid(sessionData)) {
-        return null;
-      }
-
-      // Fetch current user data to ensure it's still valid
-      const user = await userRepository.findById(sessionData.userId);
-      if (!user) {
-        // User no longer exists, remove session
-        sessionStore.delete(sessionId);
-        return null;
-      }
-
-      const authUser = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      };
-      return authUser;
-    } catch (error) {
-      // Always return null on error - no authentication required
-      return null;
-    }
-  }
-
-  /**
-   * Require authentication - returns error response if not authenticated
-   */
-  static async requireAuth(request: NextRequest): Promise<{ user: AuthUser } | NextResponse> {
-    try {
-      const user = await this.getCurrentUser(request);
-      if (!user) {
-        return ResponseHandler.unauthorized('Authentication required');
-      }
-
-      return { user };
-    } catch (error) {
-      return ResponseHandler.unauthorized('Authentication failed');
-    }
-  }
-
-  /**
-   * Require specific role - returns error response if not authorized
-   */
-  static async requireRole(request: NextRequest, allowedRoles: string[]): Promise<{ user: AuthUser } | NextResponse> {
-    const authResult = await this.requireAuth(request);
-    
-    if (authResult instanceof NextResponse) {
-      return authResult; // Authentication failed
-    }
-
-    const { user } = authResult;
-    if (!allowedRoles.includes(user.role)) {
-      return ResponseHandler.forbidden('Insufficient permissions');
-    }
-
-    return { user };
-  }
-
-  /**
-   * Create secure httpOnly cookie for session ID
-   */
-  static createSessionCookie(sessionId: string): string {
-    const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
-    // In development, don't require Secure flag for localhost
-    const secureFlag = isDevelopment ? '' : ' Secure;';
-    
-    return `session-id=${sessionId}; HttpOnly;${secureFlag} SameSite=Strict; Max-Age=${maxAge}; Path=/`;
-  }
-
-  /**
-   * Create cookie to clear session
-   */
-  static createLogoutCookie(): string {
-    return 'session-id=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/';
-  }
-
-  /**
-   * Require case access authorization
-   * Returns error response if user cannot access the case
-   * 
-   * @param request - Next.js request object
-   * @param caseId - Case ID to check access for
-   * @returns User object if authorized, or error response
-   */
-  static async requireCaseAccess(request: NextRequest, caseId: string): Promise<{ user: AuthUser } | NextResponse> {
-    const authResult = await this.requireAuth(request);
-    
-    if (authResult instanceof NextResponse) {
-      return authResult; // Authentication failed
-    }
-
-    const { user } = authResult;
-    
-    // Import here to avoid circular dependencies
-    const { AuthorizationService } = await import('./authorization');
-    const accessCheck = await AuthorizationService.canAccessCase(user, caseId);
-    
-    if (!accessCheck) {
-      return ResponseHandler.forbidden('Access denied');
-    }
-
-    return { user };
-  }
-
-  /**
-   * Require case ownership authorization
-   * Returns error response if user is not the case owner
-   * 
-   * @param request - Next.js request object  
-   * @param caseId - Case ID to check ownership for
-   * @returns User object if owner, or error response
-   */
-  static async requireCaseOwnership(request: NextRequest, caseId: string): Promise<{ user: AuthUser } | NextResponse> {
-    const authResult = await this.requireAuth(request);
-    
-    if (authResult instanceof NextResponse) {
-      return authResult; // Authentication failed
-    }
-
-    const { user } = authResult;
-    
-    const { AuthorizationService } = await import('./authorization');
-    const ownershipCheck = await AuthorizationService.isCaseOwner(user, caseId);
-    
-    if (!ownershipCheck) {
-      return ResponseHandler.forbidden('Only case owners can perform this action');
-    }
-
-    return { user };
-  }
-
-  /**
-   * Middleware to check user permissions
-   */
-  static authorize(permissions: string[]) {
-    return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
-      // TODO: Implement authorization middleware
-      return null;
-    };
-  }
-}
+// Specify matcher
+export const config = {
+  matcher: [ "/", "/my-cases/:path*", "/messages/:path*"],
+};

@@ -1,10 +1,11 @@
-import { RequireAuth } from '@/shared/lib/auth';
+'use client';
+import { withAuthProtection } from "@/shared/HOC/withAuth";
 
 
 import { HomePage } from "@/views/home";
 
-export default function Home() {
-  return  <RequireAuth roles={[
-    'CLIENT','LAWYER'
-  ]}><HomePage /></RequireAuth>;
-}
+const Home = () => {
+  return <HomePage />;
+};
+
+export default withAuthProtection(Home);

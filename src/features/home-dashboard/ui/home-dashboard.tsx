@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/shared/lib/auth-context';
+import { useAuth } from '@/shared/lib/auth';
 import { useState, useEffect } from 'react';
 import { getCasesStats } from '../api';
 import type { CaseStats } from '../model';
@@ -26,9 +26,9 @@ export function HomeDashboard() {
       try {
         const stats = await getCasesStats();
         setCaseStats(stats);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('HomeDashboard: Error fetching cases:', error);
-        setCasesError(error?.message || 'Failed to load cases');
+        setCasesError(error instanceof Error ? error.message : 'Failed to load cases');
       } finally {
         setCasesLoading(false);
       }

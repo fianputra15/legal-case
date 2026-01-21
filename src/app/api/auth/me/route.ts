@@ -1,103 +1,42 @@
-import { NextRequest } from 'next/server';
-import { ResponseHandler } from '@/server/utils/response';
-import { AuthMiddleware } from '@/server/auth/middleware';
-import { Logger } from '@/server/utils/logger';
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
+import { UserRepository } from "@/server/db/repositories/user.repository";
+import { UserService } from "@/server/services";
+import { ResponseHandler } from "@/server/utils/response";
 
-/**
- * @swagger
- * /api/auth/me:
- *   get:
- *     tags:
- *       - Authentication
- *     summary: Get current user
- *     description: Retrieve information about the currently authenticated user
- *     security:
- *       - BearerAuth: []
- *       - CookieAuth: []
- *     responses:
- *       200:
- *         description: Current user information retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *             examples:
- *               client:
- *                 summary: Client user
- *                 value:
- *                   success: true
- *                   data:
- *                     user:
- *                       id: "clx123abc456"
- *                       email: "client@example.com"
- *                       firstName: "Jane"
- *                       lastName: "Doe"
- *                       role: "CLIENT"
- *               lawyer:
- *                 summary: Lawyer user
- *                 value:
- *                   success: true
- *                   data:
- *                     user:
- *                       id: "clx789def012"
- *                       email: "lawyer@legal.com"
- *                       firstName: "John"
- *                       lastName: "Smith"
- *                       role: "LAWYER"
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *         content:
- *           application/json:
- *             examples:
- *               missing_token:
- *                 summary: Missing authentication token
- *                 value:
- *                   success: false
- *                   error: "Authentication required"
- *                   message: "Please login to access this resource"
- *               invalid_token:
- *                 summary: Invalid or expired token
- *                 value:
- *                   success: false
- *                   error: "Authentication failed"
- *                   message: "Your session has expired, please login again"
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- */
-export async function GET(request: NextRequest) {
+const userService = new UserService(new UserRepository());
+
+export async function GET() {
   try {
-    // Require authentication
-    const authResult = await AuthMiddleware.requireAuth(request);
-    
-    // If authResult is a NextResponse, authentication failed
-    if (authResult instanceof Response) {
-      return authResult;
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user } = authResult;
+    // Verify and decode the JWT using the secret
+    // This should give us the userId encoded in the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
 
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId.toString());
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // If the user exists, return their details
+    // return NextResponse.json({ user });
     return ResponseHandler.success({
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
+      user: user,
     });
-
-  } catch (error) {
-    Logger.error('Get current user error:', error);
-    // Never leak internal errors to client
-    return ResponseHandler.internalError('Unable to fetch user information');
+    
+  } catch {
+    // Catch any errors (invalid/expired token, DB error, etc.)
+    return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
   }
 }

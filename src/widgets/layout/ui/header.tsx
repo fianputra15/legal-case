@@ -1,10 +1,10 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
 import SearchIcon from '../../../../public/icons/search.svg'
 import BellIcon from '../../../../public/icons/bell.svg'
 import Image from 'next/image';
-import { useAuth } from '@/shared/lib/auth-context';
+import { useAuth } from '@/shared/lib/auth';
 
 interface HeaderProps {
   title?: string;
@@ -13,7 +13,31 @@ interface HeaderProps {
 }
 
 export default function Header({ title, actions, children }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   return (
     <header className="bg-white border-b border-light px-4 py-4">
       <div className="flex items-center justify-between">
@@ -42,11 +66,38 @@ export default function Header({ title, actions, children }: HeaderProps) {
           <button className="relative p-2 text-text-sub hover:text-text-primary transition-colors">
             <Image src={BellIcon} alt="Notifications" className="w-6 h-6" />
           </button>
-          {/* User Avatar */}
-          <div className="flex items-center justify-center w-8 h-8 bg-biege rounded-full">
-            <span className="text-xs font-medium text-strong900">
-              {user?.firstName ? user.firstName.slice(0, 2).toUpperCase() : 'UN'}
-            </span>
+          {/* User Menu */}
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex items-center justify-center w-8 h-8 bg-biege rounded-full hover:bg-gray-200 transition-colors"
+            >
+              <span className="text-xs font-medium text-strong900">
+                {user?.firstName ? user.firstName.slice(0, 2).toUpperCase() : 'UN'}
+              </span>
+            </button>
+            
+            {/* Dropdown Menu */}
+            {isUserMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900">{user?.firstName || 'Unknown User'}</p>
+                  <p className="text-sm text-gray-500">{user?.email}</p>
+                  <span className="inline-block mt-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                    {user?.role}
+                  </span>
+                </div>
+                
+                <div className="py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           {/* Actions */}
           {actions}

@@ -1,161 +1,39 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import { ResponseHandler } from '@/server/utils/response';
 import { validateRequest, createCaseSchema, getCasesQuerySchema } from '@/server/utils/validation';
 import { CaseService } from '@/server/services/case.service';
 import { CaseRepository } from '@/server/db/repositories/case.repository';
-import { AuthMiddleware } from '@/server/auth/middleware';
+import { UserService } from '@/server/services';
+import { UserRepository } from '@/server/db/repositories/user.repository';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
 import { CaseFilters, PaginationOptions } from '@/server/types/database';
 
 const caseService = new CaseService(new CaseRepository());
+const userService = new UserService(new UserRepository());
 
-/**
- * @swagger
- * /api/cases:
- *   get:
- *     tags:
- *       - Cases
- *     summary: List accessible cases
- *     description: |
- *       Retrieve all cases accessible to the authenticated user based on their role:
- *       - **CLIENT**: Only their own cases
- *       - **LAWYER**: Cases explicitly granted to them
- *     security:
- *       - BearerAuth: []
- *       - CookieAuth: []
- *     responses:
- *       200:
- *         description: Cases retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     cases:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Case'
- *                     total:
- *                       type: integer
- *                       example: 5
- *                     userRole:
- *                       type: string
- *                       enum: ['CLIENT', 'LAWYER']
- *                       example: 'CLIENT'
- *             examples:
- *               client_cases:
- *                 summary: Client's own cases
- *                 value:
- *                   success: true
- *                   data:
- *                     cases:
- *                       - id: "clx789def012"
- *                         title: "Contract Dispute - ABC Corp"
- *                         category: "CORPORATE_LAW"
- *                         status: "OPEN"
- *                         priority: 3
- *                         ownerId: "clx123abc456"
- *                         createdAt: "2024-01-15T10:30:00Z"
- *                         updatedAt: "2024-01-15T10:30:00Z"
- *                     total: 1
- *                     userRole: "CLIENT"
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- *   post:
- *     tags:
- *       - Cases
- *     summary: Create a new case
- *     description: Create a new legal case. The authenticated user becomes the case owner.
- *     security:
- *       - BearerAuth: []
- *       - CookieAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *                 example: "Property Purchase Legal Review"
- *               description:
- *                 type: string
- *                 example: "Legal review required for residential property purchase"
- *               category:
- *                 type: string
- *                 enum: ['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER']
- *                 example: "REAL_ESTATE"
- *               priority:
- *                 type: integer
- *                 minimum: 1
- *                 maximum: 4
- *                 example: 2
- *             required: ['title', 'category']
- *     responses:
- *       201:
- *         description: Case created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   $ref: '#/components/schemas/Case'
- *                 message:
- *                   type: string
- *                   example: "Case created successfully"
- *       400:
- *         description: Invalid request data
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: "Validation failed"
- *               message: "Title is required"
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- */
-
-/**
- * GET /api/cases - List cases accessible to the authenticated user with filtering and pagination
- * 
- * Query Parameters:
- * - page: Page number (default: 1)
- * - limit: Items per page (default: 10, max: 100)
- * - search: Search by title (case-insensitive)
- * - status: Filter by case status
- * - category: Filter by case category
- * 
- * Authorization:
- * - Clients see only their own cases
- * - Lawyers see cases explicitly granted to them
- */
 export async function GET(request: NextRequest) {
   try {
-    // Require authentication
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof Response) {
-      return authResult;
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user } = authResult;
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
@@ -224,6 +102,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    // Handle JWT verification errors
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
     Logger.error('Get cases error:', error);
     return ResponseHandler.internalError('Failed to retrieve cases');
   }
@@ -239,13 +121,29 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Require CLIENT role specifically
-    const authResult = await AuthMiddleware.requireRole(request, ['CLIENT']);
-    if (authResult instanceof Response) {
-      return authResult;
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user } = authResult;
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Check if user has CLIENT role (only clients can create cases)
+    if (user.role !== 'CLIENT') {
+      return NextResponse.json({ error: "Only clients can create cases" }, { status: 403 });
+    }
     
     // Parse and validate request body
     let body;
@@ -273,6 +171,10 @@ export async function POST(request: NextRequest) {
     return ResponseHandler.created(newCase, 'Case created successfully');
 
   } catch (error) {
+    // Handle JWT verification errors
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
     Logger.error('Create case error:', error);
     // Don't expose internal errors to client
     if (error instanceof Error && (error.message.includes('required') || error.message.includes('Invalid'))) {
