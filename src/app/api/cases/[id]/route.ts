@@ -14,7 +14,7 @@ const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**

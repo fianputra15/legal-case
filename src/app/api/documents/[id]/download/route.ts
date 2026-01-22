@@ -1,9 +1,9 @@
 /**
  * Document Download API Route
  * GET /api/documents/[id]/download
- * 
+ *
  * Secure document download with authorization and streaming
- * 
+ *
  * @swagger
  * /api/documents/{id}/download:
  *   get:
@@ -87,155 +87,208 @@
  *       - CookieAuth: []
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthMiddleware } from '@/server/auth/middleware';
-import { AuthorizationService } from '@/server/auth/authorization';
-import { DocumentService } from '@/server/services/document.service';
-import { ResponseHandler } from '@/server/utils/response';
-import { Logger } from '@/server/utils/logger';
+import { NextRequest, NextResponse } from "next/server";
+import { AuthorizationService } from "@/server/auth/authorization";
+import { DocumentService } from "@/server/services/document.service";
+import { ResponseHandler } from "@/server/utils/response";
+import { Logger } from "@/server/utils/logger";
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { UserService } from '@/server/services';
+import { UserRepository } from '@/server/db/repositories/user.repository';
+
+const userService = new UserService(new UserRepository());
 
 /**
  * GET /api/documents/[id]/download - Download document file
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: documentId } = await params;
-    
-    // 1. Authenticate user
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof NextResponse) {
-      return authResult; // Return auth error response
+
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { user } = authResult;
-    
+
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: string;
+    };
+
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // 2. Validate document ID format
-    if (!documentId || typeof documentId !== 'string' || documentId.trim().length === 0) {
-      return ResponseHandler.badRequest('Invalid document ID');
+    if (
+      !documentId ||
+      typeof documentId !== "string" ||
+      documentId.trim().length === 0
+    ) {
+      return ResponseHandler.badRequest("Invalid document ID");
     }
-    
+
     // 3. Get document metadata first (includes case information)
     let documentMetadata;
     try {
       documentMetadata = await DocumentService.getDocumentMetadata(documentId);
     } catch (error) {
-      Logger.error(`Document metadata retrieval failed for ${documentId}:`, error);
+      Logger.error(
+        `Document metadata retrieval failed for ${documentId}:`,
+        error,
+      );
       // Use generic error to avoid information leakage
-      return ResponseHandler.notFound('Document not found or access denied');
+      return ResponseHandler.notFound("Document not found or access denied");
     }
-    
+
     if (!documentMetadata) {
       // Log access attempt for security audit
-      Logger.warn(`User ${user.email} attempted to access non-existent document ${documentId}`);
-      return ResponseHandler.notFound('Document not found or access denied');
+      Logger.warn(
+        `User ${user.email} attempted to access non-existent document ${documentId}`,
+      );
+      return ResponseHandler.notFound("Document not found or access denied");
     }
-    
+
     // 4. Check if document has been deleted
-    if (documentMetadata.status === 'DELETED') {
-      Logger.warn(`User ${user.email} attempted to access deleted document ${documentId}`);
+    if (documentMetadata.status === "DELETED") {
+      Logger.warn(
+        `User ${user.email} attempted to access deleted document ${documentId}`,
+      );
       return new NextResponse(
         JSON.stringify({
           success: false,
           error: {
-            code: 'GONE',
-            message: 'Document has been deleted'
-          }
+            code: "GONE",
+            message: "Document has been deleted",
+          },
         }),
         {
           status: 410,
-          headers: { 'Content-Type': 'application/json' }
-        }
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
-    
+
     // 5. Check case access authorization (critical security check)
-    const canAccess = await AuthorizationService.canAccessCase(user, documentMetadata.caseId);
+    const canAccess = await AuthorizationService.canAccessCase(
+      user,
+      documentMetadata.caseId,
+    );
     if (!canAccess) {
       // Log unauthorized access attempt for security audit
-      Logger.warn(`User ${user.email} attempted unauthorized access to document ${documentId} in case ${documentMetadata.caseId}`);
+      Logger.warn(
+        `User ${user.email} attempted unauthorized access to document ${documentId} in case ${documentMetadata.caseId}`,
+      );
       // Use same error message as non-existent document (security)
-      return ResponseHandler.notFound('Document not found or access denied');
+      return ResponseHandler.notFound("Document not found or access denied");
     }
-    
+
     // 6. Get document file data
     let documentFile;
     try {
       documentFile = await DocumentService.getDocumentFile(documentId);
     } catch (error) {
       Logger.error(`Document file retrieval failed for ${documentId}:`, error);
-      
+
       // Handle specific error cases
       if (error instanceof Error) {
-        if (error.message.includes('Document not found')) {
-          return ResponseHandler.notFound('Document not found or access denied');
+        if (error.message.includes("Document not found")) {
+          return ResponseHandler.notFound(
+            "Document not found or access denied",
+          );
         }
-        if (error.message.includes('Document has been deleted')) {
+        if (error.message.includes("Document has been deleted")) {
           return new NextResponse(
             JSON.stringify({
               success: false,
               error: {
-                code: 'GONE',
-                message: 'Document has been deleted'
-              }
+                code: "GONE",
+                message: "Document has been deleted",
+              },
             }),
             {
               status: 410,
-              headers: { 'Content-Type': 'application/json' }
-            }
+              headers: { "Content-Type": "application/json" },
+            },
           );
         }
-        if (error.message.includes('File integrity check failed')) {
-          Logger.error(`File integrity check failed for document ${documentId} - possible corruption or tampering`);
-          return ResponseHandler.internalError('Document file appears to be corrupted');
+        if (error.message.includes("File integrity check failed")) {
+          Logger.error(
+            `File integrity check failed for document ${documentId} - possible corruption or tampering`,
+          );
+          return ResponseHandler.internalError(
+            "Document file appears to be corrupted",
+          );
         }
-        if (error.message.includes('Failed to read document file')) {
-          Logger.error(`File system error for document ${documentId} - file may be missing from storage`);
-          return ResponseHandler.internalError('Document file is currently unavailable');
+        if (error.message.includes("Failed to read document file")) {
+          Logger.error(
+            `File system error for document ${documentId} - file may be missing from storage`,
+          );
+          return ResponseHandler.internalError(
+            "Document file is currently unavailable",
+          );
         }
       }
-      
-      return ResponseHandler.internalError('An error occurred while accessing the document');
+
+      return ResponseHandler.internalError(
+        "An error occurred while accessing the document",
+      );
     }
-    
+
     // 7. Sanitize filename for Content-Disposition header
     const safeFilename = sanitizeFilename(documentFile.originalName);
-    
+
     // 8. Set security and streaming headers
     const headers = new Headers();
-    
+
     // Content type from document metadata
-    headers.set('Content-Type', documentFile.mimeType);
-    
+    headers.set("Content-Type", documentFile.mimeType);
+
     // Force download with original filename
-    headers.set('Content-Disposition', `attachment; filename=\"${safeFilename}\"`);
-    
+    headers.set(
+      "Content-Disposition",
+      `attachment; filename=\"${safeFilename}\"`,
+    );
+
     // File size for progress tracking
-    headers.set('Content-Length', documentFile.buffer.length.toString());
-    
+    headers.set("Content-Length", documentFile.buffer.length.toString());
+
     // Security headers
-    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    headers.set('Pragma', 'no-cache');
-    headers.set('Expires', '0');
-    
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
+
     // Prevent content sniffing
-    headers.set('X-Content-Type-Options', 'nosniff');
-    
+    headers.set("X-Content-Type-Options", "nosniff");
+
     // Log successful download for audit trail
-    Logger.info(`User ${user.email} downloaded document ${documentId} (${safeFilename}) from case ${documentMetadata.caseId}`);
-    
+    Logger.info(
+      `User ${user.email} downloaded document ${documentId} (${safeFilename}) from case ${documentMetadata.caseId}`,
+    );
+
     // 9. Stream file to client
-    return new NextResponse(documentFile.buffer, {
+    return new NextResponse(new Uint8Array(documentFile.buffer), {
       status: 200,
-      headers
+      headers,
     });
-    
   } catch (error) {
     // Log error details server-side but don't expose to client
-    Logger.error('Document download failed:', error);
-    
-    return ResponseHandler.internalError('An error occurred while downloading the document');
+    Logger.error("Document download failed:", error);
+
+    return ResponseHandler.internalError(
+      "An error occurred while downloading the document",
+    );
   }
 }
 
@@ -245,17 +298,19 @@ export async function GET(
  */
 function sanitizeFilename(filename: string): string {
   // Remove or replace dangerous characters
-  return filename
-    // Replace path separators and dangerous chars with underscores
-    .replace(/[/\\:*?"<>|]/g, '_')
-    // Remove control characters
-    .replace(/[\x00-\x1f\x7f-\x9f]/g, '')
-    // Remove leading/trailing dots and spaces
-    .replace(/^[.\s]+|[.\s]+$/g, '')
-    // Limit length to prevent header issues
-    .substring(0, 255)
+  return (
+    filename
+      // Replace path separators and dangerous chars with underscores
+      .replace(/[/\\:*?"<>|]/g, "_")
+      // Remove control characters
+      .replace(/[\x00-\x1f\x7f-\x9f]/g, "")
+      // Remove leading/trailing dots and spaces
+      .replace(/^[.\s]+|[.\s]+$/g, "")
+      // Limit length to prevent header issues
+      .substring(0, 255) ||
     // Fallback if filename becomes empty
-    || 'document';
+    "document"
+  );
 }
 
 /**
@@ -265,10 +320,10 @@ function sanitizeFilename(filename: string): string {
 function escapeFilenameRFC5987(filename: string): string {
   // First sanitize the filename
   const sanitized = sanitizeFilename(filename);
-  
+
   // Check if filename contains non-ASCII characters
   const hasNonASCII = /[^\\x00-\\x7F]/.test(sanitized);
-  
+
   if (hasNonASCII) {
     // Use RFC 5987 encoding for international filenames
     const encoded = encodeURIComponent(sanitized);

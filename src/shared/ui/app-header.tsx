@@ -21,7 +21,7 @@ const navigation: NavigationItem[] = [
 ];
 
 export function AppHeader() {
-  const { user, isAuthenticated, logout, loading } = useAuth();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -39,7 +39,7 @@ export function AppHeader() {
     if (item.public) return true;
     if (!isAuthenticated) return false;
     if (!item.roles) return true;
-    return item.roles.includes(user?.role || '');
+    return item.roles.includes(user?.role as any || '');
   });
 
   const getRoleBadgeColor = (role: string) => {
@@ -76,7 +76,7 @@ export function AppHeader() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {loading ? (
+            {isLoading ? (
               <div className="animate-pulse flex space-x-2">
                 <div className="h-8 w-20 bg-gray-200 rounded"></div>
               </div>

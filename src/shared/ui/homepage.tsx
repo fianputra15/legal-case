@@ -24,7 +24,7 @@ interface CaseStats {
 }
 
 export default function HomePage() {
-  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [caseStats, setCaseStats] = useState<CaseStats | null>(null);
   const [casesLoading, setCasesLoading] = useState(false);
@@ -44,7 +44,7 @@ export default function HomePage() {
         console.log('HomePage: Fetching cases for authenticated user');
         
         // Fetch recent cases (limit to 5 for homepage)
-        const response = await apiClient.get('/api/cases?limit=5&page=1');
+        const response = await apiClient.get('/api/cases?limit=5&page=1') as any;
         
         if (response.success && response.data) {
           setCases(response.data.cases || []);

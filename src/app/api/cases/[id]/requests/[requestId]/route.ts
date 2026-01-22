@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ResponseHandler } from '@/server/utils/response';s
+import { ResponseHandler } from '@/server/utils/response';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { UserService } from '@/server/services';
+import { UserRepository } from '@/server/db/repositories/user.repository';
+
+const userService = new UserService(new UserRepository());
 
 interface RouteParams {
-  params: { 
+  params: Promise<{ 
     id: string;
     requestId: string;
-  };
+  }>;
 }
 
 /**
@@ -17,7 +23,8 @@ interface RouteParams {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: caseId, requestId } = params;
+    const resolvedParams = await params;
+    const { id: caseId, requestId } = resolvedParams;
     
     // Validate case ID format
     if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {

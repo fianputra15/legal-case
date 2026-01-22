@@ -10,7 +10,7 @@ import { UserRepository } from '@/server/db/repositories/user.repository';
 const userService = new UserService(new UserRepository());
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -21,7 +21,8 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const caseId = params.id;
+    const resolvedParams = await params;
+    const caseId = resolvedParams.id;
     
     // Validate case ID format
     if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {
@@ -105,7 +106,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const caseId = params.id;
+    const resolvedParams = await params;
+    const caseId = resolvedParams.id;
     const { searchParams } = new URL(request.url);
     const requestId = searchParams.get('requestId');
     

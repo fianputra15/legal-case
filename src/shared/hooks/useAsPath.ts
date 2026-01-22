@@ -1,15 +1,21 @@
 'use client'
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import { useMemo, useState, useEffect } from 'react';
 
 export function useAsPath() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    // Only access search params on client side after hydration
+    if (typeof window !== 'undefined') {
+      setSearchQuery(window.location.search);
+    }
+  }, []);
 
   const asPath = useMemo(() => {
-    const query = searchParams?.toString();
-    return query ? `${pathname}?${query}` : pathname;
-  }, [pathname, searchParams]);
+    return searchQuery ? `${pathname}${searchQuery}` : pathname;
+  }, [pathname, searchQuery]);
 
   return asPath;
 }

@@ -147,11 +147,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentType, DocumentStatus } from '@prisma/client';
-import { AuthMiddleware } from '@/server/auth/middleware';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { DocumentService } from '@/server/services/document.service';
 import { ResponseHandler } from '@/server/utils/response';
 import { Logger } from '@/server/utils/logger';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { UserService } from '@/server/services';
+import { UserRepository } from '@/server/db/repositories/user.repository';
+
+const userService = new UserService(new UserRepository());
 
 // Configure allowed file types for this endpoint (subset of all supported types)
 const UPLOAD_ALLOWED_MIME_TYPES = [
@@ -180,11 +185,24 @@ export async function POST(
     const { id: caseId } = await params;
     
     // 1. Authenticate user
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof NextResponse) {
-      return authResult; // Return auth error response
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { user } = authResult;
+
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
     
     // 2. Validate case ID format
     if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {
@@ -441,12 +459,24 @@ export async function GET(
   try {
     const { id: caseId } = await params;
     
-    // 1. Authenticate user
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof NextResponse) {
-      return authResult; // Return auth error response
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { user } = authResult;
+
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
     
     // 2. Validate case ID format
     if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {

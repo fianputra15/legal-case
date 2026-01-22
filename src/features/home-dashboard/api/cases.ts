@@ -4,7 +4,7 @@ import type { Case, CaseStats } from '../model';
 export const getCasesStats = async (): Promise<CaseStats> => {
   console.log('HomeDashboard API: Fetching cases for authenticated user');
   
-  const response = await apiClient.get('/api/cases?limit=5&page=1');
+  const response = await apiClient.get('/api/cases?limit=5&page=1') as any;
   
   if (response.success && response.data) {
     const allCases: Case[] = response.data.cases || [];

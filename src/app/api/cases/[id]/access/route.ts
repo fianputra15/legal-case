@@ -3,14 +3,18 @@ import { ResponseHandler } from '@/server/utils/response';
 import { validateRequest, grantCaseAccessSchema, revokeCaseAccessSchema } from '@/server/utils/validation';
 import { CaseService } from '@/server/services/case.service';
 import { CaseRepository } from '@/server/db/repositories/case.repository';
-import { AuthMiddleware } from '@/server/auth/middleware';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { UserService } from '@/server/services';
+import { UserRepository } from '@/server/db/repositories/user.repository';
 
 const caseService = new CaseService(new CaseRepository());
+const userService = new UserService(new UserRepository());
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -33,27 +37,32 @@ interface RouteParams {
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const caseId = params.id;
+    const resolvedParams = await params;
+    const caseId = resolvedParams.id;
     
-    // Validate case ID format
-    if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {
-      return ResponseHandler.notFound('Case not found');
+    // Retrieve the "token" cookie from the request
+    const token = (await cookies()).get("token")?.value;
+
+    // If there is no token, return 401 Unauthorized
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Require authentication first
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof NextResponse) {
-      return authResult; // Returns 401 if not authenticated
+    // Verify and decode the JWT using the secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+
+    // If no user is found, return 404 Not Found
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { user } = authResult;
-    
-    // Only CLIENT role can grant access (prevent lawyers from granting access)
+    // Check if user has CLIENT role (only clients can create cases)
     if (user.role !== 'CLIENT') {
-      Logger.warn(`Non-client user ${user.email} (${user.role}) attempted to grant access to case ${caseId}`);
-      return ResponseHandler.forbidden('Only case owners can grant lawyer access');
+      return NextResponse.json({ error: "Only clients can create cases" }, { status: 403 });
     }
-    
     // Check case ownership using AuthorizationService
     const isOwner = await AuthorizationService.isCaseOwner(user, caseId);
     
@@ -134,20 +143,33 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const caseId = params.id;
+    const resolvedParams = await params;
+    const caseId = resolvedParams.id;
     
     // Validate case ID format
     if (!caseId || typeof caseId !== 'string' || caseId.trim().length === 0) {
       return ResponseHandler.notFound('Case not found');
     }
 
-    // Require authentication first
-    const authResult = await AuthMiddleware.requireAuth(request);
-    if (authResult instanceof NextResponse) {
-      return authResult; // Returns 401 if not authenticated
+    // Require authentication first - using same pattern as /me route
+    const token = (await cookies()).get("token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user } = authResult;
+    // Verify and decode the JWT using the secret
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
+    
+    // Query the database to find the user by ID
+    const user = await userService.getUserById(decoded.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
     
     // Only CLIENT role can revoke access (prevent lawyers from revoking access)
     if (user.role !== 'CLIENT') {
