@@ -5,7 +5,7 @@
  * Never relies on client-side logic or exposes sensitive information.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../../prisma/generated/client'; 
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { AuthUser } from '../auth/types';
