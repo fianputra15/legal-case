@@ -56,7 +56,7 @@ export function AppHeader() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <h1 className="text-xl font-bold text-gray-900">LegalCase</h1>
             </div>
           </div>
@@ -173,7 +173,7 @@ export function AppHeader() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-500 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                  className=" hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -196,7 +196,7 @@ export function AppHeader() {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="block w-full text-left px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-900"
+                    className="block w-full text-left px-3 py-2 text-base font-medium hover:text-gray-900"
                   >
                     Sign out
                   </button>

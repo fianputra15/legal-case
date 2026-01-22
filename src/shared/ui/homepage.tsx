@@ -114,7 +114,7 @@ export default function HomePage() {
               <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
                 Legal Case Management
               </h1>
-              <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+              <p className="mt-3 max-w-md mx-auto text-base  sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
                 Secure, efficient, and comprehensive case management for legal professionals and their clients.
               </p>
               
@@ -127,7 +127,7 @@ export default function HomePage() {
                   <div className="rounded-md shadow">
                     <a
                       href="/login"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent  font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
                     >
                       Sign In
                     </a>
@@ -135,7 +135,7 @@ export default function HomePage() {
                   <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                     <a
                       href="#features"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
                     >
                       Learn More
                     </a>
@@ -146,7 +146,7 @@ export default function HomePage() {
                   <div className="rounded-md shadow">
                     <a
                       href="/dashboard"
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md  bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
                     >
                       Go to Dashboard
                     </a>
@@ -165,8 +165,8 @@ export default function HomePage() {
                 <h2 className="text-2xl font-bold text-gray-900">
                   Welcome back, {user.firstName}!
                 </h2>
-                <p className="mt-2 text-gray-600">
-                  Here's an overview of your cases as a {user.role.toLowerCase()}
+                <p className="mt-2 ">
+                  Here an overview of your cases as a {user.role.toLowerCase()}
                 </p>
               </div>
 
@@ -266,7 +266,7 @@ export default function HomePage() {
         <div id="features" className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="lg:text-center">
-              <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Features</h2>
+              <h2 className=" text-blue-600 font-semibold tracking-wide uppercase">Features</h2>
               <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                 Everything you need to manage legal cases
               </p>
@@ -286,8 +286,8 @@ export default function HomePage() {
                     </div>
                     <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Secure Authentication</p>
                   </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
-                    Role-based access control ensures that clients & lawyers  only see what they're authorized to access.
+                  <dd className="mt-2 ml-16 text-base ">
+                    Role-based access control ensures that clients & lawyers  only see what they are authorized to access.
                   </dd>
                 </div>
 
@@ -300,7 +300,7 @@ export default function HomePage() {
                     </div>
                     <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Case Management</p>
                   </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
+                  <dd className="mt-2 ml-16 text-base ">
                     Create, update, and track legal cases with comprehensive documentation and status management.
                   </dd>
                 </div>
@@ -314,7 +314,7 @@ export default function HomePage() {
                     </div>
                     <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Secure Messaging</p>
                   </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
+                  <dd className="mt-2 ml-16 text-gray-500">
                     Encrypted communication between lawyers and clients with full audit trails and compliance features.
                   </dd>
                 </div>
@@ -328,7 +328,7 @@ export default function HomePage() {
                     </div>
                     <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Analytics & Reporting</p>
                   </dt>
-                  <dd className="mt-2 ml-16 text-base text-gray-500">
+                  <dd className="mt-2 ml-16 text-base">
                     Comprehensive reporting and analytics to track case progress, time management, and business metrics.
                   </dd>
                 </div>
