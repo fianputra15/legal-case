@@ -207,14 +207,17 @@ export function CaseDetailPage() {
 
       try {
         setLoadingRequests(true);
-        const response = await fetch(`/api/cases/${case_.id}/requests`, {
+        const response = await fetch(`/api/cases/${case_.id}/request-access`, {
           credentials: "include",
         });
+  
 
         if (response.ok) {
           const data = await response.json();
+          console.log(data);
           if (data.success) {
-            setPendingRequests(data.data || []);
+            setPendingRequests(data.data?.requests || []);
+            console.log("Pending requests:", data.data?.requests || []);
           }
         }
       } catch (error) {

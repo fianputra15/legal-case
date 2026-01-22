@@ -9,7 +9,7 @@ import Link from "next/link";
 
 
 export default function HomePage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -19,7 +19,6 @@ export default function HomePage() {
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const handleRequestAccess = async (caseId: string) => {
     try {
@@ -29,7 +28,7 @@ export default function HomePage() {
       setCases(prevCases => 
         prevCases.map(c => 
           c.id === caseId 
-            ? { ...c, hasPendingRequest: true }
+            ? { ...c, hasPendingRequest: true, requestedAt: new Date().toISOString() }
             : c
         )
       );
@@ -52,7 +51,6 @@ export default function HomePage() {
         const params = new URLSearchParams();
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
-        if (searchTerm.trim()) params.append("search", searchTerm.trim());
 
         const response = await apiClient.get<any>(`/api/cases?${params.toString()}`);
         
@@ -78,7 +76,7 @@ export default function HomePage() {
     };
 
     fetchCases();
-  }, [category, status, searchTerm, user]);
+  }, [category, status, user]);
 
   const handleWithdrawRequest = async (caseId: string) => {
     try {
@@ -130,7 +128,7 @@ export default function HomePage() {
           emptyStateConfig={{
             title: "No Cases Found",
             description: 
-              category !== "all" || status !== "all" || searchTerm.trim()
+              category !== "all" || status !== "all"
                 ? "No cases match your current filters."
                 : "No cases are available at the moment.",
             showCreateButton: user?.role === 'CLIENT',
