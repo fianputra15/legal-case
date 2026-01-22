@@ -1,6 +1,6 @@
 import { UserEntity, CreateUserDto, UpdateUserDto } from '../../types/database';
 import { prisma } from '../client';
-import { User, UserRole } from '@prisma/client';
+import { UserRole } from '../../../../prisma/generated/client';
 import bcrypt from 'bcryptjs';
 
 export class UserRepository {

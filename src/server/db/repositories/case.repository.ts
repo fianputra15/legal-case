@@ -1,6 +1,6 @@
 import { CaseEntity, CreateCaseDto, UpdateCaseDto, CaseFilters, PaginationOptions, PaginatedResult } from '../../types/database';
 import { prisma } from '../client';
-import { Case, CaseStatus, CaseCategory } from '@prisma/client';
+import { Case, CaseStatus, CaseCategory } from '../../../../prisma/generated/client';
 
 export class CaseRepository {
   /**

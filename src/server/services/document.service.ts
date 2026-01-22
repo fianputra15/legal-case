@@ -4,7 +4,7 @@
  * Secure document management with Supabase storage integration
  */
 
-import { Document, DocumentType, DocumentStatus, Prisma } from '@prisma/client';
+import { Document, DocumentType, DocumentStatus, Prisma } from '../../../prisma/generated/client';
 import { createHash } from 'crypto';
 import { prisma } from '@/server/db/client';
 import { SupabaseStorage } from '@/server/lib/supabase';

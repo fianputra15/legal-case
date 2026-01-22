@@ -146,7 +146,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { DocumentType, DocumentStatus } from '@prisma/client';
+import { DocumentType, DocumentStatus } from '../../../../../../prisma/generated/client';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { DocumentService } from '@/server/services/document.service';
 import { ResponseHandler } from '@/server/utils/response';
