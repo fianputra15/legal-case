@@ -86,12 +86,107 @@ export class CaseService {
   }
 
   /**
-   * Get case statistics
+   * Get all case IDs (for admin/lawyer access)
    */
-  async getCaseStats(userId: string): Promise<{[key: string]: number}> {
-    // TODO: Implement case statistics
-    return {};
+  async getAllCaseIds(): Promise<string[]> {
+    return this.caseRepository.findAllIds();
   }
+  /**
+   * Request lawyer access to a case
+   */
+  async requestLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+    // Validate lawyer exists and has LAWYER role
+    const lawyer = await this.userRepository.findById(lawyerId);
+    if (!lawyer) {
+      return { success: false, message: 'Lawyer not found' };
+    }
+
+    if (lawyer.role !== 'LAWYER') {
+      return { success: false, message: 'User must have LAWYER role to request case access' };
+    }
+
+    if (!lawyer.isActive) {
+      return { success: false, message: 'Lawyer account is not active' };
+    }
+
+    // Check if lawyer already has access
+    const hasAccess = await this.caseRepository.hasAccess(caseId, lawyerId);
+    if (hasAccess) {
+      return { success: false, message: 'Lawyer already has access to this case' };
+    }
+
+    // Check if request already exists
+    const existingRequest = await this.caseRepository.hasAccessRequest(caseId, lawyerId);
+    if (existingRequest) {
+      return { success: false, message: 'Access request already exists for this case' };
+    }
+
+    // Validate case exists
+    const caseExists = await this.caseRepository.findById(caseId);
+    if (!caseExists) {
+      return { success: false, message: 'Case not found' };
+    }
+
+    // Create access request
+    const requested = await this.caseRepository.createAccessRequest(caseId, lawyerId);
+    if (!requested) {
+      return { success: false, message: 'Failed to create access request' };
+    }
+
+    return { success: true, message: 'Access request submitted successfully' };
+  }
+
+  /**
+   * Get pending access requests for a case (for case owner/admin)
+   */
+  async getCaseAccessRequests(caseId: string): Promise<any[]> {
+    return this.caseRepository.getAccessRequests(caseId);
+  }
+
+  /**
+   * Approve or reject lawyer access request
+   */
+  async handleAccessRequest(
+    caseId: string, 
+    lawyerId: string, 
+    action: 'approve' | 'reject',
+    reviewerId: string
+  ): Promise<{ success: boolean; message: string }> {
+    // Validate request exists
+    const requestExists = await this.caseRepository.hasAccessRequest(caseId, lawyerId);
+    if (!requestExists) {
+      return { success: false, message: 'Access request not found' };
+    }
+
+    if (action === 'approve') {
+      // Grant access
+      const granted = await this.caseRepository.grantAccess(caseId, lawyerId);
+      if (!granted) {
+        return { success: false, message: 'Failed to grant access' };
+      }
+    }
+
+    // Remove the request (whether approved or rejected)
+    const requestRemoved = await this.caseRepository.removeAccessRequest(caseId, lawyerId, action, reviewerId);
+    if (!requestRemoved) {
+      return { success: false, message: 'Failed to process access request' };
+    }
+
+    return { 
+      success: true, 
+      message: action === 'approve' 
+        ? 'Access request approved and access granted' 
+        : 'Access request rejected'
+    };
+  }
+
+  /**
+   * Get lawyer's pending access requests
+   */
+  async getLawyerAccessRequests(lawyerId: string): Promise<any[]> {
+    return this.caseRepository.getLawyerAccessRequests(lawyerId);
+  }
+
   /**
    * Grant lawyer access to a case
    */
@@ -102,7 +197,7 @@ async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: bo
       return { success: false, message: 'Lawyer not found' };
     }
 
-    if (lawyer.role !== 'lawyer') {
+    if (lawyer.role !== 'LAWYER') {
       return { success: false, message: 'User must have LAWYER role to be granted case access' };
     }
 

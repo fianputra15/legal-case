@@ -11,6 +11,7 @@
   /* Custom Colors - Legal Case Management */
   --color-light: #EBE8E2;
   --color-weak50: #F5F3F1;
+  --color-weak60: #FFF6F0;
   --color-strong900: #1F1D1B;
   --color-strong950: #171717;
   --color-sub600: #66635D;
@@ -20,7 +21,8 @@
   --color-soft400: #9F9B92;
   --color-dark: #12110F;
   --color-biege: #CED1B6;
-  
+  --color-warning: #C58311;
+
   /* Brand Color Palette */
   --color-brand-orange-50: #fff7ed;
   --color-brand-orange-100: #ffedd5;

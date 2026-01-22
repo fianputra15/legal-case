@@ -10,10 +10,19 @@ import { UserRepository } from '@/server/db/repositories/user.repository';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
 import { CaseFilters, PaginationOptions } from '@/server/types/database';
+import { CaseAccessUtils } from '@/server/utils/case-access';
 
 const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
 
+/**
+ * GET /api/cases - Browse all cases (for discovery/browsing)
+ * 
+ * Authorization:
+ * - LAWYER: Can see all cases for browsing and discovery
+ * - CLIENT: Can see only their own cases
+ * - ADMIN: Can see all cases
+ */
 export async function GET(request: NextRequest) {
   try {
     // Retrieve the "token" cookie from the request
@@ -61,7 +70,19 @@ export async function GET(request: NextRequest) {
     };
 
     // Get cases accessible to this user based on role and permissions
-    const accessibleCaseIds = await AuthorizationService.getAccessibleCaseIds(user);
+    let accessibleCaseIds: string[];
+    
+    if (user.role === 'LAWYER') {
+      // LAWYERS can see all cases
+      const allCases = await caseService.getAllCaseIds(); // You'll need to add this method
+      accessibleCaseIds = allCases;
+    } else {
+      // For other roles, use existing authorization logic
+      accessibleCaseIds = await AuthorizationService.getAccessibleCaseIds(user);
+    }
+    
+    console.log("User role:", user.role);
+    console.log("Accessible case IDs:", accessibleCaseIds);
     
     // Fetch filtered and paginated case data
     const result = await caseService.getCasesWithFilters(accessibleCaseIds, filters, pagination);
@@ -94,8 +115,15 @@ export async function GET(request: NextRequest) {
 
     Logger.info(`Listed ${result.data.length} cases (page ${pagination.page}/${result.pagination.totalPages}) for user ${user.email} (role: ${user.role})`);
 
+    // Enhance cases with access information for lawyers
+    const enhancedCases = await CaseAccessUtils.enhanceCasesWithAccessInfo(
+      result.data,
+      user.id,
+      user.role
+    );
+
     return ResponseHandler.success({
-      cases: result.data,
+      cases: enhancedCases,
       pagination: result.pagination,
       userRole: user.role,
       appliedFilters: filters,

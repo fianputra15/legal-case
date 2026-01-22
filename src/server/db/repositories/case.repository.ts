@@ -13,6 +13,16 @@ export class CaseRepository {
     return case_ ? this.mapToEntity(case_) : null;
   }
 
+    /**
+   * Find all case IDs
+   */
+ async findAllIds(): Promise<string[]> {
+  const cases = await prisma.case.findMany({
+    select: { id: true }
+  });
+  return cases.map(c => c.id);
+}
+
   /**
    * Find cases by user ID (owner)
    */
@@ -148,10 +158,10 @@ export class CaseRepository {
   // /**
   //  * Delete case
   //  */
-  // async delete(id: string): Promise<boolean> {
-  //   // TODO: Implement database deletion
-  //   return false;
-  // }
+  async delete(id: string): Promise<boolean> {
+    // TODO: Implement database deletion
+    return false;
+  }
 
   // /**
   //  * Find cases by status
@@ -227,6 +237,152 @@ export class CaseRepository {
       },
     });
     return !!access;
+  }
+
+  /**
+   * Create a case access request
+   */
+  async createAccessRequest(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      await prisma.caseAccessRequest.create({
+        data: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+          requestedAt: new Date(),
+        },
+      });
+      return true;
+    } catch (error) {
+      // Handle unique constraint violation (duplicate request)
+      if ((error as any)?.code === 'P2002') {
+        return false; // Request already exists
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get access requests for a case
+   */
+  async getAccessRequests(caseId: string): Promise<any[]> {
+    const requests = await prisma.caseAccessRequest.findMany({
+      where: {
+        caseId,
+        status: 'PENDING',
+      },
+      include: {
+        lawyer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        requestedAt: 'desc',
+      },
+    });
+    return requests;
+  }
+
+  /**
+   * Get lawyer's access requests
+   */
+  async getLawyerAccessRequests(lawyerId: string): Promise<any[]> {
+    const requests = await prisma.caseAccessRequest.findMany({
+      where: {
+        lawyerId,
+        status: 'PENDING',
+      },
+      include: {
+        case: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        requestedAt: 'desc',
+      },
+    });
+    return requests;
+  }
+
+  /**
+   * Remove access request (approve/reject)
+   */
+  async removeAccessRequest(
+    caseId: string, 
+    lawyerId: string, 
+    action: 'approve' | 'reject', 
+    reviewerId: string
+  ): Promise<boolean> {
+    try {
+      const result = await prisma.caseAccessRequest.updateMany({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        },
+        data: {
+          status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+          reviewedAt: new Date(),
+          reviewedBy: reviewerId,
+        },
+      });
+      return result.count > 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Get access request information (including request date)
+   */
+  async getAccessRequestInfo(caseId: string, lawyerId: string): Promise<{ requestedAt: Date } | null> {
+    try {
+      const request = await prisma.caseAccessRequest.findFirst({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        },
+        select: {
+          requestedAt: true,
+        },
+      });
+
+      return request;
+    } catch (error) {
+      console.error('Error getting access request info:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if there's a pending access request (existing method - keep for backward compatibility)
+   */
+  async hasAccessRequest(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      const request = await prisma.caseAccessRequest.findFirst({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        },
+      });
+      return !!request;
+    } catch (error) {
+      console.error('Error checking access request:', error);
+      return false;
+    }
   }
 
   /**

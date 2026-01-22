@@ -29,6 +29,11 @@ export type Case = $Result.DefaultSelection<Prisma.$CasePayload>
  */
 export type CaseAccess = $Result.DefaultSelection<Prisma.$CaseAccessPayload>
 /**
+ * Model CaseAccessRequest
+ * 
+ */
+export type CaseAccessRequest = $Result.DefaultSelection<Prisma.$CaseAccessRequestPayload>
+/**
  * Model Document
  * 
  */
@@ -95,12 +100,21 @@ export const DocumentType: {
   CORRESPONDENCE: 'CORRESPONDENCE',
   LEGAL_BRIEF: 'LEGAL_BRIEF',
   COURT_FILING: 'COURT_FILING',
+  FINANCIAL: 'FINANCIAL',
   IDENTIFICATION: 'IDENTIFICATION',
-  FINANCIAL_RECORD: 'FINANCIAL_RECORD',
   OTHER: 'OTHER'
 };
 
 export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType]
+
+
+export const RequestStatus: {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
+export type RequestStatus = (typeof RequestStatus)[keyof typeof RequestStatus]
 
 }
 
@@ -123,6 +137,10 @@ export const DocumentStatus: typeof $Enums.DocumentStatus
 export type DocumentType = $Enums.DocumentType
 
 export const DocumentType: typeof $Enums.DocumentType
+
+export type RequestStatus = $Enums.RequestStatus
+
+export const RequestStatus: typeof $Enums.RequestStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -270,6 +288,16 @@ export class PrismaClient<
     * ```
     */
   get caseAccess(): Prisma.CaseAccessDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.caseAccessRequest`: Exposes CRUD operations for the **CaseAccessRequest** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CaseAccessRequests
+    * const caseAccessRequests = await prisma.caseAccessRequest.findMany()
+    * ```
+    */
+  get caseAccessRequest(): Prisma.CaseAccessRequestDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.document`: Exposes CRUD operations for the **Document** model.
@@ -727,6 +755,7 @@ export namespace Prisma {
     User: 'User',
     Case: 'Case',
     CaseAccess: 'CaseAccess',
+    CaseAccessRequest: 'CaseAccessRequest',
     Document: 'Document',
     Message: 'Message'
   };
@@ -744,7 +773,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "case" | "caseAccess" | "document" | "message"
+      modelProps: "user" | "case" | "caseAccess" | "caseAccessRequest" | "document" | "message"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -967,6 +996,80 @@ export namespace Prisma {
           count: {
             args: Prisma.CaseAccessCountArgs<ExtArgs>
             result: $Utils.Optional<CaseAccessCountAggregateOutputType> | number
+          }
+        }
+      }
+      CaseAccessRequest: {
+        payload: Prisma.$CaseAccessRequestPayload<ExtArgs>
+        fields: Prisma.CaseAccessRequestFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CaseAccessRequestFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CaseAccessRequestFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          findFirst: {
+            args: Prisma.CaseAccessRequestFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CaseAccessRequestFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          findMany: {
+            args: Prisma.CaseAccessRequestFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>[]
+          }
+          create: {
+            args: Prisma.CaseAccessRequestCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          createMany: {
+            args: Prisma.CaseAccessRequestCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CaseAccessRequestCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>[]
+          }
+          delete: {
+            args: Prisma.CaseAccessRequestDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          update: {
+            args: Prisma.CaseAccessRequestUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          deleteMany: {
+            args: Prisma.CaseAccessRequestDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CaseAccessRequestUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CaseAccessRequestUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>[]
+          }
+          upsert: {
+            args: Prisma.CaseAccessRequestUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CaseAccessRequestPayload>
+          }
+          aggregate: {
+            args: Prisma.CaseAccessRequestAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCaseAccessRequest>
+          }
+          groupBy: {
+            args: Prisma.CaseAccessRequestGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CaseAccessRequestGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CaseAccessRequestCountArgs<ExtArgs>
+            result: $Utils.Optional<CaseAccessRequestCountAggregateOutputType> | number
           }
         }
       }
@@ -1229,6 +1332,7 @@ export namespace Prisma {
     user?: UserOmit
     case?: CaseOmit
     caseAccess?: CaseAccessOmit
+    caseAccessRequest?: CaseAccessRequestOmit
     document?: DocumentOmit
     message?: MessageOmit
   }
@@ -1313,6 +1417,8 @@ export namespace Prisma {
   export type UserCountOutputType = {
     ownedCases: number
     accessibleCases: number
+    accessRequests: number
+    reviewedRequests: number
     uploadedDocuments: number
     sentMessages: number
   }
@@ -1320,6 +1426,8 @@ export namespace Prisma {
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ownedCases?: boolean | UserCountOutputTypeCountOwnedCasesArgs
     accessibleCases?: boolean | UserCountOutputTypeCountAccessibleCasesArgs
+    accessRequests?: boolean | UserCountOutputTypeCountAccessRequestsArgs
+    reviewedRequests?: boolean | UserCountOutputTypeCountReviewedRequestsArgs
     uploadedDocuments?: boolean | UserCountOutputTypeCountUploadedDocumentsArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
   }
@@ -1352,6 +1460,20 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountAccessRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseAccessRequestWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReviewedRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseAccessRequestWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountUploadedDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DocumentWhereInput
   }
@@ -1370,12 +1492,14 @@ export namespace Prisma {
 
   export type CaseCountOutputType = {
     lawyerAccess: number
+    accessRequests: number
     documents: number
     messages: number
   }
 
   export type CaseCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lawyerAccess?: boolean | CaseCountOutputTypeCountLawyerAccessArgs
+    accessRequests?: boolean | CaseCountOutputTypeCountAccessRequestsArgs
     documents?: boolean | CaseCountOutputTypeCountDocumentsArgs
     messages?: boolean | CaseCountOutputTypeCountMessagesArgs
   }
@@ -1396,6 +1520,13 @@ export namespace Prisma {
    */
   export type CaseCountOutputTypeCountLawyerAccessArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CaseAccessWhereInput
+  }
+
+  /**
+   * CaseCountOutputType without action
+   */
+  export type CaseCountOutputTypeCountAccessRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseAccessRequestWhereInput
   }
 
   /**
@@ -1615,6 +1746,8 @@ export namespace Prisma {
     updatedAt?: boolean
     ownedCases?: boolean | User$ownedCasesArgs<ExtArgs>
     accessibleCases?: boolean | User$accessibleCasesArgs<ExtArgs>
+    accessRequests?: boolean | User$accessRequestsArgs<ExtArgs>
+    reviewedRequests?: boolean | User$reviewedRequestsArgs<ExtArgs>
     uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1660,6 +1793,8 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ownedCases?: boolean | User$ownedCasesArgs<ExtArgs>
     accessibleCases?: boolean | User$accessibleCasesArgs<ExtArgs>
+    accessRequests?: boolean | User$accessRequestsArgs<ExtArgs>
+    reviewedRequests?: boolean | User$reviewedRequestsArgs<ExtArgs>
     uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1672,6 +1807,8 @@ export namespace Prisma {
     objects: {
       ownedCases: Prisma.$CasePayload<ExtArgs>[]
       accessibleCases: Prisma.$CaseAccessPayload<ExtArgs>[]
+      accessRequests: Prisma.$CaseAccessRequestPayload<ExtArgs>[]
+      reviewedRequests: Prisma.$CaseAccessRequestPayload<ExtArgs>[]
       uploadedDocuments: Prisma.$DocumentPayload<ExtArgs>[]
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     }
@@ -2081,6 +2218,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     ownedCases<T extends User$ownedCasesArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedCasesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     accessibleCases<T extends User$accessibleCasesArgs<ExtArgs> = {}>(args?: Subset<T, User$accessibleCasesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    accessRequests<T extends User$accessRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$accessRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviewedRequests<T extends User$reviewedRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     uploadedDocuments<T extends User$uploadedDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, User$uploadedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -2557,6 +2696,54 @@ export namespace Prisma {
   }
 
   /**
+   * User.accessRequests
+   */
+  export type User$accessRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    where?: CaseAccessRequestWhereInput
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    cursor?: CaseAccessRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
+  }
+
+  /**
+   * User.reviewedRequests
+   */
+  export type User$reviewedRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    where?: CaseAccessRequestWhereInput
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    cursor?: CaseAccessRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
+  }
+
+  /**
    * User.uploadedDocuments
    */
   export type User$uploadedDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2855,6 +3042,7 @@ export namespace Prisma {
     updatedAt?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
     lawyerAccess?: boolean | Case$lawyerAccessArgs<ExtArgs>
+    accessRequests?: boolean | Case$accessRequestsArgs<ExtArgs>
     documents?: boolean | Case$documentsArgs<ExtArgs>
     messages?: boolean | Case$messagesArgs<ExtArgs>
     _count?: boolean | CaseCountOutputTypeDefaultArgs<ExtArgs>
@@ -2902,6 +3090,7 @@ export namespace Prisma {
   export type CaseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     owner?: boolean | UserDefaultArgs<ExtArgs>
     lawyerAccess?: boolean | Case$lawyerAccessArgs<ExtArgs>
+    accessRequests?: boolean | Case$accessRequestsArgs<ExtArgs>
     documents?: boolean | Case$documentsArgs<ExtArgs>
     messages?: boolean | Case$messagesArgs<ExtArgs>
     _count?: boolean | CaseCountOutputTypeDefaultArgs<ExtArgs>
@@ -2918,6 +3107,7 @@ export namespace Prisma {
     objects: {
       owner: Prisma.$UserPayload<ExtArgs>
       lawyerAccess: Prisma.$CaseAccessPayload<ExtArgs>[]
+      accessRequests: Prisma.$CaseAccessRequestPayload<ExtArgs>[]
       documents: Prisma.$DocumentPayload<ExtArgs>[]
       messages: Prisma.$MessagePayload<ExtArgs>[]
     }
@@ -3327,6 +3517,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     lawyerAccess<T extends Case$lawyerAccessArgs<ExtArgs> = {}>(args?: Subset<T, Case$lawyerAccessArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    accessRequests<T extends Case$accessRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Case$accessRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     documents<T extends Case$documentsArgs<ExtArgs> = {}>(args?: Subset<T, Case$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messages<T extends Case$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Case$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -3784,6 +3975,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CaseAccessScalarFieldEnum | CaseAccessScalarFieldEnum[]
+  }
+
+  /**
+   * Case.accessRequests
+   */
+  export type Case$accessRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    where?: CaseAccessRequestWhereInput
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    cursor?: CaseAccessRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
   }
 
   /**
@@ -4903,6 +5118,1125 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CaseAccessInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CaseAccessRequest
+   */
+
+  export type AggregateCaseAccessRequest = {
+    _count: CaseAccessRequestCountAggregateOutputType | null
+    _min: CaseAccessRequestMinAggregateOutputType | null
+    _max: CaseAccessRequestMaxAggregateOutputType | null
+  }
+
+  export type CaseAccessRequestMinAggregateOutputType = {
+    id: string | null
+    caseId: string | null
+    lawyerId: string | null
+    status: $Enums.RequestStatus | null
+    requestedAt: Date | null
+    reviewedAt: Date | null
+    reviewedBy: string | null
+  }
+
+  export type CaseAccessRequestMaxAggregateOutputType = {
+    id: string | null
+    caseId: string | null
+    lawyerId: string | null
+    status: $Enums.RequestStatus | null
+    requestedAt: Date | null
+    reviewedAt: Date | null
+    reviewedBy: string | null
+  }
+
+  export type CaseAccessRequestCountAggregateOutputType = {
+    id: number
+    caseId: number
+    lawyerId: number
+    status: number
+    requestedAt: number
+    reviewedAt: number
+    reviewedBy: number
+    _all: number
+  }
+
+
+  export type CaseAccessRequestMinAggregateInputType = {
+    id?: true
+    caseId?: true
+    lawyerId?: true
+    status?: true
+    requestedAt?: true
+    reviewedAt?: true
+    reviewedBy?: true
+  }
+
+  export type CaseAccessRequestMaxAggregateInputType = {
+    id?: true
+    caseId?: true
+    lawyerId?: true
+    status?: true
+    requestedAt?: true
+    reviewedAt?: true
+    reviewedBy?: true
+  }
+
+  export type CaseAccessRequestCountAggregateInputType = {
+    id?: true
+    caseId?: true
+    lawyerId?: true
+    status?: true
+    requestedAt?: true
+    reviewedAt?: true
+    reviewedBy?: true
+    _all?: true
+  }
+
+  export type CaseAccessRequestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CaseAccessRequest to aggregate.
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CaseAccessRequests to fetch.
+     */
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CaseAccessRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CaseAccessRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CaseAccessRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CaseAccessRequests
+    **/
+    _count?: true | CaseAccessRequestCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CaseAccessRequestMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CaseAccessRequestMaxAggregateInputType
+  }
+
+  export type GetCaseAccessRequestAggregateType<T extends CaseAccessRequestAggregateArgs> = {
+        [P in keyof T & keyof AggregateCaseAccessRequest]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCaseAccessRequest[P]>
+      : GetScalarType<T[P], AggregateCaseAccessRequest[P]>
+  }
+
+
+
+
+  export type CaseAccessRequestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CaseAccessRequestWhereInput
+    orderBy?: CaseAccessRequestOrderByWithAggregationInput | CaseAccessRequestOrderByWithAggregationInput[]
+    by: CaseAccessRequestScalarFieldEnum[] | CaseAccessRequestScalarFieldEnum
+    having?: CaseAccessRequestScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CaseAccessRequestCountAggregateInputType | true
+    _min?: CaseAccessRequestMinAggregateInputType
+    _max?: CaseAccessRequestMaxAggregateInputType
+  }
+
+  export type CaseAccessRequestGroupByOutputType = {
+    id: string
+    caseId: string
+    lawyerId: string
+    status: $Enums.RequestStatus
+    requestedAt: Date
+    reviewedAt: Date | null
+    reviewedBy: string | null
+    _count: CaseAccessRequestCountAggregateOutputType | null
+    _min: CaseAccessRequestMinAggregateOutputType | null
+    _max: CaseAccessRequestMaxAggregateOutputType | null
+  }
+
+  type GetCaseAccessRequestGroupByPayload<T extends CaseAccessRequestGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CaseAccessRequestGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CaseAccessRequestGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CaseAccessRequestGroupByOutputType[P]>
+            : GetScalarType<T[P], CaseAccessRequestGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CaseAccessRequestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    caseId?: boolean
+    lawyerId?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["caseAccessRequest"]>
+
+  export type CaseAccessRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    caseId?: boolean
+    lawyerId?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["caseAccessRequest"]>
+
+  export type CaseAccessRequestSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    caseId?: boolean
+    lawyerId?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }, ExtArgs["result"]["caseAccessRequest"]>
+
+  export type CaseAccessRequestSelectScalar = {
+    id?: boolean
+    caseId?: boolean
+    lawyerId?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
+  }
+
+  export type CaseAccessRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "caseId" | "lawyerId" | "status" | "requestedAt" | "reviewedAt" | "reviewedBy", ExtArgs["result"]["caseAccessRequest"]>
+  export type CaseAccessRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }
+  export type CaseAccessRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }
+  export type CaseAccessRequestIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    case?: boolean | CaseDefaultArgs<ExtArgs>
+    lawyer?: boolean | UserDefaultArgs<ExtArgs>
+    reviewer?: boolean | CaseAccessRequest$reviewerArgs<ExtArgs>
+  }
+
+  export type $CaseAccessRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CaseAccessRequest"
+    objects: {
+      case: Prisma.$CasePayload<ExtArgs>
+      lawyer: Prisma.$UserPayload<ExtArgs>
+      reviewer: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      caseId: string
+      lawyerId: string
+      status: $Enums.RequestStatus
+      requestedAt: Date
+      reviewedAt: Date | null
+      reviewedBy: string | null
+    }, ExtArgs["result"]["caseAccessRequest"]>
+    composites: {}
+  }
+
+  type CaseAccessRequestGetPayload<S extends boolean | null | undefined | CaseAccessRequestDefaultArgs> = $Result.GetResult<Prisma.$CaseAccessRequestPayload, S>
+
+  type CaseAccessRequestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CaseAccessRequestFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CaseAccessRequestCountAggregateInputType | true
+    }
+
+  export interface CaseAccessRequestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CaseAccessRequest'], meta: { name: 'CaseAccessRequest' } }
+    /**
+     * Find zero or one CaseAccessRequest that matches the filter.
+     * @param {CaseAccessRequestFindUniqueArgs} args - Arguments to find a CaseAccessRequest
+     * @example
+     * // Get one CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CaseAccessRequestFindUniqueArgs>(args: SelectSubset<T, CaseAccessRequestFindUniqueArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CaseAccessRequest that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CaseAccessRequestFindUniqueOrThrowArgs} args - Arguments to find a CaseAccessRequest
+     * @example
+     * // Get one CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CaseAccessRequestFindUniqueOrThrowArgs>(args: SelectSubset<T, CaseAccessRequestFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CaseAccessRequest that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestFindFirstArgs} args - Arguments to find a CaseAccessRequest
+     * @example
+     * // Get one CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CaseAccessRequestFindFirstArgs>(args?: SelectSubset<T, CaseAccessRequestFindFirstArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CaseAccessRequest that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestFindFirstOrThrowArgs} args - Arguments to find a CaseAccessRequest
+     * @example
+     * // Get one CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CaseAccessRequestFindFirstOrThrowArgs>(args?: SelectSubset<T, CaseAccessRequestFindFirstOrThrowArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CaseAccessRequests that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CaseAccessRequests
+     * const caseAccessRequests = await prisma.caseAccessRequest.findMany()
+     * 
+     * // Get first 10 CaseAccessRequests
+     * const caseAccessRequests = await prisma.caseAccessRequest.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const caseAccessRequestWithIdOnly = await prisma.caseAccessRequest.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CaseAccessRequestFindManyArgs>(args?: SelectSubset<T, CaseAccessRequestFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CaseAccessRequest.
+     * @param {CaseAccessRequestCreateArgs} args - Arguments to create a CaseAccessRequest.
+     * @example
+     * // Create one CaseAccessRequest
+     * const CaseAccessRequest = await prisma.caseAccessRequest.create({
+     *   data: {
+     *     // ... data to create a CaseAccessRequest
+     *   }
+     * })
+     * 
+     */
+    create<T extends CaseAccessRequestCreateArgs>(args: SelectSubset<T, CaseAccessRequestCreateArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CaseAccessRequests.
+     * @param {CaseAccessRequestCreateManyArgs} args - Arguments to create many CaseAccessRequests.
+     * @example
+     * // Create many CaseAccessRequests
+     * const caseAccessRequest = await prisma.caseAccessRequest.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CaseAccessRequestCreateManyArgs>(args?: SelectSubset<T, CaseAccessRequestCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CaseAccessRequests and returns the data saved in the database.
+     * @param {CaseAccessRequestCreateManyAndReturnArgs} args - Arguments to create many CaseAccessRequests.
+     * @example
+     * // Create many CaseAccessRequests
+     * const caseAccessRequest = await prisma.caseAccessRequest.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CaseAccessRequests and only return the `id`
+     * const caseAccessRequestWithIdOnly = await prisma.caseAccessRequest.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CaseAccessRequestCreateManyAndReturnArgs>(args?: SelectSubset<T, CaseAccessRequestCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CaseAccessRequest.
+     * @param {CaseAccessRequestDeleteArgs} args - Arguments to delete one CaseAccessRequest.
+     * @example
+     * // Delete one CaseAccessRequest
+     * const CaseAccessRequest = await prisma.caseAccessRequest.delete({
+     *   where: {
+     *     // ... filter to delete one CaseAccessRequest
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CaseAccessRequestDeleteArgs>(args: SelectSubset<T, CaseAccessRequestDeleteArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CaseAccessRequest.
+     * @param {CaseAccessRequestUpdateArgs} args - Arguments to update one CaseAccessRequest.
+     * @example
+     * // Update one CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CaseAccessRequestUpdateArgs>(args: SelectSubset<T, CaseAccessRequestUpdateArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CaseAccessRequests.
+     * @param {CaseAccessRequestDeleteManyArgs} args - Arguments to filter CaseAccessRequests to delete.
+     * @example
+     * // Delete a few CaseAccessRequests
+     * const { count } = await prisma.caseAccessRequest.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CaseAccessRequestDeleteManyArgs>(args?: SelectSubset<T, CaseAccessRequestDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CaseAccessRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CaseAccessRequests
+     * const caseAccessRequest = await prisma.caseAccessRequest.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CaseAccessRequestUpdateManyArgs>(args: SelectSubset<T, CaseAccessRequestUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CaseAccessRequests and returns the data updated in the database.
+     * @param {CaseAccessRequestUpdateManyAndReturnArgs} args - Arguments to update many CaseAccessRequests.
+     * @example
+     * // Update many CaseAccessRequests
+     * const caseAccessRequest = await prisma.caseAccessRequest.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CaseAccessRequests and only return the `id`
+     * const caseAccessRequestWithIdOnly = await prisma.caseAccessRequest.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CaseAccessRequestUpdateManyAndReturnArgs>(args: SelectSubset<T, CaseAccessRequestUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CaseAccessRequest.
+     * @param {CaseAccessRequestUpsertArgs} args - Arguments to update or create a CaseAccessRequest.
+     * @example
+     * // Update or create a CaseAccessRequest
+     * const caseAccessRequest = await prisma.caseAccessRequest.upsert({
+     *   create: {
+     *     // ... data to create a CaseAccessRequest
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CaseAccessRequest we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CaseAccessRequestUpsertArgs>(args: SelectSubset<T, CaseAccessRequestUpsertArgs<ExtArgs>>): Prisma__CaseAccessRequestClient<$Result.GetResult<Prisma.$CaseAccessRequestPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CaseAccessRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestCountArgs} args - Arguments to filter CaseAccessRequests to count.
+     * @example
+     * // Count the number of CaseAccessRequests
+     * const count = await prisma.caseAccessRequest.count({
+     *   where: {
+     *     // ... the filter for the CaseAccessRequests we want to count
+     *   }
+     * })
+    **/
+    count<T extends CaseAccessRequestCountArgs>(
+      args?: Subset<T, CaseAccessRequestCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CaseAccessRequestCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CaseAccessRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CaseAccessRequestAggregateArgs>(args: Subset<T, CaseAccessRequestAggregateArgs>): Prisma.PrismaPromise<GetCaseAccessRequestAggregateType<T>>
+
+    /**
+     * Group by CaseAccessRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CaseAccessRequestGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CaseAccessRequestGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CaseAccessRequestGroupByArgs['orderBy'] }
+        : { orderBy?: CaseAccessRequestGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CaseAccessRequestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCaseAccessRequestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CaseAccessRequest model
+   */
+  readonly fields: CaseAccessRequestFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CaseAccessRequest.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CaseAccessRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    case<T extends CaseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CaseDefaultArgs<ExtArgs>>): Prisma__CaseClient<$Result.GetResult<Prisma.$CasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    lawyer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    reviewer<T extends CaseAccessRequest$reviewerArgs<ExtArgs> = {}>(args?: Subset<T, CaseAccessRequest$reviewerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CaseAccessRequest model
+   */
+  interface CaseAccessRequestFieldRefs {
+    readonly id: FieldRef<"CaseAccessRequest", 'String'>
+    readonly caseId: FieldRef<"CaseAccessRequest", 'String'>
+    readonly lawyerId: FieldRef<"CaseAccessRequest", 'String'>
+    readonly status: FieldRef<"CaseAccessRequest", 'RequestStatus'>
+    readonly requestedAt: FieldRef<"CaseAccessRequest", 'DateTime'>
+    readonly reviewedAt: FieldRef<"CaseAccessRequest", 'DateTime'>
+    readonly reviewedBy: FieldRef<"CaseAccessRequest", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CaseAccessRequest findUnique
+   */
+  export type CaseAccessRequestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which CaseAccessRequest to fetch.
+     */
+    where: CaseAccessRequestWhereUniqueInput
+  }
+
+  /**
+   * CaseAccessRequest findUniqueOrThrow
+   */
+  export type CaseAccessRequestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which CaseAccessRequest to fetch.
+     */
+    where: CaseAccessRequestWhereUniqueInput
+  }
+
+  /**
+   * CaseAccessRequest findFirst
+   */
+  export type CaseAccessRequestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which CaseAccessRequest to fetch.
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CaseAccessRequests to fetch.
+     */
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CaseAccessRequests.
+     */
+    cursor?: CaseAccessRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CaseAccessRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CaseAccessRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CaseAccessRequests.
+     */
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
+  }
+
+  /**
+   * CaseAccessRequest findFirstOrThrow
+   */
+  export type CaseAccessRequestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which CaseAccessRequest to fetch.
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CaseAccessRequests to fetch.
+     */
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CaseAccessRequests.
+     */
+    cursor?: CaseAccessRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CaseAccessRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CaseAccessRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CaseAccessRequests.
+     */
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
+  }
+
+  /**
+   * CaseAccessRequest findMany
+   */
+  export type CaseAccessRequestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which CaseAccessRequests to fetch.
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CaseAccessRequests to fetch.
+     */
+    orderBy?: CaseAccessRequestOrderByWithRelationInput | CaseAccessRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CaseAccessRequests.
+     */
+    cursor?: CaseAccessRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CaseAccessRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CaseAccessRequests.
+     */
+    skip?: number
+    distinct?: CaseAccessRequestScalarFieldEnum | CaseAccessRequestScalarFieldEnum[]
+  }
+
+  /**
+   * CaseAccessRequest create
+   */
+  export type CaseAccessRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CaseAccessRequest.
+     */
+    data: XOR<CaseAccessRequestCreateInput, CaseAccessRequestUncheckedCreateInput>
+  }
+
+  /**
+   * CaseAccessRequest createMany
+   */
+  export type CaseAccessRequestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CaseAccessRequests.
+     */
+    data: CaseAccessRequestCreateManyInput | CaseAccessRequestCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CaseAccessRequest createManyAndReturn
+   */
+  export type CaseAccessRequestCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * The data used to create many CaseAccessRequests.
+     */
+    data: CaseAccessRequestCreateManyInput | CaseAccessRequestCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CaseAccessRequest update
+   */
+  export type CaseAccessRequestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CaseAccessRequest.
+     */
+    data: XOR<CaseAccessRequestUpdateInput, CaseAccessRequestUncheckedUpdateInput>
+    /**
+     * Choose, which CaseAccessRequest to update.
+     */
+    where: CaseAccessRequestWhereUniqueInput
+  }
+
+  /**
+   * CaseAccessRequest updateMany
+   */
+  export type CaseAccessRequestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CaseAccessRequests.
+     */
+    data: XOR<CaseAccessRequestUpdateManyMutationInput, CaseAccessRequestUncheckedUpdateManyInput>
+    /**
+     * Filter which CaseAccessRequests to update
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * Limit how many CaseAccessRequests to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CaseAccessRequest updateManyAndReturn
+   */
+  export type CaseAccessRequestUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * The data used to update CaseAccessRequests.
+     */
+    data: XOR<CaseAccessRequestUpdateManyMutationInput, CaseAccessRequestUncheckedUpdateManyInput>
+    /**
+     * Filter which CaseAccessRequests to update
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * Limit how many CaseAccessRequests to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CaseAccessRequest upsert
+   */
+  export type CaseAccessRequestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CaseAccessRequest to update in case it exists.
+     */
+    where: CaseAccessRequestWhereUniqueInput
+    /**
+     * In case the CaseAccessRequest found by the `where` argument doesn't exist, create a new CaseAccessRequest with this data.
+     */
+    create: XOR<CaseAccessRequestCreateInput, CaseAccessRequestUncheckedCreateInput>
+    /**
+     * In case the CaseAccessRequest was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CaseAccessRequestUpdateInput, CaseAccessRequestUncheckedUpdateInput>
+  }
+
+  /**
+   * CaseAccessRequest delete
+   */
+  export type CaseAccessRequestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
+    /**
+     * Filter which CaseAccessRequest to delete.
+     */
+    where: CaseAccessRequestWhereUniqueInput
+  }
+
+  /**
+   * CaseAccessRequest deleteMany
+   */
+  export type CaseAccessRequestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CaseAccessRequests to delete
+     */
+    where?: CaseAccessRequestWhereInput
+    /**
+     * Limit how many CaseAccessRequests to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CaseAccessRequest.reviewer
+   */
+  export type CaseAccessRequest$reviewerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * CaseAccessRequest without action
+   */
+  export type CaseAccessRequestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CaseAccessRequest
+     */
+    select?: CaseAccessRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CaseAccessRequest
+     */
+    omit?: CaseAccessRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CaseAccessRequestInclude<ExtArgs> | null
   }
 
 
@@ -7256,6 +8590,19 @@ export namespace Prisma {
   export type CaseAccessScalarFieldEnum = (typeof CaseAccessScalarFieldEnum)[keyof typeof CaseAccessScalarFieldEnum]
 
 
+  export const CaseAccessRequestScalarFieldEnum: {
+    id: 'id',
+    caseId: 'caseId',
+    lawyerId: 'lawyerId',
+    status: 'status',
+    requestedAt: 'requestedAt',
+    reviewedAt: 'reviewedAt',
+    reviewedBy: 'reviewedBy'
+  };
+
+  export type CaseAccessRequestScalarFieldEnum = (typeof CaseAccessRequestScalarFieldEnum)[keyof typeof CaseAccessRequestScalarFieldEnum]
+
+
   export const DocumentScalarFieldEnum: {
     id: 'id',
     caseId: 'caseId',
@@ -7409,6 +8756,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'RequestStatus'
+   */
+  export type EnumRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RequestStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RequestStatus[]'
+   */
+  export type ListEnumRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RequestStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DocumentType'
    */
   export type EnumDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentType'>
@@ -7468,6 +8829,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     ownedCases?: CaseListRelationFilter
     accessibleCases?: CaseAccessListRelationFilter
+    accessRequests?: CaseAccessRequestListRelationFilter
+    reviewedRequests?: CaseAccessRequestListRelationFilter
     uploadedDocuments?: DocumentListRelationFilter
     sentMessages?: MessageListRelationFilter
   }
@@ -7484,6 +8847,8 @@ export namespace Prisma {
     updatedAt?: SortOrder
     ownedCases?: CaseOrderByRelationAggregateInput
     accessibleCases?: CaseAccessOrderByRelationAggregateInput
+    accessRequests?: CaseAccessRequestOrderByRelationAggregateInput
+    reviewedRequests?: CaseAccessRequestOrderByRelationAggregateInput
     uploadedDocuments?: DocumentOrderByRelationAggregateInput
     sentMessages?: MessageOrderByRelationAggregateInput
   }
@@ -7503,6 +8868,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     ownedCases?: CaseListRelationFilter
     accessibleCases?: CaseAccessListRelationFilter
+    accessRequests?: CaseAccessRequestListRelationFilter
+    reviewedRequests?: CaseAccessRequestListRelationFilter
     uploadedDocuments?: DocumentListRelationFilter
     sentMessages?: MessageListRelationFilter
   }, "id" | "email">
@@ -7552,6 +8919,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Case"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     lawyerAccess?: CaseAccessListRelationFilter
+    accessRequests?: CaseAccessRequestListRelationFilter
     documents?: DocumentListRelationFilter
     messages?: MessageListRelationFilter
   }
@@ -7568,6 +8936,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     owner?: UserOrderByWithRelationInput
     lawyerAccess?: CaseAccessOrderByRelationAggregateInput
+    accessRequests?: CaseAccessRequestOrderByRelationAggregateInput
     documents?: DocumentOrderByRelationAggregateInput
     messages?: MessageOrderByRelationAggregateInput
   }
@@ -7587,6 +8956,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Case"> | Date | string
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     lawyerAccess?: CaseAccessListRelationFilter
+    accessRequests?: CaseAccessRequestListRelationFilter
     documents?: DocumentListRelationFilter
     messages?: MessageListRelationFilter
   }, "id">
@@ -7675,6 +9045,78 @@ export namespace Prisma {
     caseId?: StringWithAggregatesFilter<"CaseAccess"> | string
     lawyerId?: StringWithAggregatesFilter<"CaseAccess"> | string
     grantedAt?: DateTimeWithAggregatesFilter<"CaseAccess"> | Date | string
+  }
+
+  export type CaseAccessRequestWhereInput = {
+    AND?: CaseAccessRequestWhereInput | CaseAccessRequestWhereInput[]
+    OR?: CaseAccessRequestWhereInput[]
+    NOT?: CaseAccessRequestWhereInput | CaseAccessRequestWhereInput[]
+    id?: StringFilter<"CaseAccessRequest"> | string
+    caseId?: StringFilter<"CaseAccessRequest"> | string
+    lawyerId?: StringFilter<"CaseAccessRequest"> | string
+    status?: EnumRequestStatusFilter<"CaseAccessRequest"> | $Enums.RequestStatus
+    requestedAt?: DateTimeFilter<"CaseAccessRequest"> | Date | string
+    reviewedAt?: DateTimeNullableFilter<"CaseAccessRequest"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"CaseAccessRequest"> | string | null
+    case?: XOR<CaseScalarRelationFilter, CaseWhereInput>
+    lawyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    reviewer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type CaseAccessRequestOrderByWithRelationInput = {
+    id?: SortOrder
+    caseId?: SortOrder
+    lawyerId?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
+    case?: CaseOrderByWithRelationInput
+    lawyer?: UserOrderByWithRelationInput
+    reviewer?: UserOrderByWithRelationInput
+  }
+
+  export type CaseAccessRequestWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    caseId_lawyerId?: CaseAccessRequestCaseIdLawyerIdCompoundUniqueInput
+    AND?: CaseAccessRequestWhereInput | CaseAccessRequestWhereInput[]
+    OR?: CaseAccessRequestWhereInput[]
+    NOT?: CaseAccessRequestWhereInput | CaseAccessRequestWhereInput[]
+    caseId?: StringFilter<"CaseAccessRequest"> | string
+    lawyerId?: StringFilter<"CaseAccessRequest"> | string
+    status?: EnumRequestStatusFilter<"CaseAccessRequest"> | $Enums.RequestStatus
+    requestedAt?: DateTimeFilter<"CaseAccessRequest"> | Date | string
+    reviewedAt?: DateTimeNullableFilter<"CaseAccessRequest"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"CaseAccessRequest"> | string | null
+    case?: XOR<CaseScalarRelationFilter, CaseWhereInput>
+    lawyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    reviewer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "caseId_lawyerId">
+
+  export type CaseAccessRequestOrderByWithAggregationInput = {
+    id?: SortOrder
+    caseId?: SortOrder
+    lawyerId?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
+    _count?: CaseAccessRequestCountOrderByAggregateInput
+    _max?: CaseAccessRequestMaxOrderByAggregateInput
+    _min?: CaseAccessRequestMinOrderByAggregateInput
+  }
+
+  export type CaseAccessRequestScalarWhereWithAggregatesInput = {
+    AND?: CaseAccessRequestScalarWhereWithAggregatesInput | CaseAccessRequestScalarWhereWithAggregatesInput[]
+    OR?: CaseAccessRequestScalarWhereWithAggregatesInput[]
+    NOT?: CaseAccessRequestScalarWhereWithAggregatesInput | CaseAccessRequestScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CaseAccessRequest"> | string
+    caseId?: StringWithAggregatesFilter<"CaseAccessRequest"> | string
+    lawyerId?: StringWithAggregatesFilter<"CaseAccessRequest"> | string
+    status?: EnumRequestStatusWithAggregatesFilter<"CaseAccessRequest"> | $Enums.RequestStatus
+    requestedAt?: DateTimeWithAggregatesFilter<"CaseAccessRequest"> | Date | string
+    reviewedAt?: DateTimeNullableWithAggregatesFilter<"CaseAccessRequest"> | Date | string | null
+    reviewedBy?: StringNullableWithAggregatesFilter<"CaseAccessRequest"> | string | null
   }
 
   export type DocumentWhereInput = {
@@ -7857,6 +9299,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
   }
@@ -7873,6 +9317,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
   }
@@ -7889,6 +9335,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
   }
@@ -7905,6 +9353,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
   }
@@ -7956,6 +9406,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedCasesInput
     lawyerAccess?: CaseAccessCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutCaseInput
     documents?: DocumentCreateNestedManyWithoutCaseInput
     messages?: MessageCreateNestedManyWithoutCaseInput
   }
@@ -7971,6 +9422,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lawyerAccess?: CaseAccessUncheckedCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput
     documents?: DocumentUncheckedCreateNestedManyWithoutCaseInput
     messages?: MessageUncheckedCreateNestedManyWithoutCaseInput
   }
@@ -7986,6 +9438,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedCasesNestedInput
     lawyerAccess?: CaseAccessUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutCaseNestedInput
     documents?: DocumentUpdateManyWithoutCaseNestedInput
     messages?: MessageUpdateManyWithoutCaseNestedInput
   }
@@ -8001,6 +9454,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lawyerAccess?: CaseAccessUncheckedUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutCaseNestedInput
     messages?: MessageUncheckedUpdateManyWithoutCaseNestedInput
   }
@@ -8085,6 +9539,73 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     lawyerId?: StringFieldUpdateOperationsInput | string
     grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseAccessRequestCreateInput = {
+    id?: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    case: CaseCreateNestedOneWithoutAccessRequestsInput
+    lawyer: UserCreateNestedOneWithoutAccessRequestsInput
+    reviewer?: UserCreateNestedOneWithoutReviewedRequestsInput
+  }
+
+  export type CaseAccessRequestUncheckedCreateInput = {
+    id?: string
+    caseId: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
+  export type CaseAccessRequestUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    case?: CaseUpdateOneRequiredWithoutAccessRequestsNestedInput
+    lawyer?: UserUpdateOneRequiredWithoutAccessRequestsNestedInput
+    reviewer?: UserUpdateOneWithoutReviewedRequestsNestedInput
+  }
+
+  export type CaseAccessRequestUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CaseAccessRequestCreateManyInput = {
+    id?: string
+    caseId: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
+  export type CaseAccessRequestUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DocumentCreateInput = {
@@ -8315,6 +9836,12 @@ export namespace Prisma {
     none?: CaseAccessWhereInput
   }
 
+  export type CaseAccessRequestListRelationFilter = {
+    every?: CaseAccessRequestWhereInput
+    some?: CaseAccessRequestWhereInput
+    none?: CaseAccessRequestWhereInput
+  }
+
   export type DocumentListRelationFilter = {
     every?: DocumentWhereInput
     some?: DocumentWhereInput
@@ -8332,6 +9859,10 @@ export namespace Prisma {
   }
 
   export type CaseAccessOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CaseAccessRequestOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8608,6 +10139,88 @@ export namespace Prisma {
     grantedAt?: SortOrder
   }
 
+  export type EnumRequestStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RequestStatus | EnumRequestStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRequestStatusFilter<$PrismaModel> | $Enums.RequestStatus
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type CaseAccessRequestCaseIdLawyerIdCompoundUniqueInput = {
+    caseId: string
+    lawyerId: string
+  }
+
+  export type CaseAccessRequestCountOrderByAggregateInput = {
+    id?: SortOrder
+    caseId?: SortOrder
+    lawyerId?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
+  }
+
+  export type CaseAccessRequestMaxOrderByAggregateInput = {
+    id?: SortOrder
+    caseId?: SortOrder
+    lawyerId?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
+  }
+
+  export type CaseAccessRequestMinOrderByAggregateInput = {
+    id?: SortOrder
+    caseId?: SortOrder
+    lawyerId?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
+  }
+
+  export type EnumRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RequestStatus | EnumRequestStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.RequestStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRequestStatusFilter<$PrismaModel>
+    _max?: NestedEnumRequestStatusFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type EnumDocumentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
@@ -8742,6 +10355,20 @@ export namespace Prisma {
     connect?: CaseAccessWhereUniqueInput | CaseAccessWhereUniqueInput[]
   }
 
+  export type CaseAccessRequestCreateNestedManyWithoutLawyerInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput> | CaseAccessRequestCreateWithoutLawyerInput[] | CaseAccessRequestUncheckedCreateWithoutLawyerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutLawyerInput | CaseAccessRequestCreateOrConnectWithoutLawyerInput[]
+    createMany?: CaseAccessRequestCreateManyLawyerInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+  }
+
+  export type CaseAccessRequestCreateNestedManyWithoutReviewerInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput> | CaseAccessRequestCreateWithoutReviewerInput[] | CaseAccessRequestUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutReviewerInput | CaseAccessRequestCreateOrConnectWithoutReviewerInput[]
+    createMany?: CaseAccessRequestCreateManyReviewerInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+  }
+
   export type DocumentCreateNestedManyWithoutUploadedByInput = {
     create?: XOR<DocumentCreateWithoutUploadedByInput, DocumentUncheckedCreateWithoutUploadedByInput> | DocumentCreateWithoutUploadedByInput[] | DocumentUncheckedCreateWithoutUploadedByInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutUploadedByInput | DocumentCreateOrConnectWithoutUploadedByInput[]
@@ -8768,6 +10395,20 @@ export namespace Prisma {
     connectOrCreate?: CaseAccessCreateOrConnectWithoutLawyerInput | CaseAccessCreateOrConnectWithoutLawyerInput[]
     createMany?: CaseAccessCreateManyLawyerInputEnvelope
     connect?: CaseAccessWhereUniqueInput | CaseAccessWhereUniqueInput[]
+  }
+
+  export type CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput> | CaseAccessRequestCreateWithoutLawyerInput[] | CaseAccessRequestUncheckedCreateWithoutLawyerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutLawyerInput | CaseAccessRequestCreateOrConnectWithoutLawyerInput[]
+    createMany?: CaseAccessRequestCreateManyLawyerInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+  }
+
+  export type CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput> | CaseAccessRequestCreateWithoutReviewerInput[] | CaseAccessRequestUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutReviewerInput | CaseAccessRequestCreateOrConnectWithoutReviewerInput[]
+    createMany?: CaseAccessRequestCreateManyReviewerInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
   }
 
   export type DocumentUncheckedCreateNestedManyWithoutUploadedByInput = {
@@ -8828,6 +10469,34 @@ export namespace Prisma {
     deleteMany?: CaseAccessScalarWhereInput | CaseAccessScalarWhereInput[]
   }
 
+  export type CaseAccessRequestUpdateManyWithoutLawyerNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput> | CaseAccessRequestCreateWithoutLawyerInput[] | CaseAccessRequestUncheckedCreateWithoutLawyerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutLawyerInput | CaseAccessRequestCreateOrConnectWithoutLawyerInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutLawyerInput | CaseAccessRequestUpsertWithWhereUniqueWithoutLawyerInput[]
+    createMany?: CaseAccessRequestCreateManyLawyerInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutLawyerInput | CaseAccessRequestUpdateWithWhereUniqueWithoutLawyerInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutLawyerInput | CaseAccessRequestUpdateManyWithWhereWithoutLawyerInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+  }
+
+  export type CaseAccessRequestUpdateManyWithoutReviewerNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput> | CaseAccessRequestCreateWithoutReviewerInput[] | CaseAccessRequestUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutReviewerInput | CaseAccessRequestCreateOrConnectWithoutReviewerInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutReviewerInput | CaseAccessRequestUpsertWithWhereUniqueWithoutReviewerInput[]
+    createMany?: CaseAccessRequestCreateManyReviewerInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutReviewerInput | CaseAccessRequestUpdateWithWhereUniqueWithoutReviewerInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutReviewerInput | CaseAccessRequestUpdateManyWithWhereWithoutReviewerInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+  }
+
   export type DocumentUpdateManyWithoutUploadedByNestedInput = {
     create?: XOR<DocumentCreateWithoutUploadedByInput, DocumentUncheckedCreateWithoutUploadedByInput> | DocumentCreateWithoutUploadedByInput[] | DocumentUncheckedCreateWithoutUploadedByInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutUploadedByInput | DocumentCreateOrConnectWithoutUploadedByInput[]
@@ -8884,6 +10553,34 @@ export namespace Prisma {
     deleteMany?: CaseAccessScalarWhereInput | CaseAccessScalarWhereInput[]
   }
 
+  export type CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput> | CaseAccessRequestCreateWithoutLawyerInput[] | CaseAccessRequestUncheckedCreateWithoutLawyerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutLawyerInput | CaseAccessRequestCreateOrConnectWithoutLawyerInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutLawyerInput | CaseAccessRequestUpsertWithWhereUniqueWithoutLawyerInput[]
+    createMany?: CaseAccessRequestCreateManyLawyerInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutLawyerInput | CaseAccessRequestUpdateWithWhereUniqueWithoutLawyerInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutLawyerInput | CaseAccessRequestUpdateManyWithWhereWithoutLawyerInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput> | CaseAccessRequestCreateWithoutReviewerInput[] | CaseAccessRequestUncheckedCreateWithoutReviewerInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutReviewerInput | CaseAccessRequestCreateOrConnectWithoutReviewerInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutReviewerInput | CaseAccessRequestUpsertWithWhereUniqueWithoutReviewerInput[]
+    createMany?: CaseAccessRequestCreateManyReviewerInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutReviewerInput | CaseAccessRequestUpdateWithWhereUniqueWithoutReviewerInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutReviewerInput | CaseAccessRequestUpdateManyWithWhereWithoutReviewerInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+  }
+
   export type DocumentUncheckedUpdateManyWithoutUploadedByNestedInput = {
     create?: XOR<DocumentCreateWithoutUploadedByInput, DocumentUncheckedCreateWithoutUploadedByInput> | DocumentCreateWithoutUploadedByInput[] | DocumentUncheckedCreateWithoutUploadedByInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutUploadedByInput | DocumentCreateOrConnectWithoutUploadedByInput[]
@@ -8925,6 +10622,13 @@ export namespace Prisma {
     connect?: CaseAccessWhereUniqueInput | CaseAccessWhereUniqueInput[]
   }
 
+  export type CaseAccessRequestCreateNestedManyWithoutCaseInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput> | CaseAccessRequestCreateWithoutCaseInput[] | CaseAccessRequestUncheckedCreateWithoutCaseInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutCaseInput | CaseAccessRequestCreateOrConnectWithoutCaseInput[]
+    createMany?: CaseAccessRequestCreateManyCaseInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+  }
+
   export type DocumentCreateNestedManyWithoutCaseInput = {
     create?: XOR<DocumentCreateWithoutCaseInput, DocumentUncheckedCreateWithoutCaseInput> | DocumentCreateWithoutCaseInput[] | DocumentUncheckedCreateWithoutCaseInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutCaseInput | DocumentCreateOrConnectWithoutCaseInput[]
@@ -8944,6 +10648,13 @@ export namespace Prisma {
     connectOrCreate?: CaseAccessCreateOrConnectWithoutCaseInput | CaseAccessCreateOrConnectWithoutCaseInput[]
     createMany?: CaseAccessCreateManyCaseInputEnvelope
     connect?: CaseAccessWhereUniqueInput | CaseAccessWhereUniqueInput[]
+  }
+
+  export type CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput> | CaseAccessRequestCreateWithoutCaseInput[] | CaseAccessRequestUncheckedCreateWithoutCaseInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutCaseInput | CaseAccessRequestCreateOrConnectWithoutCaseInput[]
+    createMany?: CaseAccessRequestCreateManyCaseInputEnvelope
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
   }
 
   export type DocumentUncheckedCreateNestedManyWithoutCaseInput = {
@@ -9002,6 +10713,20 @@ export namespace Prisma {
     deleteMany?: CaseAccessScalarWhereInput | CaseAccessScalarWhereInput[]
   }
 
+  export type CaseAccessRequestUpdateManyWithoutCaseNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput> | CaseAccessRequestCreateWithoutCaseInput[] | CaseAccessRequestUncheckedCreateWithoutCaseInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutCaseInput | CaseAccessRequestCreateOrConnectWithoutCaseInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutCaseInput | CaseAccessRequestUpsertWithWhereUniqueWithoutCaseInput[]
+    createMany?: CaseAccessRequestCreateManyCaseInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutCaseInput | CaseAccessRequestUpdateWithWhereUniqueWithoutCaseInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutCaseInput | CaseAccessRequestUpdateManyWithWhereWithoutCaseInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+  }
+
   export type DocumentUpdateManyWithoutCaseNestedInput = {
     create?: XOR<DocumentCreateWithoutCaseInput, DocumentUncheckedCreateWithoutCaseInput> | DocumentCreateWithoutCaseInput[] | DocumentUncheckedCreateWithoutCaseInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutCaseInput | DocumentCreateOrConnectWithoutCaseInput[]
@@ -9042,6 +10767,20 @@ export namespace Prisma {
     update?: CaseAccessUpdateWithWhereUniqueWithoutCaseInput | CaseAccessUpdateWithWhereUniqueWithoutCaseInput[]
     updateMany?: CaseAccessUpdateManyWithWhereWithoutCaseInput | CaseAccessUpdateManyWithWhereWithoutCaseInput[]
     deleteMany?: CaseAccessScalarWhereInput | CaseAccessScalarWhereInput[]
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput = {
+    create?: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput> | CaseAccessRequestCreateWithoutCaseInput[] | CaseAccessRequestUncheckedCreateWithoutCaseInput[]
+    connectOrCreate?: CaseAccessRequestCreateOrConnectWithoutCaseInput | CaseAccessRequestCreateOrConnectWithoutCaseInput[]
+    upsert?: CaseAccessRequestUpsertWithWhereUniqueWithoutCaseInput | CaseAccessRequestUpsertWithWhereUniqueWithoutCaseInput[]
+    createMany?: CaseAccessRequestCreateManyCaseInputEnvelope
+    set?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    disconnect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    delete?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    connect?: CaseAccessRequestWhereUniqueInput | CaseAccessRequestWhereUniqueInput[]
+    update?: CaseAccessRequestUpdateWithWhereUniqueWithoutCaseInput | CaseAccessRequestUpdateWithWhereUniqueWithoutCaseInput[]
+    updateMany?: CaseAccessRequestUpdateManyWithWhereWithoutCaseInput | CaseAccessRequestUpdateManyWithWhereWithoutCaseInput[]
+    deleteMany?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
   }
 
   export type DocumentUncheckedUpdateManyWithoutCaseNestedInput = {
@@ -9098,6 +10837,58 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutAccessibleCasesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAccessibleCasesInput, UserUpdateWithoutAccessibleCasesInput>, UserUncheckedUpdateWithoutAccessibleCasesInput>
+  }
+
+  export type CaseCreateNestedOneWithoutAccessRequestsInput = {
+    create?: XOR<CaseCreateWithoutAccessRequestsInput, CaseUncheckedCreateWithoutAccessRequestsInput>
+    connectOrCreate?: CaseCreateOrConnectWithoutAccessRequestsInput
+    connect?: CaseWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAccessRequestsInput = {
+    create?: XOR<UserCreateWithoutAccessRequestsInput, UserUncheckedCreateWithoutAccessRequestsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAccessRequestsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReviewedRequestsInput = {
+    create?: XOR<UserCreateWithoutReviewedRequestsInput, UserUncheckedCreateWithoutReviewedRequestsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedRequestsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumRequestStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RequestStatus
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type CaseUpdateOneRequiredWithoutAccessRequestsNestedInput = {
+    create?: XOR<CaseCreateWithoutAccessRequestsInput, CaseUncheckedCreateWithoutAccessRequestsInput>
+    connectOrCreate?: CaseCreateOrConnectWithoutAccessRequestsInput
+    upsert?: CaseUpsertWithoutAccessRequestsInput
+    connect?: CaseWhereUniqueInput
+    update?: XOR<XOR<CaseUpdateToOneWithWhereWithoutAccessRequestsInput, CaseUpdateWithoutAccessRequestsInput>, CaseUncheckedUpdateWithoutAccessRequestsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutAccessRequestsNestedInput = {
+    create?: XOR<UserCreateWithoutAccessRequestsInput, UserUncheckedCreateWithoutAccessRequestsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAccessRequestsInput
+    upsert?: UserUpsertWithoutAccessRequestsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAccessRequestsInput, UserUpdateWithoutAccessRequestsInput>, UserUncheckedUpdateWithoutAccessRequestsInput>
+  }
+
+  export type UserUpdateOneWithoutReviewedRequestsNestedInput = {
+    create?: XOR<UserCreateWithoutReviewedRequestsInput, UserUncheckedCreateWithoutReviewedRequestsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReviewedRequestsInput
+    upsert?: UserUpsertWithoutReviewedRequestsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReviewedRequestsInput, UserUpdateWithoutReviewedRequestsInput>, UserUncheckedUpdateWithoutReviewedRequestsInput>
   }
 
   export type CaseCreateNestedOneWithoutDocumentsInput = {
@@ -9364,6 +11155,48 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedEnumRequestStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RequestStatus | EnumRequestStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRequestStatusFilter<$PrismaModel> | $Enums.RequestStatus
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumRequestStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RequestStatus | EnumRequestStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RequestStatus[] | ListEnumRequestStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRequestStatusWithAggregatesFilter<$PrismaModel> | $Enums.RequestStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRequestStatusFilter<$PrismaModel>
+    _max?: NestedEnumRequestStatusFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type NestedEnumDocumentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
@@ -9408,6 +11241,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lawyerAccess?: CaseAccessCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutCaseInput
     documents?: DocumentCreateNestedManyWithoutCaseInput
     messages?: MessageCreateNestedManyWithoutCaseInput
   }
@@ -9422,6 +11256,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lawyerAccess?: CaseAccessUncheckedCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput
     documents?: DocumentUncheckedCreateNestedManyWithoutCaseInput
     messages?: MessageUncheckedCreateNestedManyWithoutCaseInput
   }
@@ -9455,6 +11290,62 @@ export namespace Prisma {
 
   export type CaseAccessCreateManyLawyerInputEnvelope = {
     data: CaseAccessCreateManyLawyerInput | CaseAccessCreateManyLawyerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseAccessRequestCreateWithoutLawyerInput = {
+    id?: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    case: CaseCreateNestedOneWithoutAccessRequestsInput
+    reviewer?: UserCreateNestedOneWithoutReviewedRequestsInput
+  }
+
+  export type CaseAccessRequestUncheckedCreateWithoutLawyerInput = {
+    id?: string
+    caseId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
+  export type CaseAccessRequestCreateOrConnectWithoutLawyerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    create: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput>
+  }
+
+  export type CaseAccessRequestCreateManyLawyerInputEnvelope = {
+    data: CaseAccessRequestCreateManyLawyerInput | CaseAccessRequestCreateManyLawyerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseAccessRequestCreateWithoutReviewerInput = {
+    id?: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    case: CaseCreateNestedOneWithoutAccessRequestsInput
+    lawyer: UserCreateNestedOneWithoutAccessRequestsInput
+  }
+
+  export type CaseAccessRequestUncheckedCreateWithoutReviewerInput = {
+    id?: string
+    caseId: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+  }
+
+  export type CaseAccessRequestCreateOrConnectWithoutReviewerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    create: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput>
+  }
+
+  export type CaseAccessRequestCreateManyReviewerInputEnvelope = {
+    data: CaseAccessRequestCreateManyReviewerInput | CaseAccessRequestCreateManyReviewerInput[]
     skipDuplicates?: boolean
   }
 
@@ -9583,6 +11474,51 @@ export namespace Prisma {
     grantedAt?: DateTimeFilter<"CaseAccess"> | Date | string
   }
 
+  export type CaseAccessRequestUpsertWithWhereUniqueWithoutLawyerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    update: XOR<CaseAccessRequestUpdateWithoutLawyerInput, CaseAccessRequestUncheckedUpdateWithoutLawyerInput>
+    create: XOR<CaseAccessRequestCreateWithoutLawyerInput, CaseAccessRequestUncheckedCreateWithoutLawyerInput>
+  }
+
+  export type CaseAccessRequestUpdateWithWhereUniqueWithoutLawyerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    data: XOR<CaseAccessRequestUpdateWithoutLawyerInput, CaseAccessRequestUncheckedUpdateWithoutLawyerInput>
+  }
+
+  export type CaseAccessRequestUpdateManyWithWhereWithoutLawyerInput = {
+    where: CaseAccessRequestScalarWhereInput
+    data: XOR<CaseAccessRequestUpdateManyMutationInput, CaseAccessRequestUncheckedUpdateManyWithoutLawyerInput>
+  }
+
+  export type CaseAccessRequestScalarWhereInput = {
+    AND?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+    OR?: CaseAccessRequestScalarWhereInput[]
+    NOT?: CaseAccessRequestScalarWhereInput | CaseAccessRequestScalarWhereInput[]
+    id?: StringFilter<"CaseAccessRequest"> | string
+    caseId?: StringFilter<"CaseAccessRequest"> | string
+    lawyerId?: StringFilter<"CaseAccessRequest"> | string
+    status?: EnumRequestStatusFilter<"CaseAccessRequest"> | $Enums.RequestStatus
+    requestedAt?: DateTimeFilter<"CaseAccessRequest"> | Date | string
+    reviewedAt?: DateTimeNullableFilter<"CaseAccessRequest"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"CaseAccessRequest"> | string | null
+  }
+
+  export type CaseAccessRequestUpsertWithWhereUniqueWithoutReviewerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    update: XOR<CaseAccessRequestUpdateWithoutReviewerInput, CaseAccessRequestUncheckedUpdateWithoutReviewerInput>
+    create: XOR<CaseAccessRequestCreateWithoutReviewerInput, CaseAccessRequestUncheckedCreateWithoutReviewerInput>
+  }
+
+  export type CaseAccessRequestUpdateWithWhereUniqueWithoutReviewerInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    data: XOR<CaseAccessRequestUpdateWithoutReviewerInput, CaseAccessRequestUncheckedUpdateWithoutReviewerInput>
+  }
+
+  export type CaseAccessRequestUpdateManyWithWhereWithoutReviewerInput = {
+    where: CaseAccessRequestScalarWhereInput
+    data: XOR<CaseAccessRequestUpdateManyMutationInput, CaseAccessRequestUncheckedUpdateManyWithoutReviewerInput>
+  }
+
   export type DocumentUpsertWithWhereUniqueWithoutUploadedByInput = {
     where: DocumentWhereUniqueInput
     update: XOR<DocumentUpdateWithoutUploadedByInput, DocumentUncheckedUpdateWithoutUploadedByInput>
@@ -9658,6 +11594,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
   }
@@ -9673,6 +11611,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
   }
@@ -9701,6 +11641,34 @@ export namespace Prisma {
 
   export type CaseAccessCreateManyCaseInputEnvelope = {
     data: CaseAccessCreateManyCaseInput | CaseAccessCreateManyCaseInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CaseAccessRequestCreateWithoutCaseInput = {
+    id?: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    lawyer: UserCreateNestedOneWithoutAccessRequestsInput
+    reviewer?: UserCreateNestedOneWithoutReviewedRequestsInput
+  }
+
+  export type CaseAccessRequestUncheckedCreateWithoutCaseInput = {
+    id?: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
+  export type CaseAccessRequestCreateOrConnectWithoutCaseInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    create: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput>
+  }
+
+  export type CaseAccessRequestCreateManyCaseInputEnvelope = {
+    data: CaseAccessRequestCreateManyCaseInput | CaseAccessRequestCreateManyCaseInput[]
     skipDuplicates?: boolean
   }
 
@@ -9794,6 +11762,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
   }
@@ -9809,6 +11779,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
   }
@@ -9827,6 +11799,22 @@ export namespace Prisma {
   export type CaseAccessUpdateManyWithWhereWithoutCaseInput = {
     where: CaseAccessScalarWhereInput
     data: XOR<CaseAccessUpdateManyMutationInput, CaseAccessUncheckedUpdateManyWithoutCaseInput>
+  }
+
+  export type CaseAccessRequestUpsertWithWhereUniqueWithoutCaseInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    update: XOR<CaseAccessRequestUpdateWithoutCaseInput, CaseAccessRequestUncheckedUpdateWithoutCaseInput>
+    create: XOR<CaseAccessRequestCreateWithoutCaseInput, CaseAccessRequestUncheckedCreateWithoutCaseInput>
+  }
+
+  export type CaseAccessRequestUpdateWithWhereUniqueWithoutCaseInput = {
+    where: CaseAccessRequestWhereUniqueInput
+    data: XOR<CaseAccessRequestUpdateWithoutCaseInput, CaseAccessRequestUncheckedUpdateWithoutCaseInput>
+  }
+
+  export type CaseAccessRequestUpdateManyWithWhereWithoutCaseInput = {
+    where: CaseAccessRequestScalarWhereInput
+    data: XOR<CaseAccessRequestUpdateManyMutationInput, CaseAccessRequestUncheckedUpdateManyWithoutCaseInput>
   }
 
   export type DocumentUpsertWithWhereUniqueWithoutCaseInput = {
@@ -9871,6 +11859,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedCasesInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutCaseInput
     documents?: DocumentCreateNestedManyWithoutCaseInput
     messages?: MessageCreateNestedManyWithoutCaseInput
   }
@@ -9885,6 +11874,7 @@ export namespace Prisma {
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput
     documents?: DocumentUncheckedCreateNestedManyWithoutCaseInput
     messages?: MessageUncheckedCreateNestedManyWithoutCaseInput
   }
@@ -9905,6 +11895,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownedCases?: CaseCreateNestedManyWithoutOwnerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
   }
@@ -9920,6 +11912,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
   }
@@ -9950,6 +11944,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedCasesNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutCaseNestedInput
     documents?: DocumentUpdateManyWithoutCaseNestedInput
     messages?: MessageUpdateManyWithoutCaseNestedInput
   }
@@ -9964,6 +11959,7 @@ export namespace Prisma {
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutCaseNestedInput
     messages?: MessageUncheckedUpdateManyWithoutCaseNestedInput
   }
@@ -9990,6 +11986,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
   }
@@ -10005,6 +12003,252 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+  }
+
+  export type CaseCreateWithoutAccessRequestsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    category: $Enums.CaseCategory
+    status?: $Enums.CaseStatus
+    priority?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedCasesInput
+    lawyerAccess?: CaseAccessCreateNestedManyWithoutCaseInput
+    documents?: DocumentCreateNestedManyWithoutCaseInput
+    messages?: MessageCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseUncheckedCreateWithoutAccessRequestsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    category: $Enums.CaseCategory
+    status?: $Enums.CaseStatus
+    priority?: number
+    ownerId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lawyerAccess?: CaseAccessUncheckedCreateNestedManyWithoutCaseInput
+    documents?: DocumentUncheckedCreateNestedManyWithoutCaseInput
+    messages?: MessageUncheckedCreateNestedManyWithoutCaseInput
+  }
+
+  export type CaseCreateOrConnectWithoutAccessRequestsInput = {
+    where: CaseWhereUniqueInput
+    create: XOR<CaseCreateWithoutAccessRequestsInput, CaseUncheckedCreateWithoutAccessRequestsInput>
+  }
+
+  export type UserCreateWithoutAccessRequestsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    role?: $Enums.UserRole
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedCases?: CaseCreateNestedManyWithoutOwnerInput
+    accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
+    uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserUncheckedCreateWithoutAccessRequestsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    role?: $Enums.UserRole
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
+    accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
+    uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserCreateOrConnectWithoutAccessRequestsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAccessRequestsInput, UserUncheckedCreateWithoutAccessRequestsInput>
+  }
+
+  export type UserCreateWithoutReviewedRequestsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    role?: $Enums.UserRole
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedCases?: CaseCreateNestedManyWithoutOwnerInput
+    accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserUncheckedCreateWithoutReviewedRequestsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    role?: $Enums.UserRole
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
+    accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+  }
+
+  export type UserCreateOrConnectWithoutReviewedRequestsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReviewedRequestsInput, UserUncheckedCreateWithoutReviewedRequestsInput>
+  }
+
+  export type CaseUpsertWithoutAccessRequestsInput = {
+    update: XOR<CaseUpdateWithoutAccessRequestsInput, CaseUncheckedUpdateWithoutAccessRequestsInput>
+    create: XOR<CaseCreateWithoutAccessRequestsInput, CaseUncheckedCreateWithoutAccessRequestsInput>
+    where?: CaseWhereInput
+  }
+
+  export type CaseUpdateToOneWithWhereWithoutAccessRequestsInput = {
+    where?: CaseWhereInput
+    data: XOR<CaseUpdateWithoutAccessRequestsInput, CaseUncheckedUpdateWithoutAccessRequestsInput>
+  }
+
+  export type CaseUpdateWithoutAccessRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumCaseCategoryFieldUpdateOperationsInput | $Enums.CaseCategory
+    status?: EnumCaseStatusFieldUpdateOperationsInput | $Enums.CaseStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedCasesNestedInput
+    lawyerAccess?: CaseAccessUpdateManyWithoutCaseNestedInput
+    documents?: DocumentUpdateManyWithoutCaseNestedInput
+    messages?: MessageUpdateManyWithoutCaseNestedInput
+  }
+
+  export type CaseUncheckedUpdateWithoutAccessRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumCaseCategoryFieldUpdateOperationsInput | $Enums.CaseCategory
+    status?: EnumCaseStatusFieldUpdateOperationsInput | $Enums.CaseStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    ownerId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lawyerAccess?: CaseAccessUncheckedUpdateManyWithoutCaseNestedInput
+    documents?: DocumentUncheckedUpdateManyWithoutCaseNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutCaseNestedInput
+  }
+
+  export type UserUpsertWithoutAccessRequestsInput = {
+    update: XOR<UserUpdateWithoutAccessRequestsInput, UserUncheckedUpdateWithoutAccessRequestsInput>
+    create: XOR<UserCreateWithoutAccessRequestsInput, UserUncheckedCreateWithoutAccessRequestsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAccessRequestsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAccessRequestsInput, UserUncheckedUpdateWithoutAccessRequestsInput>
+  }
+
+  export type UserUpdateWithoutAccessRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
+    accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
+    uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAccessRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
+    accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+  }
+
+  export type UserUpsertWithoutReviewedRequestsInput = {
+    update: XOR<UserUpdateWithoutReviewedRequestsInput, UserUncheckedUpdateWithoutReviewedRequestsInput>
+    create: XOR<UserCreateWithoutReviewedRequestsInput, UserUncheckedCreateWithoutReviewedRequestsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReviewedRequestsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReviewedRequestsInput, UserUncheckedUpdateWithoutReviewedRequestsInput>
+  }
+
+  export type UserUpdateWithoutReviewedRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
+    accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReviewedRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
+    accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
     uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
   }
@@ -10020,6 +12264,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedCasesInput
     lawyerAccess?: CaseAccessCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutCaseInput
     messages?: MessageCreateNestedManyWithoutCaseInput
   }
 
@@ -10034,6 +12279,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lawyerAccess?: CaseAccessUncheckedCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput
     messages?: MessageUncheckedCreateNestedManyWithoutCaseInput
   }
 
@@ -10054,6 +12300,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
   }
 
@@ -10069,6 +12317,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
   }
 
@@ -10099,6 +12349,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedCasesNestedInput
     lawyerAccess?: CaseAccessUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutCaseNestedInput
     messages?: MessageUpdateManyWithoutCaseNestedInput
   }
 
@@ -10113,6 +12364,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lawyerAccess?: CaseAccessUncheckedUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput
     messages?: MessageUncheckedUpdateManyWithoutCaseNestedInput
   }
 
@@ -10139,6 +12391,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
   }
 
@@ -10154,6 +12408,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
   }
 
@@ -10168,6 +12424,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     owner: UserCreateNestedOneWithoutOwnedCasesInput
     lawyerAccess?: CaseAccessCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutCaseInput
     documents?: DocumentCreateNestedManyWithoutCaseInput
   }
 
@@ -10182,6 +12439,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lawyerAccess?: CaseAccessUncheckedCreateNestedManyWithoutCaseInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutCaseInput
     documents?: DocumentUncheckedCreateNestedManyWithoutCaseInput
   }
 
@@ -10202,6 +12460,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentCreateNestedManyWithoutUploadedByInput
   }
 
@@ -10217,6 +12477,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     ownedCases?: CaseUncheckedCreateNestedManyWithoutOwnerInput
     accessibleCases?: CaseAccessUncheckedCreateNestedManyWithoutLawyerInput
+    accessRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutLawyerInput
+    reviewedRequests?: CaseAccessRequestUncheckedCreateNestedManyWithoutReviewerInput
     uploadedDocuments?: DocumentUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
@@ -10247,6 +12509,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     owner?: UserUpdateOneRequiredWithoutOwnedCasesNestedInput
     lawyerAccess?: CaseAccessUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutCaseNestedInput
     documents?: DocumentUpdateManyWithoutCaseNestedInput
   }
 
@@ -10261,6 +12524,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lawyerAccess?: CaseAccessUncheckedUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutCaseNestedInput
   }
 
@@ -10287,6 +12551,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUpdateManyWithoutUploadedByNestedInput
   }
 
@@ -10302,6 +12568,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedCases?: CaseUncheckedUpdateManyWithoutOwnerNestedInput
     accessibleCases?: CaseAccessUncheckedUpdateManyWithoutLawyerNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutLawyerNestedInput
+    reviewedRequests?: CaseAccessRequestUncheckedUpdateManyWithoutReviewerNestedInput
     uploadedDocuments?: DocumentUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
@@ -10320,6 +12588,24 @@ export namespace Prisma {
     id?: string
     caseId: string
     grantedAt?: Date | string
+  }
+
+  export type CaseAccessRequestCreateManyLawyerInput = {
+    id?: string
+    caseId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
+  export type CaseAccessRequestCreateManyReviewerInput = {
+    id?: string
+    caseId: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
   }
 
   export type DocumentCreateManyUploadedByInput = {
@@ -10356,6 +12642,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lawyerAccess?: CaseAccessUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUpdateManyWithoutCaseNestedInput
     documents?: DocumentUpdateManyWithoutCaseNestedInput
     messages?: MessageUpdateManyWithoutCaseNestedInput
   }
@@ -10370,6 +12657,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lawyerAccess?: CaseAccessUncheckedUpdateManyWithoutCaseNestedInput
+    accessRequests?: CaseAccessRequestUncheckedUpdateManyWithoutCaseNestedInput
     documents?: DocumentUncheckedUpdateManyWithoutCaseNestedInput
     messages?: MessageUncheckedUpdateManyWithoutCaseNestedInput
   }
@@ -10401,6 +12689,60 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseAccessRequestUpdateWithoutLawyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    case?: CaseUpdateOneRequiredWithoutAccessRequestsNestedInput
+    reviewer?: UserUpdateOneWithoutReviewedRequestsNestedInput
+  }
+
+  export type CaseAccessRequestUncheckedUpdateWithoutLawyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyWithoutLawyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CaseAccessRequestUpdateWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    case?: CaseUpdateOneRequiredWithoutAccessRequestsNestedInput
+    lawyer?: UserUpdateOneRequiredWithoutAccessRequestsNestedInput
+  }
+
+  export type CaseAccessRequestUncheckedUpdateWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyWithoutReviewerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    caseId?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DocumentUpdateWithoutUploadedByInput = {
@@ -10481,6 +12823,15 @@ export namespace Prisma {
     grantedAt?: Date | string
   }
 
+  export type CaseAccessRequestCreateManyCaseInput = {
+    id?: string
+    lawyerId: string
+    status?: $Enums.RequestStatus
+    requestedAt?: Date | string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
+  }
+
   export type DocumentCreateManyCaseInput = {
     id?: string
     originalName: string
@@ -10521,6 +12872,33 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     lawyerId?: StringFieldUpdateOperationsInput | string
     grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CaseAccessRequestUpdateWithoutCaseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lawyer?: UserUpdateOneRequiredWithoutAccessRequestsNestedInput
+    reviewer?: UserUpdateOneWithoutReviewedRequestsNestedInput
+  }
+
+  export type CaseAccessRequestUncheckedUpdateWithoutCaseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CaseAccessRequestUncheckedUpdateManyWithoutCaseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lawyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DocumentUpdateWithoutCaseInput = {

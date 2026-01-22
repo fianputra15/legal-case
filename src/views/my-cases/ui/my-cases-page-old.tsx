@@ -7,6 +7,8 @@ import { MainLayout } from '@/widgets/layout';
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import Link from 'next/link';
 
+
+
 function MyCasesContent() {
   const { user } = useAuth();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
@@ -32,7 +34,7 @@ function MyCasesContent() {
         const response = await apiClient.get<any>(`/api/my-cases?${params.toString()}`);
         const casesData = (response.data?.cases || []).map((caseItem: any) => ({
           ...caseItem,
-          userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
+          userRole: user?.role,
           showOwner: false,
         }));
         setCases(casesData);
@@ -50,6 +52,77 @@ function MyCasesContent() {
 
     loadCases();
   }, [category, status]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Created today";
+    if (diffDays === 1) return "Created 1 day ago";
+    if (diffDays < 7) return `Created ${diffDays} days ago`;
+    if (diffDays < 14) return "Created 1 week ago";
+    if (diffDays < 30) return `Created ${Math.floor(diffDays / 7)} weeks ago`;
+    return `Created ${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const option = categoryOptions.find((opt) => opt.value === category);
+    return (
+      option?.label ||
+      category
+        .split("_")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ")
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'OPEN': return 'bg-green-100 text-green-800';
+      case 'IN_PROGRESS': return 'bg-blue-100 text-blue-800';
+      case 'CLOSED': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'OPEN': return 'Open';
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'CLOSED': return 'Closed';
+      default: return status;
+    }
+  };
+
+  const getAttachmentCount = (caseId: string) => {
+    // Generate consistent attachment count based on case ID
+    const hash = caseId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    return hash % 6; // 0-5 attachments
+  };
+
+  const getPriorityLabel = (priority: number) => {
+    switch (priority) {
+      case 1: return 'Low';
+      case 2: return 'Medium';
+      case 3: return 'High';
+      case 4: return 'Urgent';
+      default: return 'Medium';
+    }
+  };
+
+  const getPriorityColor = (priority: number) => {
+    switch (priority) {
+      case 1: return 'text-gray-600';
+      case 2: return 'text-blue-600';
+      case 3: return 'text-orange-600';
+      case 4: return 'text-red-600';
+      default: return 'text-blue-600';
+    }
+  };
 
   return (
     <div className="space-y-6 bg-white p-6">
@@ -93,9 +166,7 @@ function MyCasesContent() {
           description: 
             category !== "all" || status !== "all" 
               ? "No cases match your current filters."
-              : user?.role === 'CLIENT' 
-                ? "You don't have any cases yet. Create your first case to get started."
-                : "No cases have been assigned to you yet.",
+              : "You don't have any cases yet. Create your first case to get started.",
           showCreateButton: user?.role === 'CLIENT',
           createButtonText: "Create Your First Case",
           createButtonHref: "/create-case",

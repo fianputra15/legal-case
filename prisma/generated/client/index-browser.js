@@ -151,6 +151,16 @@ exports.Prisma.CaseAccessScalarFieldEnum = {
   grantedAt: 'grantedAt'
 };
 
+exports.Prisma.CaseAccessRequestScalarFieldEnum = {
+  id: 'id',
+  caseId: 'caseId',
+  lawyerId: 'lawyerId',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy'
+};
+
 exports.Prisma.DocumentScalarFieldEnum = {
   id: 'id',
   caseId: 'caseId',
@@ -218,14 +228,20 @@ exports.CaseStatus = exports.$Enums.CaseStatus = {
   ARCHIVED: 'ARCHIVED'
 };
 
+exports.RequestStatus = exports.$Enums.RequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
 exports.DocumentType = exports.$Enums.DocumentType = {
   CONTRACT: 'CONTRACT',
   EVIDENCE: 'EVIDENCE',
   CORRESPONDENCE: 'CORRESPONDENCE',
   LEGAL_BRIEF: 'LEGAL_BRIEF',
   COURT_FILING: 'COURT_FILING',
+  FINANCIAL: 'FINANCIAL',
   IDENTIFICATION: 'IDENTIFICATION',
-  FINANCIAL_RECORD: 'FINANCIAL_RECORD',
   OTHER: 'OTHER'
 };
 
@@ -240,6 +256,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   Case: 'Case',
   CaseAccess: 'CaseAccess',
+  CaseAccessRequest: 'CaseAccessRequest',
   Document: 'Document',
   Message: 'Message'
 };

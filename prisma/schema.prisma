@@ -52,9 +52,15 @@ enum DocumentType {
   CORRESPONDENCE
   LEGAL_BRIEF
   COURT_FILING
+  FINANCIAL
   IDENTIFICATION
-  FINANCIAL_RECORD
   OTHER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // Models
@@ -70,10 +76,12 @@ model User {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  ownedCases        Case[]       @relation("CaseOwner")
-  accessibleCases   CaseAccess[] @relation("LawyerAccess")
-  uploadedDocuments Document[]   @relation("DocumentUploader")
-  sentMessages      Message[]    @relation("MessageSender")
+  ownedCases        Case[]                @relation("CaseOwner")
+  accessibleCases   CaseAccess[]          @relation("LawyerAccess")
+  accessRequests    CaseAccessRequest[]   @relation("LawyerAccessRequests")
+  reviewedRequests  CaseAccessRequest[]   @relation("ReviewedAccessRequests")
+  uploadedDocuments Document[]            @relation("DocumentUploader")
+  sentMessages      Message[]             @relation("MessageSender")
 
   @@map("users")
   @@index([email])
@@ -92,10 +100,11 @@ model Case {
   updatedAt   DateTime     @updatedAt
 
   // Relations
-  owner        User         @relation("CaseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  lawyerAccess CaseAccess[] @relation("CaseAccess")
-  documents    Document[]   @relation("CaseDocuments")
-  messages     Message[]    @relation("CaseMessages")
+  owner          User                  @relation("CaseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  lawyerAccess   CaseAccess[]          @relation("CaseAccess")
+  accessRequests CaseAccessRequest[]   @relation("CaseAccessRequests")
+  documents      Document[]            @relation("CaseDocuments")
+  messages       Message[]             @relation("CaseMessages")
 
   @@map("cases")
   @@index([ownerId])
@@ -118,6 +127,27 @@ model CaseAccess {
   @@map("case_access")
   @@index([caseId])
   @@index([lawyerId])
+}
+
+model CaseAccessRequest {
+  id          String        @id @default(cuid())
+  caseId      String
+  lawyerId    String
+  status      RequestStatus @default(PENDING)
+  requestedAt DateTime      @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?       // User ID who approved/rejected
+
+  // Relations
+  case     Case  @relation("CaseAccessRequests", fields: [caseId], references: [id], onDelete: Cascade)
+  lawyer   User  @relation("LawyerAccessRequests", fields: [lawyerId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ReviewedAccessRequests", fields: [reviewedBy], references: [id])
+
+  @@unique([caseId, lawyerId]) // One pending request per lawyer per case
+  @@map("case_access_requests")
+  @@index([caseId])
+  @@index([lawyerId])
+  @@index([status])
 }
 
 model Document {
