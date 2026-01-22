@@ -33,7 +33,7 @@ function MyCasesContent() {
         const casesData = (response.data?.cases || []).map((caseItem: any) => ({
           ...caseItem,
           userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
-          showOwner: false,
+          showOwner: user?.role === 'LAWYER', // Show owner for lawyers in My Cases too
         }));
         setCases(casesData);
         setTotalCases(response.data?.pagination?.total || response.data?.cases?.length || 0);

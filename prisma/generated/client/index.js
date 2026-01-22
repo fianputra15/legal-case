@@ -181,11 +181,7 @@ exports.UserRole = exports.$Enums.UserRole = {
 
 exports.CaseStatus = exports.$Enums.CaseStatus = {
   OPEN: 'OPEN',
-  IN_PROGRESS: 'IN_PROGRESS',
-  UNDER_REVIEW: 'UNDER_REVIEW',
-  AWAITING_CLIENT: 'AWAITING_CLIENT',
   CLOSED: 'CLOSED',
-  ARCHIVED: 'ARCHIVED'
 };
 
 exports.CaseCategory = exports.$Enums.CaseCategory = {

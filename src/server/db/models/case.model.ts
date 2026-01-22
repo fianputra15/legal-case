@@ -27,6 +27,6 @@ export class CaseModelSchema {
     updatedAt: 'timestamp DEFAULT CURRENT_TIMESTAMP',
   };
 
-  static statusValues = ['open', 'in_progress', 'closed', 'archived'];
+  static statusValues = ['open', 'closed'];
   static priorityValues = ['low', 'medium', 'high', 'urgent'];
 }

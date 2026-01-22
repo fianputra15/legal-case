@@ -19,11 +19,7 @@ enum UserRole {
 
 enum CaseStatus {
   OPEN
-  IN_PROGRESS
-  UNDER_REVIEW
-  AWAITING_CLIENT
   CLOSED
-  ARCHIVED
 }
 
 enum CaseCategory {

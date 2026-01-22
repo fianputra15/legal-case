@@ -11,7 +11,6 @@ export const getCasesStats = async (): Promise<CaseStats> => {
     const stats: CaseStats = {
       total: response.data.pagination?.total || allCases.length,
       open: allCases.filter((c: Case) => c.status === 'OPEN').length,
-      in_progress: allCases.filter((c: Case) => c.status === 'IN_PROGRESS').length,
       closed: allCases.filter((c: Case) => c.status === 'CLOSED').length,
       recent: allCases.slice(0, 3)
     };

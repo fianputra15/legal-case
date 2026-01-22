@@ -1,37 +1,74 @@
+import { CaseCategory, CaseStatus } from 'prisma/generated/client';
 import { CaseEntity, CreateCaseDto, UpdateCaseDto, CaseFilters, PaginationOptions, PaginatedResult } from '../../types/database';
 import { prisma } from '../client';
-import { Case, CaseStatus, CaseCategory } from '../../../../prisma/generated/client';
 
 export class CaseRepository {
   /**
    * Find case by ID
    */
   async findById(id: string): Promise<CaseEntity | null> {
-    const case_ = await prisma.case.findUnique({
-      where: { id },
-    });
-    return case_ ? this.mapToEntity(case_) : null;
+    try {
+      const caseEntity = await prisma.case.findUnique({
+        where: { id },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        },
+      });
+      
+      return caseEntity as CaseEntity;
+    } catch (error) {
+      console.error('Error finding case by ID:', error);
+      return null;
+    }
   }
 
     /**
    * Find all case IDs
    */
  async findAllIds(): Promise<string[]> {
-  const cases = await prisma.case.findMany({
-    select: { id: true }
-  });
-  return cases.map(c => c.id);
+  try {
+    const cases = await prisma.case.findMany({
+      select: { id: true }
+    });
+    return cases.map(c => c.id);
+  } catch (error) {
+    console.error('Error getting all case IDs:', error);
+    return [];
+  }
 }
 
   /**
    * Find cases by user ID (owner)
    */
   async findByUserId(userId: string): Promise<CaseEntity[]> {
-    const cases = await prisma.case.findMany({
-      where: { ownerId: userId },
-      orderBy: { createdAt: 'desc' },
-    });
-    return cases.map(this.mapToEntity);
+    try {
+      const cases = await prisma.case.findMany({
+        where: { ownerId: userId },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      
+      return cases as CaseEntity[];
+    } catch (error) {
+      console.error('Error finding cases by user ID:', error);
+      return [];
+    }
   }
 
   /**
@@ -42,67 +79,81 @@ export class CaseRepository {
     filters: CaseFilters,
     pagination: PaginationOptions
   ): Promise<PaginatedResult<CaseEntity>> {
-    if (accessibleCaseIds.length === 0) {
+    try {
+      const whereClause: any = {};
+
+      // Apply case ID restriction
+      if (accessibleCaseIds.length > 0) {
+        whereClause.id = { in: accessibleCaseIds };
+      } else {
+        // No accessible cases, return empty result
+        return {
+          data: [],
+          pagination: {
+            total: 0,
+            page: pagination.page,
+            limit: pagination.limit,
+            totalPages: 0,
+          },
+        };
+      }
+
+      // Apply search filter
+      if (filters.search) {
+        whereClause.OR = [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { description: { contains: filters.search, mode: 'insensitive' } },
+        ];
+      }
+
+      // Apply status filter
+      if (filters.status) {
+        whereClause.status = filters.status;
+      }
+
+      // Apply category filter
+      if (filters.category) {
+        whereClause.category = filters.category;
+      }
+
+      // Get total count
+      const total = await prisma.case.count({ where: whereClause });
+
+      // Calculate pagination
+      const totalPages = Math.ceil(total / pagination.limit);
+      const skip = (pagination.page - 1) * pagination.limit;
+
+      // Fetch cases with owner information
+      const cases = await prisma.case.findMany({
+        where: whereClause,
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pagination.limit,
+      });
+
       return {
-        data: [],
+        data: cases as CaseEntity[],
         pagination: {
+          total,
           page: pagination.page,
           limit: pagination.limit,
-          total: 0,
-          totalPages: 0,
+          totalPages,
         },
       };
+    } catch (error) {
+      console.error('Error in findWithFilters:', error);
+      throw error;
     }
-
-    // Build where clause
-    const whereClause: {
-      id: { in: string[] };
-      title?: { contains: string; mode: 'insensitive' };
-      status?: CaseStatus;
-      category?: CaseCategory;
-    } = {
-      id: { in: accessibleCaseIds },
-    };
-
-    if (filters.search) {
-      whereClause.title = {
-        contains: filters.search,
-        mode: 'insensitive',
-      };
-    }
-
-    if (filters.status) {
-      whereClause.status = filters.status as CaseStatus;
-    }
-
-    if (filters.category) {
-      whereClause.category = filters.category as CaseCategory;
-    }
-
-    // Get total count for pagination
-    const total = await prisma.case.count({ where: whereClause });
-
-    // Calculate pagination
-    const totalPages = Math.ceil(total / pagination.limit);
-    const skip = (pagination.page - 1) * pagination.limit;
-
-    // Get paginated results
-    const cases = await prisma.case.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: pagination.limit,
-    });
-
-    return {
-      data: cases.map(this.mapToEntity),
-      pagination: {
-        page: pagination.page,
-        limit: pagination.limit,
-        total,
-        totalPages,
-      },
-    };
   }
 
   /**
@@ -113,7 +164,7 @@ export class CaseRepository {
       data: {
         title: data.title,
         category: data.category as CaseCategory,
-        status: (data.status as CaseStatus) || CaseStatus.OPEN,
+        status: data.status as CaseStatus,
         description: data.description,
         ownerId: data.ownerId,
       },
@@ -230,17 +281,73 @@ export class CaseRepository {
    * Check if lawyer has access to a case
    */
   async hasAccess(caseId: string, lawyerId: string): Promise<boolean> {
-    const access = await prisma.caseAccess.findFirst({
-      where: {
-        caseId,
-        lawyerId,
-      },
-    });
-    return !!access;
+    try {
+      console.log(`🔍 Checking hasAccess for caseId: ${caseId}, lawyerId: ${lawyerId}`);
+      const access = await prisma.caseAccess.findFirst({
+        where: {
+          caseId,
+          lawyerId,
+        }
+      });
+      console.log(`🔍 hasAccess result:`, access);
+      const result = !!access;
+      console.log(`🔍 hasAccess returning: ${result}`);
+      return result;
+    } catch (error) {
+      console.error('Error checking case access:', error);
+      return false;
+    }
   }
 
   /**
-   * Create a case access request
+   * Check if there's a pending access request
+   */
+  async hasAccessRequest(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      console.log(`🔍 Checking hasAccessRequest for caseId: ${caseId}, lawyerId: ${lawyerId}`);
+      const request = await prisma.caseAccessRequest.findFirst({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        }
+      });
+      console.log(`🔍 hasAccessRequest result:`, request);
+      const result = !!request;
+      console.log(`🔍 hasAccessRequest returning: ${result}`);
+      return result;
+    } catch (error) {
+      console.error('Error checking access request:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get access request information (including request date)
+   */
+  async getAccessRequestInfo(caseId: string, lawyerId: string): Promise<{ requestedAt: Date } | null> {
+    try {
+      console.log(`🔍 Getting access request info for caseId: ${caseId}, lawyerId: ${lawyerId}`);
+      const request = await prisma.caseAccessRequest.findFirst({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        },
+        select: {
+          requestedAt: true,
+        }
+      });
+      console.log(`🔍 getAccessRequestInfo result:`, request);
+      return request;
+    } catch (error) {
+      console.error('Error getting access request info:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create access request
    */
   async createAccessRequest(caseId: string, lawyerId: string): Promise<boolean> {
     try {
@@ -249,16 +356,12 @@ export class CaseRepository {
           caseId,
           lawyerId,
           status: 'PENDING',
-          requestedAt: new Date(),
-        },
+        }
       });
       return true;
     } catch (error) {
-      // Handle unique constraint violation (duplicate request)
-      if ((error as any)?.code === 'P2002') {
-        return false; // Request already exists
-      }
-      throw error;
+      console.error('Error creating access request:', error);
+      return false;
     }
   }
 
@@ -266,66 +369,82 @@ export class CaseRepository {
    * Get access requests for a case
    */
   async getAccessRequests(caseId: string): Promise<any[]> {
-    const requests = await prisma.caseAccessRequest.findMany({
-      where: {
-        caseId,
-        status: 'PENDING',
-      },
-      include: {
-        lawyer: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+    try {
+      const requests = await prisma.caseAccessRequest.findMany({
+        where: {
+          caseId,
+          status: 'PENDING',
         },
-      },
-      orderBy: {
-        requestedAt: 'desc',
-      },
-    });
-    return requests;
+        include: {
+          lawyer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            }
+          }
+        },
+        orderBy: {
+          requestedAt: 'desc',
+        }
+      });
+      return requests;
+    } catch (error) {
+      console.error('Error getting access requests:', error);
+      return [];
+    }
   }
 
   /**
    * Get lawyer's access requests
    */
   async getLawyerAccessRequests(lawyerId: string): Promise<any[]> {
-    const requests = await prisma.caseAccessRequest.findMany({
-      where: {
-        lawyerId,
-        status: 'PENDING',
-      },
-      include: {
-        case: {
-          select: {
-            id: true,
-            title: true,
-            category: true,
-            status: true,
-            createdAt: true,
-          },
+    try {
+      const requests = await prisma.caseAccessRequest.findMany({
+        where: {
+          lawyerId,
+          status: 'PENDING',
         },
-      },
-      orderBy: {
-        requestedAt: 'desc',
-      },
-    });
-    return requests;
+        include: {
+          case: {
+            select: {
+              id: true,
+              title: true,
+              category: true,
+              status: true,
+              owner: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          requestedAt: 'desc',
+        }
+      });
+      return requests;
+    } catch (error) {
+      console.error('Error getting lawyer access requests:', error);
+      return [];
+    }
   }
 
   /**
-   * Remove access request (approve/reject)
+   * Remove access request (after approval/rejection)
    */
   async removeAccessRequest(
     caseId: string, 
     lawyerId: string, 
-    action: 'approve' | 'reject', 
+    action: 'approve' | 'reject',
     reviewerId: string
   ): Promise<boolean> {
     try {
-      const result = await prisma.caseAccessRequest.updateMany({
+      await prisma.caseAccessRequest.updateMany({
         where: {
           caseId,
           lawyerId,
@@ -335,52 +454,35 @@ export class CaseRepository {
           status: action === 'approve' ? 'APPROVED' : 'REJECTED',
           reviewedAt: new Date(),
           reviewedBy: reviewerId,
-        },
+        }
       });
+
+      // Optionally, delete the record completely after a delay
+      // Or keep it for audit purposes (recommended)
+      
+      return true;
+    } catch (error) {
+      console.error('Error removing access request:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Remove access request by lawyer (withdraw request)
+   */
+  async removeAccessRequestByLawyer(caseId: string, lawyerId: string): Promise<boolean> {
+    try {
+      const result = await prisma.caseAccessRequest.deleteMany({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        }
+      });
+
       return result.count > 0;
     } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Get access request information (including request date)
-   */
-  async getAccessRequestInfo(caseId: string, lawyerId: string): Promise<{ requestedAt: Date } | null> {
-    try {
-      const request = await prisma.caseAccessRequest.findFirst({
-        where: {
-          caseId,
-          lawyerId,
-          status: 'PENDING',
-        },
-        select: {
-          requestedAt: true,
-        },
-      });
-
-      return request;
-    } catch (error) {
-      console.error('Error getting access request info:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Check if there's a pending access request (existing method - keep for backward compatibility)
-   */
-  async hasAccessRequest(caseId: string, lawyerId: string): Promise<boolean> {
-    try {
-      const request = await prisma.caseAccessRequest.findFirst({
-        where: {
-          caseId,
-          lawyerId,
-          status: 'PENDING',
-        },
-      });
-      return !!request;
-    } catch (error) {
-      console.error('Error checking access request:', error);
+      console.error('Error removing access request by lawyer:', error);
       return false;
     }
   }
@@ -388,7 +490,7 @@ export class CaseRepository {
   /**
    * Map Prisma Case model to CaseEntity
    */
-  private mapToEntity(case_: Case): CaseEntity {
+  private mapToEntity(case_: any): CaseEntity {
     return {
       id: case_.id,
       title: case_.title,

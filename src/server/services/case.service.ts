@@ -79,7 +79,7 @@ export class CaseService {
   /**
    * Delete a case
    */
-  async deleteCase(id: string, userId: string): Promise<boolean> {
+  async deleteCase(id: string): Promise<boolean> {
     // TODO: Add authorization check
     // TODO: Implement soft delete or cascade rules
     return this.caseRepository.delete(id);
@@ -134,6 +134,41 @@ export class CaseService {
     }
 
     return { success: true, message: 'Access request submitted successfully' };
+  }
+
+  /**
+   * Withdraw lawyer access request for a case
+   */
+  async withdrawLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+    // Validate lawyer exists and has LAWYER role
+    const lawyer = await this.userRepository.findById(lawyerId);
+    if (!lawyer) {
+      return { success: false, message: 'Lawyer not found' };
+    }
+
+    if (lawyer.role !== 'LAWYER') {
+      return { success: false, message: 'User must have LAWYER role to withdraw case access request' };
+    }
+
+    // Validate case exists
+    const caseExists = await this.caseRepository.findById(caseId);
+    if (!caseExists) {
+      return { success: false, message: 'Case not found' };
+    }
+
+    // Check if request exists
+    const existingRequest = await this.caseRepository.hasAccessRequest(caseId, lawyerId);
+    if (!existingRequest) {
+      return { success: false, message: 'No pending access request found for this case' };
+    }
+
+    // Remove access request
+    const withdrawn = await this.caseRepository.removeAccessRequestByLawyer(caseId, lawyerId);
+    if (!withdrawn) {
+      return { success: false, message: 'Failed to withdraw access request' };
+    }
+
+    return { success: true, message: 'Access request withdrawn successfully' };
   }
 
   /**

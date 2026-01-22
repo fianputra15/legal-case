@@ -16,6 +16,12 @@ export class CaseAccessUtils {
     userId: string,
     userRole: string
   ): Promise<any[]> {
+    console.log('🔍 CaseAccessUtils.enhanceCasesWithAccessInfo called:', {
+      casesCount: cases.length,
+      userId,
+      userRole
+    });
+
     if (userRole !== 'LAWYER') {
       // For non-lawyers, just return cases as-is with default values
       return cases.map(caseItem => ({
@@ -29,20 +35,47 @@ export class CaseAccessUtils {
     // For lawyers, check access and pending requests for each case
     const enhancedCases = await Promise.all(
       cases.map(async (caseItem) => {
-        // Check if lawyer has access
-        const hasAccess = await this.caseRepository.hasAccess(caseItem.id, userId);
-        
-        // Check if there's a pending request and get the request date
-        const pendingRequestInfo = await this.caseRepository.getAccessRequestInfo(caseItem.id, userId);
-        
-        return {
-          ...caseItem,
-          hasAccess,
-          hasPendingRequest: !!pendingRequestInfo,
-          requestedAt: pendingRequestInfo?.requestedAt || null,
-        };
+        try {
+          // Check if lawyer has access
+          const hasAccess = await this.caseRepository.hasAccess(caseItem.id, userId);
+          console.log(`   Case ${caseItem.title} (${caseItem.id}) - hasAccess: ${hasAccess}`);
+ 
+          // Check if there's a pending request and get the request date
+          const pendingRequestInfo = await this.caseRepository.getAccessRequestInfo(caseItem.id, userId);
+          console.log(`   Case ${caseItem.title} (${caseItem.id}) - pendingRequestInfo:`, pendingRequestInfo);
+          
+          const result = {
+            ...caseItem,
+            hasAccess,
+            hasPendingRequest: !!pendingRequestInfo,
+            requestedAt: pendingRequestInfo?.requestedAt || null,
+          };
+          
+          console.log(`   Case ${caseItem.title} enhanced result:`, {
+            hasAccess: result.hasAccess,
+            hasPendingRequest: result.hasPendingRequest,
+            requestedAt: result.requestedAt
+          });
+          
+          return result;
+        } catch (error) {
+          console.error(`Error enhancing case ${caseItem.id}:`, error);
+          return {
+            ...caseItem,
+            hasAccess: false,
+            hasPendingRequest: false,
+            requestedAt: null,
+          };
+        }
       })
     );
+
+    console.log('🔍 CaseAccessUtils enhanced cases result:', enhancedCases.map(c => ({
+      id: c.id,
+      title: c.title,
+      hasAccess: c.hasAccess,
+      hasPendingRequest: c.hasPendingRequest
+    })));
 
     return enhancedCases;
   }

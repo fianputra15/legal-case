@@ -121,7 +121,7 @@ const options: swaggerJSDoc.Options = {
             },
             status: {
               type: 'string',
-              enum: ['OPEN', 'IN_PROGRESS', 'UNDER_REVIEW', 'AWAITING_CLIENT', 'CLOSED', 'ARCHIVED'],
+              enum: ['OPEN', 'CLOSED'],
               example: 'OPEN'
             },
             priority: {

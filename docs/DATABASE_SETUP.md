@@ -17,7 +17,7 @@ This project uses **Prisma ORM** with **PostgreSQL** for database management. Th
 ### Enums Used
 
 - `UserRole`: LAWYER, CLIENT
-- `CaseStatus`: OPEN, IN_PROGRESS, UNDER_REVIEW, AWAITING_CLIENT, CLOSED, ARCHIVED
+- `CaseStatus`: OPEN, CLOSED
 - `CaseCategory`: CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, etc.
 - `DocumentStatus`: PENDING, PROCESSED, ARCHIVED, DELETED
 

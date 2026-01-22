@@ -43,11 +43,7 @@ export const getCategoryLabel = (category: string): string => {
 export const getStatusColor = (status: string): string => {
   switch (status) {
     case 'OPEN': return 'bg-green-100 text-green-800';
-    case 'IN_PROGRESS': return 'bg-blue-100 text-blue-800';
     case 'CLOSED': return 'bg-gray-100 text-gray-800';
-    case 'UNDER_REVIEW': return 'bg-yellow-100 text-yellow-800';
-    case 'AWAITING_CLIENT': return 'bg-purple-100 text-purple-800';
-    case 'ARCHIVED': return 'bg-gray-100 text-gray-600';
     default: return 'bg-gray-100 text-gray-800';
   }
 };
@@ -55,11 +51,7 @@ export const getStatusColor = (status: string): string => {
 export const getStatusLabel = (status: string): string => {
   switch (status) {
     case 'OPEN': return 'Open';
-    case 'IN_PROGRESS': return 'In Progress';
     case 'CLOSED': return 'Closed';
-    case 'UNDER_REVIEW': return 'Under Review';
-    case 'AWAITING_CLIENT': return 'Awaiting Client';
-    case 'ARCHIVED': return 'Archived';
     default: return status;
   }
 };
@@ -89,11 +81,7 @@ export const caseFilterOptions = {
   statuses: [
     { value: "all", label: "All Status" },
     { value: "OPEN", label: "Open" },
-    { value: "IN_PROGRESS", label: "In Progress" },
-    { value: "UNDER_REVIEW", label: "Under Review" },
-    { value: "AWAITING_CLIENT", label: "Awaiting Client" },
     { value: "CLOSED", label: "Closed" },
-    { value: "ARCHIVED", label: "Archived" },
   ],
   sortOptions: [
     { value: "newest", label: "Newest first" },

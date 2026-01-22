@@ -56,7 +56,7 @@ if (!isOwner) {
 {
   title: z.string().min(1, 'Title is required').max(255, 'Title must be less than 255 characters').optional(),
   category: z.enum(['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER']).optional(),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'UNDER_REVIEW', 'AWAITING_CLIENT', 'CLOSED', 'ARCHIVED']).optional(),
+  status: z.enum(['OPEN', 'CLOSED',]).optional(),
   description: z.string().optional()
 }
 ```
@@ -79,7 +79,7 @@ curl -X PATCH "http://localhost:3000/api/cases/clx1a2b3c4d5e6f7g8h9i0j1" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer CLIENT_JWT_TOKEN" \
   -d '{
-    "status": "IN_PROGRESS"
+    "status": "OPEN"
   }'
 ```
 
@@ -117,7 +117,7 @@ curl -X PATCH "http://localhost:3000/api/cases/clx1a2b3c4d5e6f7g8h9i0j1" \
     "id": "clx1a2b3c4d5e6f7g8h9i0j1",
     "title": "Updated Contract Dispute Resolution",
     "category": "CORPORATE_LAW",
-    "status": "IN_PROGRESS",
+    "status": "OPEN",
     "description": "Updated description with recent developments",
     "priority": 2,
     "ownerId": "clx9y8x7w6v5u4t3s2r1q0p9",

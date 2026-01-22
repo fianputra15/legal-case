@@ -20,13 +20,16 @@ const handleRequestSchema = z.object({
 /**
  * PUT /api/cases/[id]/access-requests - Handle access request (approve/reject)
  * 
- * Authorization: Only case owne
+ * Authorization: Only case owner or admin
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params since it's now async in Next.js
+    const resolvedParams = await params;
+    
     // Retrieve the "token" cookie from the request
     const token = (await cookies()).get("token")?.value;
 
@@ -41,7 +44,7 @@ export async function PUT(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const caseId = params.id;
+    const caseId = resolvedParams.id;
 
     // Get case to check ownership
     const caseEntity = await caseService.getCaseById(caseId);

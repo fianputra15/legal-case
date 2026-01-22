@@ -311,11 +311,7 @@ POST /api/cases
 #### Optional Fields
 - `status` (string): Case status (defaults to `OPEN`) - one of:
   - `OPEN`
-  - `IN_PROGRESS`
-  - `UNDER_REVIEW` 
-  - `AWAITING_CLIENT`
   - `CLOSED`
-  - `ARCHIVED`
 - `description` (string): Case description
 
 #### Example Request Body

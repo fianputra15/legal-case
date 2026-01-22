@@ -2,7 +2,7 @@
 import { MainLayout } from "@/widgets/layout";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
-import { CaseList, CaseFilters, CaseCardProps, SearchBar } from '@/shared/ui';
+import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
 import Link from "next/link";
 
@@ -22,7 +22,6 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleRequestAccess = async (caseId: string) => {
-    console.log(caseId, 'caseId di homepage');
     try {
       await apiClient.post(`/api/cases/${caseId}/request-access`);
       
@@ -50,7 +49,6 @@ export default function HomePage() {
       try {
         setLoading(true);
         setError('');
-        
         const params = new URLSearchParams();
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
@@ -61,21 +59,19 @@ export default function HomePage() {
         const casesData = (response.data?.cases || []).map((caseItem: any) => ({
           ...caseItem,
           userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
-          showOwner: user?.role === 'LAWYER',
-          hasAccess: false, // This should be determined by checking CaseAccess table
-          hasPendingRequest: false, // This should be determined by checking CaseAccessRequest table
-          onRequestAccess: user?.role === 'LAWYER' ? () => handleRequestAccess(caseItem.id) : undefined,
+          showOwner: user?.role === 'LAWYER', // Show owner for lawyers
+          onRequestAccess: handleRequestAccess,
         }));
         
         setCases(casesData);
-        setTotalCases(response.data?.pagination?.total || casesData.length || 0);
+        setTotalCases(response.data?.pagination?.total || response.data?.cases?.length || 0);
       } catch (err) {
+        console.error('Error fetching cases:', err);
         if (err instanceof ApiError) {
           setError(`Failed to load cases: ${err.message}`);
         } else {
-          setError('Failed to load cases');
+          setError('Failed to load cases. Please try again.');
         }
-        console.error("Error fetching cases:", err);
       } finally {
         setLoading(false);
       }
@@ -84,61 +80,33 @@ export default function HomePage() {
     fetchCases();
   }, [category, status, searchTerm, user]);
 
+  const handleWithdrawRequest = async (caseId: string) => {
+    try {
+      await apiClient.delete(`/api/cases/${caseId}/request-access`);
+      
+      // Refresh the cases to update the UI
+      setCases(prevCases =>
+        prevCases.map(caseItem =>
+          caseItem.id === caseId
+            ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
+            : caseItem
+        )
+      );
+      
+      // Optionally, show a success message
+      alert('Access request withdrawn successfully!');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        alert(`Failed to withdraw request: ${error.message}`);
+      } else {
+        alert('Failed to withdraw request');
+      }
+    }
+  };
+
   return (
     <MainLayout headerTitle="Browse Cases" showFooter={false}>
       <div className="space-y-6 bg-white p-6">
-        {/* Header Section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-strong900 mb-2">
-                {user?.role === 'LAWYER' ? 'Browse Cases' : 'Your Cases'}
-              </h1>
-              <p className="text-sub600">
-                {user?.role === 'LAWYER' 
-                  ? "Discover and request access to available cases" 
-                  : "Manage your legal cases"
-                }
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              {isAuthenticated && user?.role === 'CLIENT' && (
-                <>
-                  <Link
-                    href="/my-cases"
-                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                  >
-                    My Cases
-                  </Link>
-                  <Link
-                    href="/create-case"
-                    className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors"
-                  >
-                    + Create Case
-                  </Link>
-                </>
-              )}
-              
-              {isAuthenticated && user?.role === 'LAWYER' && (
-                <Link
-                  href="/my-cases"
-                  className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors"
-                >
-                  My Assigned Cases
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <SearchBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          placeholder="Search cases by title or description..."
-        />
-
         {/* Filters Bar */}
         <CaseFilters
           category={category}
@@ -157,6 +125,8 @@ export default function HomePage() {
           loading={loading}
           error={error}
           onRetry={() => window.location.reload()}
+          onRequestAccess={handleRequestAccess}
+          onWithdrawRequest={handleWithdrawRequest}
           emptyStateConfig={{
             title: "No Cases Found",
             description: 

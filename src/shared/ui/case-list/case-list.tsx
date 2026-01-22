@@ -15,6 +15,8 @@ interface CaseListProps {
     createButtonHref?: string;
   };
   onRetry?: () => void;
+  onRequestAccess?: (caseId: string) => void;
+  onWithdrawRequest?: (caseId: string) => void;
 }
 
 export const CaseList: React.FC<CaseListProps> = ({
@@ -23,9 +25,9 @@ export const CaseList: React.FC<CaseListProps> = ({
   error,
   emptyStateConfig,
   onRetry,
+  onRequestAccess,
+  onWithdrawRequest,
 }) => {
-
-    console.log(cases, 'cases di case list');
   // Loading state
   if (loading) {
     return (
@@ -92,7 +94,12 @@ export const CaseList: React.FC<CaseListProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {cases.map((caseItem) => (
-        <CaseCard key={caseItem.id} {...caseItem} />
+        <CaseCard 
+          key={caseItem.id} 
+          {...caseItem} 
+          onRequestAccess={onRequestAccess}
+          onWithdrawRequest={onWithdrawRequest}
+        />
       ))}
     </div>
   );

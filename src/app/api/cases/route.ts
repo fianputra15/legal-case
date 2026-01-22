@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     
     if (user.role === 'LAWYER') {
       // LAWYERS can see all cases
-      const allCases = await caseService.getAllCaseIds(); // You'll need to add this method
+      const allCases = await caseService.getAllCaseIds();
       accessibleCaseIds = allCases;
     } else {
       // For other roles, use existing authorization logic
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
         cases: [],
         pagination: {
           ...result.pagination,
-          page: pagination.page, // Keep requested page in response
+          page: pagination.page, 
         },
         userRole: user.role,
         appliedFilters: filters,
@@ -121,7 +121,6 @@ export async function GET(request: NextRequest) {
       user.id,
       user.role
     );
-
     return ResponseHandler.success({
       cases: enhancedCases,
       pagination: result.pagination,

@@ -40,8 +40,20 @@ export interface CaseEntity {
   status: string;
   priority: number;
   ownerId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  owner?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface EnhancedCaseEntity extends CaseEntity {
+  hasAccess?: boolean;
+  hasPendingRequest?: boolean;
+  requestedAt?: Date | string | null;
 }
 
 export interface CreateCaseDto {
@@ -87,11 +99,8 @@ export enum UserRole {
 
 export enum CaseStatus {
   OPEN = 'open',
-  IN_PROGRESS = 'in_progress',
   CLOSED = 'closed',
-  ARCHIVED = 'archived',
 }
-
 export enum CasePriority {
   LOW = 'low',
   MEDIUM = 'medium',

@@ -203,7 +203,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         return ResponseHandler.forbidden('Only case owners can delete cases');
       }
     }
-    const deleted = await caseService.deleteCase(caseId, user.id);
+    const deleted = await caseService.deleteCase(caseId);
 
     if (!deleted) {
       return ResponseHandler.notFound('Case not found');

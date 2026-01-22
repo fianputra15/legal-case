@@ -10,6 +10,7 @@ import { UserRepository } from '@/server/db/repositories/user.repository';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { Logger } from '@/server/utils/logger';
 import { CaseFilters, PaginationOptions } from '@/server/types/database';
+import { CaseAccessUtils } from '@/server/utils/case-access';
 
 const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
@@ -68,28 +69,23 @@ export async function GET(request: NextRequest) {
       ...(validatedQuery.category && { category: validatedQuery.category }),
     };
 
-    // Get cases accessible to this user based on role and permissions
-    // This will return cases based on user's role:
-    // - CLIENT: owned cases
-    // - LAWYER: cases with granted access
-    // - ADMIN: all cases
+    // Get cases accessible to this user (role-specific logic)
     const accessibleCaseIds = await AuthorizationService.getAccessibleCaseIds(user);
     
-    console.log("My Cases - User role:", user.role);
-    console.log("My Cases - Accessible case IDs:", accessibleCaseIds);
+    console.log("User role:", user.role);
+    console.log("My accessible case IDs:", accessibleCaseIds);
     
     // Fetch filtered and paginated case data
     const result = await caseService.getCasesWithFilters(accessibleCaseIds, filters, pagination);
 
     // Handle edge cases
     if (result.pagination.total === 0) {
-      Logger.info(`No accessible cases found for user ${user.email} (role: ${user.role})`);
+      Logger.info(`No cases found for user ${user.email} with current filters`);
       return ResponseHandler.success({
         cases: [],
         pagination: result.pagination,
         userRole: user.role,
         appliedFilters: filters,
-        message: `No cases found. ${user.role === 'CLIENT' ? 'You haven\'t created any cases yet.' : user.role === 'LAWYER' ? 'No cases have been assigned to you yet.' : 'No cases available.'}`
       });
     }
 
@@ -100,7 +96,7 @@ export async function GET(request: NextRequest) {
         cases: [],
         pagination: {
           ...result.pagination,
-          page: pagination.page, // Keep requested page in response
+          page: pagination.page,
         },
         userRole: user.role,
         appliedFilters: filters,
@@ -108,10 +104,17 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    Logger.info(`Listed ${result.data.length} accessible cases (page ${pagination.page}/${result.pagination.totalPages}) for user ${user.email} (role: ${user.role})`);
+    Logger.info(`Listed ${result.data.length} my cases (page ${pagination.page}/${result.pagination.totalPages}) for user ${user.email} (role: ${user.role})`);
+
+    // Enhance cases with access information 
+    const enhancedCases = await CaseAccessUtils.enhanceCasesWithAccessInfo(
+      result.data,
+      user.id,
+      user.role
+    );
 
     return ResponseHandler.success({
-      cases: result.data,
+      cases: enhancedCases, // ← Enhanced cases dengan hasAccess, hasPendingRequest, requestedAt
       pagination: result.pagination,
       userRole: user.role,
       appliedFilters: filters,

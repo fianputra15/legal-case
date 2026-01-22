@@ -59,7 +59,7 @@ async function main() {
       title: 'Property Purchase Legal Review',
       description: 'Legal review required for residential property purchase in downtown area.',
       category: 'REAL_ESTATE',
-      status: CaseStatus.IN_PROGRESS,
+      status: CaseStatus.OPEN,
       priority: 2, // Medium priority
       ownerId: client.id,
     },

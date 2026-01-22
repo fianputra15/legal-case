@@ -52,6 +52,54 @@ function BrowseCasesContent() {
     loadCases();
   }, [category, status]);
 
+  const handleRequestAccess = async (caseId: string) => {
+    try {
+      await apiClient.post(`/api/cases/${caseId}/request-access`);
+      
+      // Refresh the cases to update the UI
+      setCases(prevCases =>
+        prevCases.map(caseItem =>
+          caseItem.id === caseId
+            ? { ...caseItem, hasPendingRequest: true }
+            : caseItem
+        )
+      );
+      
+      // Optionally, show a success message
+      alert('Access request submitted successfully!');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        alert(`Failed to request access: ${error.message}`);
+      } else {
+        alert('Failed to request access');
+      }
+    }
+  };
+
+  const handleWithdrawRequest = async (caseId: string) => {
+    try {
+      await apiClient.delete(`/api/cases/${caseId}/request-access`);
+      
+      // Refresh the cases to update the UI
+      setCases(prevCases =>
+        prevCases.map(caseItem =>
+          caseItem.id === caseId
+            ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
+            : caseItem
+        )
+      );
+      
+      // Optionally, show a success message
+      alert('Access request withdrawn successfully!');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        alert(`Failed to withdraw request: ${error.message}`);
+      } else {
+        alert('Failed to withdraw request');
+      }
+    }
+  };
+
   const getPageTitle = () => {
     switch (user?.role) {
       case 'LAWYER': return 'Browse Cases';
@@ -148,6 +196,8 @@ function BrowseCasesContent() {
         loading={loading}
         error={error}
         onRetry={() => window.location.reload()}
+        onRequestAccess={handleRequestAccess}
+        onWithdrawRequest={handleWithdrawRequest}
         emptyStateConfig={{
           title: "No Cases Found",
           description: getEmptyStateMessage(),

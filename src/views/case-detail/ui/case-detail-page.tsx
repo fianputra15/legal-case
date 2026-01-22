@@ -238,8 +238,6 @@ export function CaseDetailPage() {
     switch (status) {
       case "OPEN":
         return "text-success";
-      case "IN_PROGRESS":
-        return "text-blue-600";
       case "CLOSED":
         return "text-gray-600";
       default:
@@ -251,8 +249,6 @@ export function CaseDetailPage() {
     switch (status) {
       case "OPEN":
         return "Open";
-      case "IN_PROGRESS":
-        return "In Progress";
       case "CLOSED":
         return "Closed";
       default:

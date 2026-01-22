@@ -11,7 +11,6 @@ export interface Case {
 export interface CaseStats {
   total: number;
   open: number;
-  in_progress: number;
   closed: number;
   recent: Case[];
 }

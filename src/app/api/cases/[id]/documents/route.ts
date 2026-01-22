@@ -547,10 +547,6 @@ export async function GET(
       createdAt: doc.createdAt
     }));
     
-    // 9. Log access for audit trail
-    Logger.info(`User ${user.email} listed ${safeDocuments.length} documents for case ${caseId}`);
-    
-    // 10. Return paginated response
     return ResponseHandler.success(safeDocuments, 'Documents retrieved successfully', {
       page: Math.floor(offset / limit) + 1,
       limit,

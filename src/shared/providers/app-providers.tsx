@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/shared/lib/auth';
+import { ModalProvider } from './modal-provider';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -14,7 +15,9 @@ interface AppProvidersProps {
 export default function AppProviders({ children }: AppProvidersProps) {
   return (
     <AuthProvider>
-      {children}
+      <ModalProvider>
+        {children}
+      </ModalProvider>
     </AuthProvider>
   );
 }

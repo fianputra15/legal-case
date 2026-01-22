@@ -58,11 +58,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 export const CaseStatus: {
   OPEN: 'OPEN',
-  IN_PROGRESS: 'IN_PROGRESS',
-  UNDER_REVIEW: 'UNDER_REVIEW',
-  AWAITING_CLIENT: 'AWAITING_CLIENT',
   CLOSED: 'CLOSED',
-  ARCHIVED: 'ARCHIVED'
 };
 
 export type CaseStatus = (typeof CaseStatus)[keyof typeof CaseStatus]
