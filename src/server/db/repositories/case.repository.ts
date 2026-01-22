@@ -145,29 +145,29 @@ export class CaseRepository {
     }
   }
 
-  /**
-   * Delete case
-   */
-  async delete(id: string): Promise<boolean> {
-    // TODO: Implement database deletion
-    return false;
-  }
+  // /**
+  //  * Delete case
+  //  */
+  // async delete(id: string): Promise<boolean> {
+  //   // TODO: Implement database deletion
+  //   return false;
+  // }
 
-  /**
-   * Find cases by status
-   */
-  async findByStatus(status: string): Promise<CaseEntity[]> {
-    // TODO: Implement database query
-    return [];
-  }
+  // /**
+  //  * Find cases by status
+  //  */
+  // async findByStatus(status: string): Promise<CaseEntity[]> {
+  //   // TODO: Implement database query
+  //   return [];
+  // }
 
-  /**
-   * Find cases assigned to lawyer
-   */
-  async findByLawyerId(lawyerId: string): Promise<CaseEntity[]> {
-    // TODO: Implement database query
-    return [];
-  }
+  // /**
+  //  * Find cases assigned to lawyer
+  //  */
+  // async findByLawyerId(lawyerId: string): Promise<CaseEntity[]> {
+  //   // TODO: Implement database query
+  //   return [];
+  // }
 
   /**
    * Count cases by user

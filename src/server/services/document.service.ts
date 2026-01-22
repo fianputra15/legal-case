@@ -164,7 +164,7 @@ export class DocumentService {
     
     try {
       // Download file from Supabase storage
-      const { buffer, contentType } = await SupabaseStorage.downloadFile(document.relativePath);
+      const { buffer } = await SupabaseStorage.downloadFile(document.relativePath);
       
       // Verify file integrity if checksum exists
       if (document.checksum) {

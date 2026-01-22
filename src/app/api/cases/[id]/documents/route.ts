@@ -169,10 +169,10 @@ const UPLOAD_ALLOWED_MIME_TYPES = [
 // Maximum file size: 25MB (reasonable for legal documents)
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB in bytes
 
-interface UploadFileData {
-  file: File;
-  documentType?: DocumentType;
-}
+// interface UploadFileData {
+//   file: File;
+//   documentType?: DocumentType;
+// }
 
 /**
  * POST /api/cases/[id]/documents - Upload document to case
