@@ -14,6 +14,7 @@ const navigation: NavigationItem[] = [
   { name: 'Home', href: '/', public: true },
   { name: 'Dashboard', href: '/dashboard', roles: ['CLIENT', 'LAWYER'] },
   { name: 'My Cases', href: '/my-cases', roles: ['CLIENT'] },
+  { name: 'Create Case', href: '/create-case', roles: ['CLIENT'] },
   { name: 'Case Management', href: '/cases', roles: ['LAWYER'] },   
   { name: 'Messages', href: '/messages', roles: ['CLIENT', 'LAWYER'] },
   { name: 'Demo', href: '/demo', roles: ['CLIENT', 'LAWYER'] },

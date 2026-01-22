@@ -71,7 +71,6 @@ export default function Sidebar({ children }: SidebarProps) {
            FolderPaperIcon
           }
           label="My Cases"
-          badge="12"
         />
         
         <NavItem
@@ -80,7 +79,6 @@ export default function Sidebar({ children }: SidebarProps) {
             MessagesIcon
           }
           label="Messages"
-          badge="3"
         />
         
         {/* Additional navigation items from children */}

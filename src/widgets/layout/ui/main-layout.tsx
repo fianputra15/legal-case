@@ -39,7 +39,7 @@ export default function MainLayout({
       <main className="p-2 overflow-auto rounded-l" style={{ gridArea: "main-content" }}>
         <Header title={headerTitle} actions={headerActions} />
 
-        <div className="max-w-7xl mx-auto">{children}</div>
+        <div className="w-full mx-auto">{children}</div>
       </main>
 
       {/* Footer (optional) */}

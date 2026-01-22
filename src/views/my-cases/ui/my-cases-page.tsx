@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth, RequireAuth } from '@/shared/lib/auth';
+import { useAuth } from '@/shared/lib/auth';
 import { apiClient, ApiError } from '@/shared/api';
-import { AppHeader } from '@/shared/ui/app-header';
+import { MainLayout } from '@/widgets/layout';
+import UserIcon from "../../../../public/icons/people.svg";
+import ClipIcon from "../../../../public/icons/clip.svg";
+import CircleMarkedIcon from "../../../../public/icons/circle-marked.svg";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Case {
   id: string;
@@ -11,16 +16,49 @@ interface Case {
   description?: string;
   status: string;
   category: string;
+  priority: number;
   createdAt: string;
   updatedAt: string;
+  ownerId: string;
+  attachments?: number;
 }
+
+const categoryOptions = [
+  { value: "all", label: "All" },
+  { value: "EMPLOYMENT_LAW", label: "Employment Law" },
+  { value: "FAMILY_LAW", label: "Family Law" },
+  { value: "COMMERCIAL_LAW", label: "Commercial" },
+  { value: "INTELLECTUAL_PROPERTY", label: "Intellectual Property" },
+  { value: "CRIMINAL_LAW", label: "Criminal Law" },
+  { value: "CIVIL_LAW", label: "Civil Law" },
+  { value: "CORPORATE_LAW", label: "Corporate Law" },
+];
+
+const statusOptions = [
+  { value: "all", label: "All Status" },
+  { value: "OPEN", label: "Open" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "CLOSED", label: "Closed" },
+];
+
+const sortOptions = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "priority", label: "Priority" },
+  { value: "title", label: "Title A-Z" },
+];
 
 function MyCasesContent() {
   const { user } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState('all');
+  const [totalCases, setTotalCases] = useState(0);
+
+  // Filter states
+  const [category, setCategory] = useState("all");
+  const [status, setStatus] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     const loadCases = async () => {
@@ -28,8 +66,13 @@ function MyCasesContent() {
         setLoading(true);
         setError('');
 
-        const response = await apiClient.get<any>('/api/cases');
+        const params = new URLSearchParams();
+        if (category !== "all") params.append("category", category);
+        if (status !== "all") params.append("status", status);
+
+        const response = await apiClient.get<any>(`/api/cases?${params.toString()}`);
         setCases(response.data?.cases || []);
+        setTotalCases(response.data?.pagination?.total || response.data?.cases?.length || 0);
       } catch (error) {
         if (error instanceof ApiError) {
           setError(`Failed to load cases: ${error.message}`);
@@ -42,7 +85,34 @@ function MyCasesContent() {
     };
 
     loadCases();
-  }, []);
+  }, [category, status]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Created today";
+    if (diffDays === 1) return "Created 1 day ago";
+    if (diffDays < 7) return `Created ${diffDays} days ago`;
+    if (diffDays < 14) return "Created 1 week ago";
+    if (diffDays < 30) return `Created ${Math.floor(diffDays / 7)} weeks ago`;
+    return `Created ${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const option = categoryOptions.find((opt) => opt.value === category);
+    return (
+      option?.label ||
+      category
+        .split("_")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ")
+    );
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -53,140 +123,260 @@ function MyCasesContent() {
     }
   };
 
-  const filteredCases = cases.filter(case_ => {
-    if (filter === 'all') return true;
-    return case_.status === filter;
-  });
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'OPEN': return 'Open';
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'CLOSED': return 'Closed';
+      default: return status;
+    }
+  };
+
+  const getAttachmentCount = (caseId: string) => {
+    // Generate consistent attachment count based on case ID
+    const hash = caseId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    return hash % 6; // 0-5 attachments
+  };
+
+  const getPriorityLabel = (priority: number) => {
+    switch (priority) {
+      case 1: return 'Low';
+      case 2: return 'Medium';
+      case 3: return 'High';
+      case 4: return 'Urgent';
+      default: return 'Medium';
+    }
+  };
+
+  const getPriorityColor = (priority: number) => {
+    switch (priority) {
+      case 1: return 'text-gray-600';
+      case 2: return 'text-blue-600';
+      case 3: return 'text-orange-600';
+      case 4: return 'text-red-600';
+      default: return 'text-blue-600';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppHeader />
-      
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Cases</h1>
-          <p className="text-gray-600 mt-2">Manage and track your legal cases</p>
-        </div>
-
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="px-6 py-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium text-gray-700">Filter by status:</label>
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="all">All Cases</option>
-                  <option value="OPEN">Open</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="CLOSED">Closed</option>
-                </select>
-              </div>
-              
-              {user?.role === 'CLIENT' && (
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                  <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  New Case
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-12">
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-12">
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
-            </div>
-          </div>
-        ) : filteredCases.length === 0 ? (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-12 text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <div className="space-y-6 bg-white p-6">
+      {/* Header Section */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          {user?.role === 'CLIENT' && (
+            <Link
+              href="/create-case"
+              className="bg-brand text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors inline-flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No cases found</h3>
-              <p className="mt-2 text-gray-500">
-                {filter === 'all' ? 'You don\'t have any cases yet.' : `No ${filter.toLowerCase()} cases found.`}
-              </p>
-              {user?.role === 'CLIENT' && (
-                <div className="mt-6">
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                    Create your first case
-                  </button>
-                </div>
-              )}
-            </div>
+              Create New Case
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-sub600">
+              Category:
+            </label>
+            <select
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {categoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="divide-y divide-gray-200">
-              {filteredCases.map((case_) => (
-                <div key={case_.id} className="px-6 py-6 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-medium text-gray-900 truncate">
-                        {case_.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {case_.description || 'No description provided'}
-                      </p>
-                      <div className="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-                        <span>{case_.category.replace('_', ' ')}</span>
-                        <span>•</span>
-                        <span>Created {new Date(case_.createdAt).toLocaleDateString()}</span>
-                        <span>•</span>
-                        <span>Updated {new Date(case_.updatedAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(case_.status)}`}>
-                        {case_.status.replace('_', ' ')}
-                      </span>
-                      <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">View</button>
-                        <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">Documents</button>
-                      </div>
-                    </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-sub600">Status:</label>
+            <select
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="text-sm text-sub600">
+            Showing {cases.length} of {totalCases} cases
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-sub600">Sort by:</label>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Cases Grid */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
+            >
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-6 bg-gray-200 rounded mb-3"></div>
+              <div className="h-16 bg-gray-200 rounded mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-12">
+          <div className="text-error text-lg mb-2">⚠️</div>
+          <p className="text-error mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-error text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && cases.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-4xl mb-4">📁</div>
+          <h3 className="text-lg font-medium text-strong900 mb-2">
+            No Cases Found
+          </h3>
+          <p className="text-base mb-4">
+            {category !== "all" || status !== "all" 
+              ? "No cases match your current filters."
+              : "You don't have any cases yet. Create your first case to get started."
+            }
+          </p>
+          {user?.role === 'CLIENT' && (
+            <Link
+              href="/create-case"
+              className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-lg hover:bg-brand-orange-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Your First Case
+            </Link>
+          )}
+        </div>
+      )}
+
+      {!loading && !error && cases.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {cases.map((caseItem) => (
+            <div
+              key={caseItem.id}
+              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+            >
+              {/* Category and Status Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium py-[4px] px-2 border-light border rounded-full text-xs">
+                    {getCategoryLabel(caseItem.category)}
+                  </span>
+                  <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(caseItem.status)}`}>
+                    {getStatusLabel(caseItem.status)}
+                  </span>
+                </div>
+                <span className="text-sm text-sub600">
+                  {formatDate(caseItem.createdAt)}
+                </span>
+              </div>
+
+              {/* Case Title */}
+              <h3 className="text-md font-medium text-strong900 mb-2 leading-tight">
+                {caseItem.title}
+              </h3>
+
+              {/* Case Description */}
+              <p className="text-sm text-sub600 mb-4 line-clamp-3">
+                {caseItem.description ||
+                  "No description available for this case."}
+              </p>
+
+              {/* Case Info */}
+              <div className="flex items-center justify-between pb-4 border-b-light border-b">
+                <div className="flex items-center gap-4 text-sm text-sub600">
+                  <div className="flex items-center gap-1">
+                    <Image
+                      src={UserIcon}
+                      alt="Owner"
+                      className="w-4 h-4"
+                    />
+                    <span>Your Case</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Image
+                      src={ClipIcon}
+                      alt="Attachments"
+                      className="w-4 h-4"
+                    />
+                    <span>{caseItem.attachments || getAttachmentCount(caseItem.id)} Attachments</span>
+                  </div>
+                  <div className={`text-xs font-medium ${getPriorityColor(caseItem.priority)}`}>
+                    {getPriorityLabel(caseItem.priority)} Priority
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-4">
+                <div className="text-xs text-sub600">
+                  Last updated {new Date(caseItem.updatedAt).toLocaleDateString()}
+                </div>
+                
+                <div className="flex gap-2">
+                  <button className="px-3 py-1.5 text-xs border border-gray-300 text-sub600 rounded hover:bg-gray-50 transition-colors">
+                    Documents
+                  </button>
+                  <Link 
+                    href={`/case/${caseItem.id}`}
+                    className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 export default function MyCasesPage() {
   return (
-    <RequireAuth 
-      roles={['CLIENT']}
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Checking authentication...</p>
-          </div>
-        </div>
-      }
-    >
+    <MainLayout headerTitle="My Cases" showFooter={false}>
       <MyCasesContent />
-    </RequireAuth>
+    </MainLayout>
   );
 }

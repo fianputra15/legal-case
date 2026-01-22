@@ -1,10 +1,12 @@
 "use client";
 import { MainLayout } from "@/widgets/layout";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/shared/lib/auth";
 import UserIcon from "../../../../public/icons/people.svg";
 import ClipIcon from "../../../../public/icons/clip.svg";
 import CircleMarkedIcon from "../../../../public/icons/circle-marked.svg";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Case {
   id: string;
@@ -60,6 +62,7 @@ const sortOptions = [
 ];
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -230,6 +233,9 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Create Case Button - Only for CLIENT role */}
+       
+            
             <label className="text-sm font-medium text-sub600">Sort by:</label>
             <select
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
@@ -243,6 +249,14 @@ export default function HomePage() {
               ))}
             </select>
           </div>
+               {isAuthenticated && user?.role === 'CLIENT' && (
+              <Link
+                href="/create-case"
+                className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors"
+              >
+                + Create Case
+              </Link>
+            )}
         </div>
 
         {/* Cases Grid */}
