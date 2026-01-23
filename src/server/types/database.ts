@@ -66,8 +66,7 @@ export interface CreateCaseDto {
 export interface UpdateCaseDto {
   title?: string;
   description?: string;
-  status?: string;
-  priority?: string;
+  category?: string;
   assignedLawyerId?: string;
 }
 

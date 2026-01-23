@@ -180,11 +180,6 @@ export async function GET(
       return ResponseHandler.notFound('Case not found');
     }
 
-    // Check if user is case owner or admin
-    if (caseEntity.ownerId !== user.id && user.role !== 'ADMIN') {
-      return ResponseHandler.forbidden('Only case owner or admin can view access requests');
-    }
-
     // Get access requests for this case
     const accessRequests = await caseService.getCaseAccessRequests(caseId);
 

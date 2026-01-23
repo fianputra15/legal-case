@@ -99,7 +99,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Grant access using service layer (handles business logic validation)
-    const result = await caseService.grantLawyerAccess(caseId, grantData.lawyerId);
+    const result = await caseService.grantLawyerAccess(caseId, grantData.lawyerId, user.id);
 
     if (!result.success) {
       Logger.warn(`Failed to grant access to case ${caseId} for lawyer ${grantData.lawyerId}: ${result.message}`);

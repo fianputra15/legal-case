@@ -88,7 +88,7 @@ export class DocumentService {
           documentType: upload.documentType || DocumentType.OTHER,
           checksum,
           uploadedById: upload.uploadedById,
-          status: DocumentStatus.PENDING
+          status: DocumentStatus.PROCESSED
         }
       });
       
@@ -330,6 +330,7 @@ export class DocumentService {
           results.verified++;
         }
       } catch (error) {
+        console.log(error);
         results.missing.push(document.id);
       }
     }

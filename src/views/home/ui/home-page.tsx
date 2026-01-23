@@ -5,11 +5,13 @@ import { useAuth } from "@/shared/lib/auth";
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -59,6 +61,7 @@ export default function HomePage() {
           userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
           showOwner: user?.role === 'LAWYER', // Show owner for lawyers
           onRequestAccess: handleRequestAccess,
+          onEdit: handleEdit,
         }));
         
         setCases(casesData);
@@ -102,6 +105,10 @@ export default function HomePage() {
     }
   };
 
+  const handleEdit = (caseId: string) => {
+    router.push(`/edit-case/${caseId}` as any);
+  };
+
   return (
     <MainLayout headerTitle="Browse Cases" showFooter={false}>
       <div className="space-y-6 bg-white p-6">
@@ -125,6 +132,7 @@ export default function HomePage() {
           onRetry={() => window.location.reload()}
           onRequestAccess={handleRequestAccess}
           onWithdrawRequest={handleWithdrawRequest}
+          onEdit={handleEdit}
           emptyStateConfig={{
             title: "No Cases Found",
             description: 

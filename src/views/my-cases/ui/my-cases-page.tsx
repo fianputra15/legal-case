@@ -1,17 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/shared/lib/auth';
-import { apiClient, ApiError } from '@/shared/api';
-import { MainLayout } from '@/widgets/layout';
-import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/shared/lib/auth";
+import { apiClient, ApiError } from "@/shared/api";
+import { MainLayout } from "@/widgets/layout";
+import { CaseList, CaseFilters, CaseCardProps } from "@/shared/ui";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { CaseResponse } from "@/server/types";
 
 function MyCasesContent() {
   const { user } = useAuth();
+  const router = useRouter();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [totalCases, setTotalCases] = useState(0);
 
   // Filter states
@@ -19,29 +22,40 @@ function MyCasesContent() {
   const [status, setStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
+  const handleEdit = useCallback((caseId: string) => {
+    router.push(`/edit-case/${caseId}`);
+  }, [router]);
+
   useEffect(() => {
     const loadCases = async () => {
       try {
         setLoading(true);
-        setError('');
+        setError("");
 
         const params = new URLSearchParams();
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
 
-        const response = await apiClient.get<any>(`/api/my-cases?${params.toString()}`);
-        const casesData = (response.data?.cases || []).map((caseItem: any) => ({
-          ...caseItem,
-          userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
-          showOwner: user?.role === 'LAWYER', // Show owner for lawyers in My Cases too
-        }));
+        const response = await apiClient.get<any>(
+          `/api/my-cases?${params.toString()}`,
+        );
+        const casesData = (response.data?.cases || []).map(
+          (caseItem: CaseResponse) => ({
+            ...caseItem,
+            userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
+            showOwner: user?.role === "LAWYER", // Show owner for lawyers in My Cases too
+            onEdit: handleEdit,
+          }),
+        );
         setCases(casesData);
-        setTotalCases(response.data?.pagination?.total || response.data?.cases?.length || 0);
+        setTotalCases(
+          response.data?.pagination?.total || response.data?.cases?.length || 0,
+        );
       } catch (error) {
         if (error instanceof ApiError) {
           setError(`Failed to load cases: ${error.message}`);
         } else {
-          setError('Failed to load cases');
+          setError("Failed to load cases");
         }
       } finally {
         setLoading(false);
@@ -49,20 +63,30 @@ function MyCasesContent() {
     };
 
     loadCases();
-  }, [category, status]);
+  }, [category, status, user, router, sortBy, handleEdit]);
 
   return (
     <div className="space-y-6 bg-white p-6">
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          {user?.role === 'CLIENT' && (
+          {user?.role === "CLIENT" && (
             <Link
               href="/create-case"
               className="bg-brand text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors inline-flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
               Create New Case
             </Link>
@@ -88,15 +112,16 @@ function MyCasesContent() {
         loading={loading}
         error={error}
         onRetry={() => window.location.reload()}
+        onEdit={handleEdit}
         emptyStateConfig={{
           title: "No Cases Found",
-          description: 
-            category !== "all" || status !== "all" 
+          description:
+            category !== "all" || status !== "all"
               ? "No cases match your current filters."
-              : user?.role === 'CLIENT' 
+              : user?.role === "CLIENT"
                 ? "You don't have any cases yet. Create your first case to get started."
                 : "No cases have been assigned to you yet.",
-          showCreateButton: user?.role === 'CLIENT',
+          showCreateButton: user?.role === "CLIENT",
           createButtonText: "Create Your First Case",
           createButtonHref: "/create-case",
         }}

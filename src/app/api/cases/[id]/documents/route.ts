@@ -221,6 +221,7 @@ export async function POST(
     try {
       formData = await request.formData();
     } catch (error) {
+      console.log(error);
       return ResponseHandler.badRequest('Invalid form data - must be multipart/form-data');
     }
     

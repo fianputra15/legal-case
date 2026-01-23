@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
 
-  const protectedPaths = [ "/", "/my-cases", "/messages"]; // protect these routes
+  const protectedPaths = [ "/", "/case", "/messages"]; // protect these routes
   const pathname = req.nextUrl.pathname;
 
   if (protectedPaths.some(path => pathname.startsWith(path))) {
@@ -26,5 +26,5 @@ export function middleware(req: NextRequest) {
 
 // Specify matcher
 export const config = {
-  matcher: [ "/", "/my-cases/:path*", "/messages/:path*"],
+  matcher: [ "/", "/case/:path*", "/messages"],
 };

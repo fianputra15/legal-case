@@ -225,7 +225,7 @@ export class CaseService {
   /**
    * Grant lawyer access to a case
    */
-async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: boolean; message: string }> {
+async grantLawyerAccess(caseId: string, lawyerId: string, reviewerId: string): Promise<{ success: boolean; message: string }> {
     // Validate lawyer exists and has LAWYER role
     const lawyer = await this.userRepository.findById(lawyerId);
     if (!lawyer) {
@@ -244,6 +244,11 @@ async grantLawyerAccess(caseId: string, lawyerId: string): Promise<{ success: bo
     const hasAccess = await this.caseRepository.hasAccess(caseId, lawyerId);
     if (hasAccess) {
       return { success: false, message: 'Lawyer already has access to this case' };
+    }
+
+    const approved = await this.caseRepository.approveAccessRequest(caseId, lawyerId, 'approve', reviewerId);
+    if (!approved) {
+      return { success: false, message: 'Failed to approve access request' };
     }
 
     // Grant access

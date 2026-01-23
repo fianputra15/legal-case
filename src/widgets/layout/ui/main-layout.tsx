@@ -7,9 +7,11 @@ import Header from "./header";
 interface MainLayoutProps {
   children: ReactNode;
   sidebarChildren?: ReactNode;
-  headerTitle?: string;
+  headerTitle?: ReactNode;
   headerActions?: ReactNode;
   showFooter?: boolean;
+  showSearchBar?: boolean;
+  showProfile?: boolean;
 }
 
 export default function MainLayout({
@@ -18,6 +20,8 @@ export default function MainLayout({
   headerTitle,
   headerActions,
   showFooter = false,
+  showSearchBar = true,
+  showProfile = true,
 }: MainLayoutProps) {
   return (
     <div
@@ -37,7 +41,7 @@ export default function MainLayout({
 
       {/* Main Content */}
       <main className="p-2 overflow-auto rounded-l" style={{ gridArea: "main-content" }}>
-        <Header title={headerTitle} actions={headerActions} />
+        <Header title={headerTitle} actions={headerActions} showSearchBar={showSearchBar} showProfile={showProfile} />
 
         <div className="w-full mx-auto">{children}</div>
       </main>

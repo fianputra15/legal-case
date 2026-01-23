@@ -3,7 +3,7 @@
 import { HTMLAttributes, ReactNode } from 'react';
 import Link, { LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/shared/lib';
+import { cn, useAuth } from '@/shared/lib';
 import BrowseIcon from '../../../../public/icons/page-text-search.svg'
 import FolderPaperIcon from '../../../../public/icons/folder-paper.svg'
 import MessagesIcon from '../../../../public/icons/bubble.svg'
@@ -50,9 +50,10 @@ function NavItem({ href, icon, label, badge }: NavItemProps) {
 }
 
 export default function Sidebar({ children }: SidebarProps) {
+  const { user } = useAuth()
   return (
     <aside className="bg-transparent border-active flex flex-col h-full">
-      <div className="p-4">
+      <div className="px-8 py-4">
        <Image src={SibylIcon} alt="Legal Case Management" width={47} height={23} />
       </div>
       
@@ -64,14 +65,16 @@ export default function Sidebar({ children }: SidebarProps) {
           }
           label="Browse Cases"
         />
-        
-        <NavItem
-          href="/my-cases"
-          icon={
+
+        {
+          user?.role === 'LAWYER' && (
+            <NavItem
+              href="/my-cases"
+              icon={
            FolderPaperIcon
           }
           label="My Cases"
-        />
+        />)}
         
         <NavItem
           href="/messages"

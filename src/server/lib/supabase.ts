@@ -31,7 +31,6 @@ export class SupabaseStorage {
   static generateFilePath(caseId: string, originalName: string): string {
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 15);
-    const extension = originalName.split('.').pop() || '';
     const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
     
     return `cases/${caseId}/documents/${timestamp}_${randomSuffix}_${sanitizedName}`;

@@ -1,5 +1,9 @@
+'use client';
+import { withAuthProtection } from "@/shared/HOC/withAuth";
 import { MessagesPage } from "@/views/messages";
 
-export default function Messages() {
+function Messages() {
   return <MessagesPage />;
 }
+
+export default withAuthProtection(Messages);

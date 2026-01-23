@@ -36,6 +36,7 @@ export interface CaseCardProps {
   requestedAt?: string | null;
   onRequestAccess?: (caseId: string) => void;
   onWithdrawRequest?: (caseId: string) => void;
+  onEdit?: (caseId: string) => void;
 }
 
 export const CaseCard: React.FC<CaseCardProps> = ({
@@ -45,13 +46,13 @@ export const CaseCard: React.FC<CaseCardProps> = ({
   category,
   createdAt,
   attachments,
-  owner,
   userRole,
   hasAccess = false,
   hasPendingRequest = false,
   requestedAt = null,
   onRequestAccess,
   onWithdrawRequest,
+  onEdit,
 }) => {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { showModal } = useModal();
@@ -106,8 +107,9 @@ export const CaseCard: React.FC<CaseCardProps> = ({
         <div className="flex items-center gap-4 text-sm text-sub600">
           <div className="flex items-center gap-1">
             <Image src={UserIcon} alt="Owner" className="w-4 h-4" />
+            {/* This is still hardcoded */}
             <span>
-              {owner?.firstName} {owner?.lastName}
+              Client: M, 40 
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -174,9 +176,15 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             userRole === "CLIENT" ||
             (userRole === "LAWYER" && hasAccess)) && (
             <>
-              <button className="px-3 py-1.5 text-xs border border-gray-300 text-sub600 rounded hover:bg-gray-50 transition-colors">
-                Documents
-              </button>
+              {/* Edit button only for CLIENT role */}
+              {userRole === "CLIENT" && onEdit && (
+                <button 
+                  onClick={() => onEdit(id)}
+                  className="px-3 py-1.5 text-xs border border-gray-300 text-sub600 rounded hover:bg-gray-50 transition-colors"
+                >
+                  Edit
+                </button>
+              )}
               <Link
                 href={`/case/${id}`}
                 className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors"

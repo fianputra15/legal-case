@@ -1,6 +1,11 @@
+'use client';
+
+import { withAuthProtection } from '@/shared/HOC/withAuth';
 import { CaseDetailPage } from '@/views/case-detail';
 
 
-export default function Page() {
+function DetailCase() {
   return <CaseDetailPage  />;
 }
+
+export default withAuthProtection(DetailCase);

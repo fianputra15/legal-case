@@ -312,24 +312,3 @@ function sanitizeFilename(filename: string): string {
     "document"
   );
 }
-
-/**
- * Escape filename for Content-Disposition header (RFC 5987)
- * Handles international characters properly
- */
-function escapeFilenameRFC5987(filename: string): string {
-  // First sanitize the filename
-  const sanitized = sanitizeFilename(filename);
-
-  // Check if filename contains non-ASCII characters
-  const hasNonASCII = /[^\\x00-\\x7F]/.test(sanitized);
-
-  if (hasNonASCII) {
-    // Use RFC 5987 encoding for international filenames
-    const encoded = encodeURIComponent(sanitized);
-    return `filename*=UTF-8''${encoded}`;
-  } else {
-    // Use simple quoted filename for ASCII
-    return `filename=\"${sanitized}\"`;
-  }
-}

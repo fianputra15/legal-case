@@ -120,6 +120,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     } catch (error) {
+      console.log(error);
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     
@@ -182,6 +183,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     } catch (error) {
+      console.log(error);
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     
@@ -259,6 +261,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     } catch (error) {
+      console.log(error);
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     

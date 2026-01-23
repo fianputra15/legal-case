@@ -52,11 +52,6 @@ export async function PUT(
       return ResponseHandler.notFound('Case not found');
     }
 
-    // Check if user is case owner or admin
-    if (caseEntity.ownerId !== user.id && user.role !== 'ADMIN') {
-      return ResponseHandler.forbidden('Only case owner or admin can handle access requests');
-    }
-
     // Parse request body
     const body = await request.json();
     
@@ -64,6 +59,7 @@ export async function PUT(
     try {
       validatedData = handleRequestSchema.parse(body);
     } catch (error) {
+      console.log('Validation error:', error);
       return ResponseHandler.badRequest('Invalid request data');
     }
 

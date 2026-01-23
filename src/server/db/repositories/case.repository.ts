@@ -179,13 +179,13 @@ export class CaseRepository {
     try {
       const updateData: {
         title?: string;
-        status?: CaseStatus;
         description?: string;
+        category?: CaseCategory;
       } = {};
       
       if (data.title !== undefined) updateData.title = data.title;
-      if (data.status !== undefined) updateData.status = data.status as CaseStatus;
       if (data.description !== undefined) updateData.description = data.description;
+      if (data.category !== undefined) updateData.category = data.category as CaseCategory;
       
       // Only proceed if there are fields to update
       if (Object.keys(updateData).length === 0) {
@@ -463,6 +463,37 @@ export class CaseRepository {
       return true;
     } catch (error) {
       console.error('Error removing access request:', error);
+      return false;
+    }
+  }
+
+
+  /**
+   * Approve access request (after approval/rejection)
+   */
+  async approveAccessRequest(
+    caseId: string, 
+    lawyerId: string, 
+    action: 'approve' | 'reject',
+    reviewerId: string
+  ): Promise<boolean> {
+    try {
+      await prisma.caseAccessRequest.updateMany({
+        where: {
+          caseId,
+          lawyerId,
+          status: 'PENDING',
+        },
+        data: {
+          status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+          reviewedAt: new Date(),
+          reviewedBy: reviewerId,
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error approving access request:', error);
       return false;
     }
   }

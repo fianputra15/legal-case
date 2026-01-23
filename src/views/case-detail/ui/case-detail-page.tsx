@@ -3,10 +3,25 @@ import { MainLayout } from "@/widgets/layout";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
-// import UserIcon from "../../../../public/icons/people.svg";
-import ClipIcon from "../../../../public/icons/clip.svg";
+import FileIcon from "../../../../public/icons/file-text.svg";
+import ArrowRight from "../../../../public/icons/arrow-right.svg";
+import BrowseIcon from "../../../../public/icons/page-text-search.svg";
+import SquareArrowIcon from "../../../../public/icons/square-arrow.svg";
+import { Button } from "@/shared/ui";
+import { DocumentManager } from "@/widgets/document-manager";
+
+interface CaseAccessRequest {
+  id: string;
+  lawyer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    specialization: string;
+  };
+  status: string;
+  requestedAt: string;
+}
 
 interface Case {
   id: string;
@@ -38,32 +53,20 @@ interface KeyEvent {
   }[];
 }
 
-interface Lawyer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  specialization: string;
-  experience: number;
-  rating: number;
-  hourlyRate: number;
-  profileImage?: string;
-  hasRequestedAccess: boolean;
-}
-
 export function CaseDetailPage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const caseId = params.id as string;
-  const [case_, setCase] = useState<Case | null>(null);
+  const [cases, setCases] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("details");
-  const [lawyers, setLawyers] = useState<Lawyer[]>([]);
-  const [loadingLawyers, setLoadingLawyers] = useState(false);
-  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<CaseAccessRequest[]>(
+    [],
+  );
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [documentCount, setDocumentCount] = useState(0);
 
   // Mock data for demonstration - in real app this would come from API
   const mockParties: Party[] = [
@@ -91,42 +94,6 @@ export function CaseDetailPage() {
     },
   ];
 
-  const mockLawyers: Lawyer[] = [
-    {
-      id: "1",
-      firstName: "Sarah",
-      lastName: "Johnson",
-      email: "sarah@lawfirm.com",
-      specialization: "Employment Law",
-      experience: 8,
-      rating: 4.8,
-      hourlyRate: 350,
-      hasRequestedAccess: false,
-    },
-    {
-      id: "2",
-      firstName: "Michael",
-      lastName: "Wong",
-      email: "michael@legalpartners.com",
-      specialization: "Employment & Labor Law",
-      experience: 12,
-      rating: 4.9,
-      hourlyRate: 450,
-      hasRequestedAccess: true,
-    },
-    {
-      id: "3",
-      firstName: "Linda",
-      lastName: "Tan",
-      email: "linda@advocategroup.com",
-      specialization: "Contract & Employment Law",
-      experience: 6,
-      rating: 4.7,
-      hourlyRate: 300,
-      hasRequestedAccess: false,
-    },
-  ];
-
   useEffect(() => {
     const fetchCase = async () => {
       try {
@@ -145,7 +112,7 @@ export function CaseDetailPage() {
         const data = await response.json();
 
         if (data.success) {
-          setCase(data.data);
+          setCases(data.data);
         } else {
           throw new Error(data.message || "Failed to fetch case");
         }
@@ -162,55 +129,17 @@ export function CaseDetailPage() {
     }
   }, [caseId]);
 
-  useEffect(() => {
-    // Load available lawyers when case is loaded
-    const fetchLawyers = async () => {
-      if (!case_ || activeTab !== "engagement") return;
-
-      try {
-        setLoadingLawyers(true);
-        const response = await fetch("/api/lawyers/available", {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setLawyers(data.data);
-          } else {
-            console.error("Failed to fetch lawyers:", data.message);
-            // Fallback to mock data
-            setLawyers(mockLawyers);
-          }
-        } else {
-          console.error("Failed to fetch lawyers");
-          // Fallback to mock data
-          setLawyers(mockLawyers);
-        }
-      } catch (error) {
-        console.error("Error fetching lawyers:", error);
-        // Fallback to mock data
-        setLawyers(mockLawyers);
-      } finally {
-        setLoadingLawyers(false);
-      }
-    };
-
-    fetchLawyers();
-  }, [case_, activeTab]);
-
   // Fetch pending access requests
   useEffect(() => {
     const fetchPendingRequests = async () => {
-      if (!case_ || activeTab !== "engagement" || user?.role !== "CLIENT")
+      if (!cases || activeTab !== "engagement" || user?.role !== "CLIENT")
         return;
 
       try {
         setLoadingRequests(true);
-        const response = await fetch(`/api/cases/${case_.id}/request-access`, {
+        const response = await fetch(`/api/cases/${cases.id}/request-access`, {
           credentials: "include",
         });
-  
 
         if (response.ok) {
           const data = await response.json();
@@ -228,24 +157,13 @@ export function CaseDetailPage() {
     };
 
     fetchPendingRequests();
-  }, [case_, activeTab, user]);
+  }, [cases, activeTab, user]);
 
   const getCategoryLabel = (category: string) => {
     return category
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "OPEN":
-        return "text-success";
-      case "CLOSED":
-        return "text-gray-600";
-      default:
-        return "text-gray-600";
-    }
   };
 
   const getStatusLabel = (status: string) => {
@@ -267,46 +185,11 @@ export function CaseDetailPage() {
     });
   };
 
-  const handleRequestAccess = async (lawyerId: string) => {
-    if (!case_) return;
-
-    try {
-      const response = await fetch(`/api/cases/${case_.id}/access`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ lawyerId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Update the lawyer's hasRequestedAccess status
-        setLawyers((prev) =>
-          prev.map((lawyer) =>
-            lawyer.id === lawyerId
-              ? { ...lawyer, hasRequestedAccess: true }
-              : lawyer,
-          ),
-        );
-
-        alert("Access requested successfully!");
-      } else {
-        alert(data.message || "Failed to request access");
-      }
-    } catch (error) {
-      console.error("Error requesting access:", error);
-      alert("Failed to request access");
-    }
-  };
-
   const handleApproveRequest = async (requestId: string, lawyerId: string) => {
-    if (!case_) return;
+    if (!cases) return;
 
     try {
-      const response = await fetch(`/api/cases/${case_.id}/access`, {
+      const response = await fetch(`/api/cases/${cases.id}/access`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -333,11 +216,11 @@ export function CaseDetailPage() {
   };
 
   const handleRejectRequest = async (requestId: string) => {
-    if (!case_) return;
+    if (!cases) return;
 
     try {
       const response = await fetch(
-        `/api/cases/${case_.id}/requests/${requestId}`,
+        `/api/cases/${cases.id}/requests/${requestId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -361,9 +244,18 @@ export function CaseDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <MainLayout headerTitle="Case Details" showFooter={false}>
+  const handleDocumentCountChange = (count: number) => {
+    setDocumentCount(count);
+  };
+
+  if (loading) 
+    (
+      <MainLayout
+        headerTitle="Case Details"
+        showFooter={false}
+        showProfile={false}
+        showSearchBar={false}
+      >
         <div className="space-y-6 bg-white p-6">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded mb-4 w-1/2"></div>
@@ -373,14 +265,18 @@ export function CaseDetailPage() {
         </div>
       </MainLayout>
     );
-  }
 
-  if (error || !case_) {
+
+  if (error || !cases) {
     return (
-      <MainLayout headerTitle="Case Details" showFooter={false}>
+      <MainLayout
+        headerTitle="Case Details"
+        showFooter={false}
+        showProfile={false}
+        showSearchBar={false}
+      >
         <div className="space-y-6 bg-white p-6">
           <div className="text-center py-12">
-            <div className="text-error text-lg mb-2">⚠️</div>
             <p className="text-error mb-4">{error || "Case not found"}</p>
             <button
               onClick={() => router.push("/my-cases")}
@@ -395,61 +291,75 @@ export function CaseDetailPage() {
   }
 
   return (
-    <MainLayout headerTitle="Case Details" showFooter={false}>
+    <MainLayout
+      headerTitle={
+        <div className="flex justify-between">
+          <div className="flex items-center gap-2 text-sub600 text-sm font-medium">
+            <Image src={BrowseIcon} width={20} height={20} alt="arrow right" />{" "}
+            Browse Case{" "}
+            <Image
+              className="mx-2"
+              src={ArrowRight}
+              width={6}
+              height={6}
+              alt="arrow right"
+            />{" "}
+            {cases.title}
+          </div>
+          <button className="ml-auto bg-brand text-white p-1.5 rounded-lg text-sm hover:bg-brand-orange-600 transition-colors">
+            Send Loa
+          </button>
+        </div>
+      }
+      showSearchBar={false}
+      showProfile={false}
+      showFooter={false}
+    >
       <div className="space-y-6 bg-white p-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-1 text-sm text-sub600 mb-4">
-          <Link href="/my-cases" className="hover:text-brand">
-            My Cases
-          </Link>
-          <span className="text-gray-400">›</span>
-          <span className="text-strong900 truncate max-w-xs">
-            {case_.title}
-          </span>
-        </nav>
-
         {/* Header Section */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span
-                className={`inline-flex items-center gap-1 text-sm font-medium ${getStatusColor(case_.status)}`}
-              >
+              <div className="text-success text-xs font-medium bg-weak60 px-2 py-1 flex items-center gap-1 rounded-md mr-4">
                 <div className="w-2 h-2 rounded-full bg-current"></div>
-                {getStatusLabel(case_.status)}
-              </span>
+                {getStatusLabel(cases.status)}
+              </div>
             </div>
 
             <h1 className="text-2xl font-bold text-strong900 mb-2">
-              {case_.title}
+              {cases.title}
             </h1>
 
-            <div className="flex items-center gap-4 text-sm text-sub600">
-              <span>{getCategoryLabel(case_.category)}</span>
-              <span>•</span>
-              <span>Created on {formatDate(case_.createdAt)}</span>
+            <div className="flex items-center gap-2 text-sm text-sub600">
+              <span className="text-xs font-medium bg-white px-2 py-1 flex items-center gap-1 rounded-full border-light border">
+                {getCategoryLabel(cases.category)}
+              </span>
+              <span className="text-lg">•</span>
+              <span className="text-xs">
+                Created on {formatDate(cases.createdAt)}
+              </span>
             </div>
           </div>
-
-          <button className="bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-orange-600 transition-colors">
-            Send LOI
-          </button>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
-          <nav className="flex space-x-8">
-            {["details", "engagement", "documents"].map((tab) => (
+          <nav className="flex space-x-4">
+            {[
+              { key: "details", label: "Details" },
+              { key: "engagement", label: "Engagement" },
+              { key: "documents", label: `Documents${documentCount > 0 ? ` (${documentCount})` : ''}` },
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab
-                    ? "border-brand text-brand"
+                  activeTab === tab.key
+                    ? "border-brand text-strong900"
                     : "border-transparent text-sub600 hover:text-strong900 hover:border-gray-300"
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab.label}
               </button>
             ))}
           </nav>
@@ -460,25 +370,22 @@ export function CaseDetailPage() {
           <div className="space-y-8">
             {/* Case Summary */}
             <div>
-              <h2 className="text-lg font-semibold text-strong900 mb-4">
+              <h2 className="text-md font-semibold text-strong900 mb-4">
                 Case Summary
               </h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-sub600 leading-relaxed">
-                  {case_.description ||
-                    "No description provided for this case."}
-                </p>
-              </div>
+              <p className="text-sm text-sub600 leading-relaxed">
+                {cases.description || "No description provided for this case."}
+              </p>
             </div>
 
             {/* Parties Involved */}
             <div>
-              <h2 className="text-lg font-semibold text-strong900 mb-4">
+              <h2 className="text-md font-semibold text-strong900 mb-4">
                 Parties Involved
               </h2>
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 <table className="min-w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-weak50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-sub600 uppercase tracking-wider">
                         Name
@@ -494,7 +401,7 @@ export function CaseDetailPage() {
                         <td className="px-4 py-3 text-sm text-strong900">
                           {party.name}
                         </td>
-                        <td className="px-4 py-3 text-sm text-sub600">
+                        <td className="px-4 py-3 text-sm text-strong900">
                           {party.role}
                         </td>
                       </tr>
@@ -506,67 +413,84 @@ export function CaseDetailPage() {
 
             {/* Key Events */}
             <div>
-              <h2 className="text-lg font-semibold text-strong900 mb-4">
+              <h2 className="text-md font-semibold text-strong900 mb-4">
                 Key Events
               </h2>
-              <div className="space-y-4">
+              <ol className="">
                 {mockKeyEvents.map((event, index) => (
-                  <div
-                    key={event.id}
-                    className="border border-gray-200 rounded-lg p-4"
+                  <li
+                    key={index}
+                    className={`${index < mockKeyEvents.length - 1 ? "border-s border-light" : ""} pb-6`}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="shrink-0">
-                        <div className="w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
+                    <div className="flex-start flex items-center">
+                      <div className="-ms-3.5 me-3 h-7 w-7 rounded-full bg-biege flex items-center justify-center text-xs border-white border-4">
+                        {index + 1}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-strong900 mb-1">
-                          {event.date}
-                        </div>
-                        <p className="text-sm text-sub600 mb-3">
-                          {event.description}
-                        </p>
-
-                        {event.documents && event.documents.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {event.documents.map((doc, docIndex) => (
-                              <a
-                                key={docIndex}
-                                href={doc.url}
-                                className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-sub600 text-xs rounded-full hover:bg-gray-200 transition-colors"
-                              >
-                                <Image
-                                  src={ClipIcon}
-                                  alt="Attachment"
-                                  className="w-3 h-3"
-                                />
-                                {doc.name}
-                              </a>
-                            ))}
+                      <p className="text-sm text-strong900">{event.date}</p>
+                    </div>
+                    <div className="border-light border ml-5 p-2 rounded-md space-y-2 mt-2 ">
+                      <p className="text-sub600">{event.description}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        {event.documents?.map((doc, docIndex) => (
+                          <div
+                            key={docIndex}
+                            className="border-light px-2 py-1.5 text-sub600 flex items-center gap-1 rounded-md border"
+                          >
+                            <Image
+                              src={FileIcon}
+                              alt="Attachment"
+                              className="w-4 h-4"
+                            />
+                            <span className="pr-2 border-r border-light">
+                              {doc.name}
+                            </span>
+                            <button
+                              onClick={() => window.open("https://google.com")}
+                              className="text-xs text-brand underline cursor-pointer"
+                            >
+                              <Image src={SquareArrowIcon} alt="Download" />
+                            </button>
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
             </div>
           </div>
         )}
 
         {activeTab === "engagement" && (
           <div className="space-y-6">
+            {loadingRequests && (
+              <div className="bg-white rounded-lg p-6 animate-pulse">
+                <div className="h-16 bg-gray-200 rounded mb-4"></div>
+                <div className="h-16 bg-gray-200 rounded mb-4"></div>
+                <div className="h-16 bg-gray-200 rounded mb-4"></div>
+                <div className="h-16 bg-gray-200 rounded mb-4"></div>
+              </div>
+            )}
+            {!pendingRequests.length && !loadingRequests && (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium text-strong900 mb-2">
+                  No Pending Requests
+                </h3>
+                <p className="text-sub600">
+                  There are currently no pending access requests for this case.
+                </p>
+              </div>
+            )}
             {/* Pending Access Requests - Only for case owners */}
             {user?.role === "CLIENT" && pendingRequests.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-strong900 mb-2">
+                <span className="text-lg font-semibold text-sub600 mb-2">
                   Pending Access Requests
-                </h2>
+                </span>
                 <p className="text-sm text-sub600 mb-4">
                   Review and approve access requests from lawyers.
                 </p>
+
                 <div className="space-y-3 mb-8">
                   {pendingRequests.map((request) => (
                     <div
@@ -592,23 +516,24 @@ export function CaseDetailPage() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button
+                          <Button
+                            variant="outline"
+                            onClick={() => handleRejectRequest(request.id)}
+                            className="px-3 py-1.5 bg-transparent text-error rounded text-sm hover:font-semibold cursor-pointer transition-colors font-medium"
+                          >
+                            Reject
+                          </Button>
+                          <Button
                             onClick={() =>
                               handleApproveRequest(
                                 request.id,
                                 request.lawyer.id,
                               )
                             }
-                            className="px-3 py-1.5 bg-success text-white rounded text-sm hover:bg-green-600 transition-colors"
+                            className="px-3 py-1.5 bg-success text-white rounded text-sm hover:bg-green-600 transition-colors cursor-pointer"
                           >
                             Approve
-                          </button>
-                          <button
-                            onClick={() => handleRejectRequest(request.id)}
-                            className="px-3 py-1.5 bg-error text-white rounded text-sm hover:bg-red-600 transition-colors"
-                          >
-                            Reject
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -616,128 +541,14 @@ export function CaseDetailPage() {
                 </div>
               </div>
             )}
-
-            <div>
-              <h2 className="text-lg font-semibold text-strong900 mb-2">
-                Available Lawyers
-              </h2>
-              <p className="text-sm text-sub600 mb-6">
-                Review and request access from qualified lawyers who can assist
-                with your case.
-              </p>
-            </div>
-
-            {loadingLawyers ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="border border-gray-200 rounded-lg p-6 animate-pulse"
-                  >
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-3 w-2/3"></div>
-                    <div className="h-12 bg-gray-200 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {lawyers.map((lawyer) => (
-                  <div
-                    key={lawyer.id}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {lawyer.firstName[0]}
-                            {lawyer.lastName[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-strong900">
-                            {lawyer.firstName} {lawyer.lastName}
-                          </h3>
-                          <p className="text-sm text-sub600">
-                            {lawyer.specialization}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="flex items-center gap-1">
-                          <span className="text-yellow-500">★</span>
-                          <span className="text-sm font-medium">
-                            {lawyer.rating}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-sub600">Experience:</span>
-                        <span className="text-strong900">
-                          {lawyer.experience} years
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-sub600">Hourly Rate:</span>
-                        <span className="text-strong900">
-                          ${lawyer.hourlyRate}/hr
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      {lawyer.hasRequestedAccess ? (
-                        <button
-                          disabled
-                          className="flex-1 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm font-medium cursor-not-allowed"
-                        >
-                          Access Requested
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleRequestAccess(lawyer.id)}
-                          className="flex-1 px-4 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors"
-                        >
-                          Request Access
-                        </button>
-                      )}
-                      <button className="px-4 py-2 border border-gray-300 text-sub600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                        View Profile
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
         {activeTab === "documents" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold text-strong900 mb-2">
-                Case Documents
-              </h2>
-              <p className="text-sm text-sub600 mb-6">
-                All documents related to this case are listed below.
-              </p>
-            </div>
-
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-4xl mb-4">📄</div>
-              <h3 className="text-lg font-medium text-strong900 mb-2">
-                Documents Coming Soon
-              </h3>
-              <p className="text-sub600">
-                Document management functionality will be available soon.
-              </p>
-            </div>
-          </div>
+          <DocumentManager 
+            caseId={caseId}
+            onDocumentCountChange={handleDocumentCountChange}
+          />
         )}
       </div>
     </MainLayout>

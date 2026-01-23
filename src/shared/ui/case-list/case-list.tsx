@@ -17,6 +17,7 @@ interface CaseListProps {
   onRetry?: () => void;
   onRequestAccess?: (caseId: string) => void;
   onWithdrawRequest?: (caseId: string) => void;
+  onEdit?: (caseId: string) => void;
 }
 
 export const CaseList: React.FC<CaseListProps> = ({
@@ -27,6 +28,7 @@ export const CaseList: React.FC<CaseListProps> = ({
   onRetry,
   onRequestAccess,
   onWithdrawRequest,
+  onEdit,
 }) => {
   // Loading state
   if (loading) {
@@ -99,6 +101,7 @@ export const CaseList: React.FC<CaseListProps> = ({
           {...caseItem} 
           onRequestAccess={onRequestAccess}
           onWithdrawRequest={onWithdrawRequest}
+          onEdit={onEdit}
         />
       ))}
     </div>
