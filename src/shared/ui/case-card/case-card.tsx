@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import UserIcon from "../../../../public/icons/people.svg";
 import ClipIcon from "../../../../public/icons/clip.svg";
 import Clock from "../../../../public/icons/clock.svg";
-import Warning from "../../../../public/icons/warning.svg";
 import ApprovedIcon from "../../../../public/icons/circle-marked.svg";
 import { formatDate, getCategoryLabel } from "@/shared/lib/case-utils";
-import { useModal } from "@/shared/providers/modal-provider";
+import { RequestAccessButton, WithdrawRequestButton } from "@/features/case-request-access";
 import Typography from "../typography";
 
 
@@ -38,6 +37,10 @@ export interface CaseCardProps {
   requestedAt?: string | null;
   onRequestAccess?: (caseId: string) => void;
   onWithdrawRequest?: (caseId: string) => void;
+  onRequestSuccess?: (caseId: string) => void;
+  onRequestError?: (message: string) => void;
+  onWithdrawSuccess?: (caseId: string) => void;
+  onWithdrawError?: (message: string) => void;
   onEdit?: (caseId: string) => void;
 }
 
@@ -53,32 +56,13 @@ export const CaseCard: React.FC<CaseCardProps> = ({
   grantedAt = null,
   hasPendingRequest = false,
   requestedAt = null,
-  onRequestAccess,
-  onWithdrawRequest,
+  onRequestSuccess,
+  onRequestError,
+  onWithdrawSuccess,
+  onWithdrawError,
   onEdit,
 }) => {
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const { showModal } = useModal();
 
-  const handleWithdrawRequest = () => {
-    showModal({
-      title: <div className="flex items-center gap-3 font-medium text-sm"><Image src={Warning} width={19} height={19} alt="warning" /> Withdraw Access Request</div>,
-      description: `You’ll be removed from the client’s list of requesting lawyers. You can request access again later.`,
-      confirmText: "Withdraw",
-      cancelText: "Cancel",
-      variant: "destructive",
-      onConfirm: async () => {
-        if (onWithdrawRequest) {
-          setIsWithdrawing(true);
-          try {
-            await onWithdrawRequest(id);
-          } finally {
-            setIsWithdrawing(false);
-          }
-        }
-      },
-    });
-  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-lg transition-shadow">
@@ -164,29 +148,24 @@ export const CaseCard: React.FC<CaseCardProps> = ({
           {/* For lawyers browsing cases without access */}
           {userRole === "LAWYER" &&
             !hasAccess &&
-            !hasPendingRequest &&
-            onRequestAccess && (
-              <button
-                onClick={() => onRequestAccess(id)}
-                className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors cursor-pointer"
-              >
-                Request Access
-              </button>
+            !hasPendingRequest && (
+              <RequestAccessButton 
+                caseId={id}
+                onSuccess={onRequestSuccess}
+                onError={onRequestError}
+              />
             )}
 
           {/* For lawyers with pending requests */}
           {userRole === "LAWYER" && !hasAccess && hasPendingRequest && (
-            <button
-              onClick={handleWithdrawRequest}
-              disabled={isWithdrawing}
-              className={`text-xs font-medium p-2 rounded transition-colors cursor-pointer ${
-                isWithdrawing
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-red-100 text-red-700 hover:bg-red-200"
-              }`}
+            <WithdrawRequestButton
+              caseId={id}
+              onSuccess={onWithdrawSuccess}
+              onError={onWithdrawError}
+              className="text-xs font-medium p-2 rounded transition-colors cursor-pointer bg-red-100 text-red-700 hover:bg-red-200"
             >
-              {isWithdrawing ? "Withdrawing..." : "Withdraw Request"}
-            </button>
+              Withdraw Request
+            </WithdrawRequestButton>
           )}
 
           {/* For cases with access or owned cases */}

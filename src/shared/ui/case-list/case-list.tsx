@@ -25,6 +25,10 @@ interface CaseListProps {
   onRetry?: () => void;
   onRequestAccess?: (caseId: string) => void;
   onWithdrawRequest?: (caseId: string) => void;
+  onRequestSuccess?: (caseId: string) => void;
+  onRequestError?: (message: string) => void;
+  onWithdrawSuccess?: (caseId: string) => void;
+  onWithdrawError?: (message: string) => void;
   onEdit?: (caseId: string) => void;
   pagination?: PaginationProps;
 }
@@ -37,6 +41,10 @@ export const CaseList: React.FC<CaseListProps> = ({
   onRetry,
   onRequestAccess,
   onWithdrawRequest,
+  onRequestSuccess,
+  onRequestError,
+  onWithdrawSuccess,
+  onWithdrawError,
   onEdit,
   pagination,
 }) => {
@@ -146,6 +154,10 @@ export const CaseList: React.FC<CaseListProps> = ({
             {...caseItem} 
             onRequestAccess={onRequestAccess}
             onWithdrawRequest={onWithdrawRequest}
+            onRequestSuccess={onRequestSuccess}
+            onRequestError={onRequestError}
+            onWithdrawSuccess={onWithdrawSuccess}
+            onWithdrawError={onWithdrawError}
             onEdit={onEdit}
           />
         ))}

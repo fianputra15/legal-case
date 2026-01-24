@@ -64,14 +64,6 @@ export class CaseAccessUtils {
         }
       })
     );
-
-    console.log('🔍 CaseAccessUtils enhanced cases result:', enhancedCases.map(c => ({
-      id: c.id,
-      title: c.title,
-      hasAccess: c.hasAccess,
-      hasPendingRequest: c.hasPendingRequest
-    })));
-
     return enhancedCases;
   }
 

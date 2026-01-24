@@ -5,11 +5,13 @@ import { useAuth } from "@/shared/lib/auth";
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
 import { useRouter } from "next/navigation";
+import { useAccessRequest } from "@/features";
 
 
 
 export default function HomePage() {
   const { user } = useAuth();
+  const { handleRequestAccess } = useAccessRequest();
   const router = useRouter();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,27 +33,38 @@ export default function HomePage() {
     router.push(`/edit-case/${caseId}`);
   }, [router]);
 
-  const handleRequestAccess = async (caseId: string) => {
-    try {
-      await apiClient.post(`/api/cases/${caseId}/request-access`);
-      
-      // Update the case in local state to show pending request
-      setCases(prevCases => 
-        prevCases.map(c => 
-          c.id === caseId 
-            ? { ...c, hasPendingRequest: true, requestedAt: new Date().toISOString() }
-            : c
-        )
-      );
-      
-      alert('Access request submitted successfully!');
-    } catch (error) {
-      if (error instanceof ApiError) {
-        alert(`Failed to request access: ${error.message}`);
-      } else {
-        alert('Failed to request access');
-      }
-    }
+  const handleRequestSuccess = (caseId: string) => {
+    // Update the case in local state to show pending request
+    setCases(prevCases => 
+      prevCases.map(c => 
+        c.id === caseId 
+          ? { ...c, hasPendingRequest: true, requestedAt: new Date().toISOString() }
+          : c
+      )
+    );
+    
+    alert('Access request submitted successfully!');
+  };
+
+  const handleRequestError = (message: string) => {
+    alert(`Failed to request access: ${message}`);
+  };
+
+  const handleWithdrawSuccess = (caseId: string) => {
+    // Update the cases to remove pending request
+    setCases(prevCases =>
+      prevCases.map(caseItem =>
+        caseItem.id === caseId
+          ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
+          : caseItem
+      )
+    );
+    
+    alert('Access request withdrawn successfully!');
+  };
+
+  const handleWithdrawError = (message: string) => {
+    alert(`Failed to withdraw request: ${message}`);
   };
 
   useEffect(() => {
@@ -93,44 +106,17 @@ export default function HomePage() {
     };
 
     fetchCases();
-  }, [category, status, sortBy, currentPage, user, handleEdit, itemsPerPage]);
+  }, [category, status, sortBy, currentPage, user, handleEdit, itemsPerPage, handleRequestAccess]);
 
   // Reset to first page when filters change
   useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [category, status, sortBy]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const handleWithdrawRequest = async (caseId: string) => {
-    try {
-      await apiClient.delete(`/api/cases/${caseId}/request-access`);
-      
-      // Refresh the cases to update the UI
-      setCases(prevCases =>
-        prevCases.map(caseItem =>
-          caseItem.id === caseId
-            ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
-            : caseItem
-        )
-      );
-      
-      // Optionally, show a success message
-      alert('Access request withdrawn successfully!');
-    } catch (error) {
-      if (error instanceof ApiError) {
-        alert(`Failed to withdraw request: ${error.message}`);
-      } else {
-        alert('Failed to withdraw request');
-      }
-    }
-  };
-
 
   return (
     <MainLayout headerTitle="Browse Cases" showFooter={false}>
@@ -153,8 +139,10 @@ export default function HomePage() {
           loading={loading}
           error={error}
           onRetry={() => window.location.reload()}
-          onRequestAccess={handleRequestAccess}
-          onWithdrawRequest={handleWithdrawRequest}
+          onRequestSuccess={handleRequestSuccess}
+          onRequestError={handleRequestError}
+          onWithdrawSuccess={handleWithdrawSuccess}
+          onWithdrawError={handleWithdrawError}
           onEdit={handleEdit}
           emptyStateConfig={{
             title: "No Cases Found",

@@ -10,6 +10,7 @@ import BrowseIcon from "../../../../public/icons/page-text-search.svg";
 import SquareArrowIcon from "../../../../public/icons/square-arrow.svg";
 import { Button } from "@/shared/ui";
 import { DocumentManager } from "@/widgets/document-manager";
+import { PendingRequestCard } from "@/features/case-request-access";
 
 interface CaseAccessRequest {
   id: string;
@@ -67,6 +68,27 @@ export function CaseDetailPage() {
   );
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [documentCount, setDocumentCount] = useState(0);
+
+  // Callback functions for PendingRequestCard
+  const handleApprovedSuccess = (requestId: string) => {
+    // Remove from pending requests
+    setPendingRequests((prev) =>
+      prev.filter((req) => req.id !== requestId),
+    );
+    alert("Access approved successfully!");
+  };
+
+  const handleRejectedSuccess = (requestId: string) => {
+    // Remove from pending requests  
+    setPendingRequests((prev) =>
+      prev.filter((req) => req.id !== requestId),
+    );
+    alert("Access request rejected successfully!");
+  };
+
+  const handleRequestError = (message: string) => {
+    alert(`Error: ${message}`);
+  };
 
   // Mock data for demonstration - in real app this would come from API
   const mockParties: Party[] = [
@@ -183,65 +205,6 @@ export function CaseDetailPage() {
       month: "short",
       year: "numeric",
     });
-  };
-
-  const handleApproveRequest = async (requestId: string, lawyerId: string) => {
-    if (!cases) return;
-
-    try {
-      const response = await fetch(`/api/cases/${cases.id}/access`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ lawyerId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Remove from pending requests
-        setPendingRequests((prev) =>
-          prev.filter((req) => req.id !== requestId),
-        );
-        alert("Access approved successfully!");
-      } else {
-        alert(data.message || "Failed to approve access");
-      }
-    } catch (error) {
-      console.error("Error approving access:", error);
-      alert("Failed to approve access");
-    }
-  };
-
-  const handleRejectRequest = async (requestId: string) => {
-    if (!cases) return;
-
-    try {
-      const response = await fetch(
-        `/api/cases/${cases.id}/requests/${requestId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Remove from pending requests
-        setPendingRequests((prev) =>
-          prev.filter((req) => req.id !== requestId),
-        );
-        alert("Access request rejected");
-      } else {
-        alert(data.message || "Failed to reject access");
-      }
-    } catch (error) {
-      console.error("Error rejecting access:", error);
-      alert("Failed to reject access");
-    }
   };
 
   const handleDocumentCountChange = (count: number) => {
@@ -510,50 +473,14 @@ export function CaseDetailPage() {
 
                 <div className="space-y-3 mb-8">
                   {pendingRequests.map((request) => (
-                    <div
+                    <PendingRequestCard
                       key={request.id}
-                      className="border border-orange-200 bg-orange-50 rounded-lg p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">
-                              {request.lawyer.firstName[0]}
-                              {request.lawyer.lastName[0]}
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-strong900">
-                              {request.lawyer.firstName}{" "}
-                              {request.lawyer.lastName}
-                            </h3>
-                            <p className="text-sm text-sub600">
-                              {request.lawyer.specialization}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleRejectRequest(request.id)}
-                            className="px-3 py-1.5 bg-transparent text-error rounded text-sm hover:font-semibold cursor-pointer transition-colors font-medium"
-                          >
-                            Reject
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              handleApproveRequest(
-                                request.id,
-                                request.lawyer.id,
-                              )
-                            }
-                            className="px-3 py-1.5 bg-success text-white rounded text-sm hover:bg-green-600 transition-colors cursor-pointer"
-                          >
-                            Approve
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                      request={request}
+                      caseId={cases!.id}
+                      onApproved={handleApprovedSuccess}
+                      onRejected={handleRejectedSuccess}
+                      onError={handleRequestError}
+                    />
                   ))}
                 </div>
               </div>
