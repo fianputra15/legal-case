@@ -203,8 +203,7 @@ export async function GET(request: NextRequest) {
     // Enhance cases with access information for lawyers
     const enhancedCases = await CaseAccessUtils.enhanceCasesWithAccessInfo(
       result.data,
-      user.id,
-      user.role
+      user.id
     );
     return ResponseHandler.success({
       cases: enhancedCases,

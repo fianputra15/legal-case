@@ -758,9 +758,4 @@ const options: swaggerJSDoc.Options = {
 };
 
 // Debug logging to check if swagger spec is generated
-console.log('🔧 Generating Swagger spec...');
 export const swaggerSpec = swaggerJSDoc(options);
-console.log('✅ Swagger spec generated with', Object.keys(swaggerSpec.paths || {}).length, 'paths');
-if (Object.keys(swaggerSpec.paths || {}).length === 0) {
-  console.warn('⚠️ No API paths found in swagger spec. Check JSDoc comments in API routes.');
-}

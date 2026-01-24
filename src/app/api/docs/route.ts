@@ -6,14 +6,14 @@
  */
 
 import { swaggerSpec } from '@/server/config/swagger';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Generate Redoc HTML page with custom styling and configuration
  * @param spec - OpenAPI specification object (not used directly, served via /api/docs/spec)
  * @returns HTML string for Redoc documentation page
  */
-function generateRedocHTML(spec: any) {
+function generateRedocHTML() {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -245,7 +245,7 @@ function generateRedocHTML(spec: any) {
  * @param request - NextRequest object
  * @returns NextResponse with HTML content or error response
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.log('📄 Serving API docs page...');
     
@@ -253,10 +253,7 @@ export async function GET(request: NextRequest) {
     if (!swaggerSpec) {
       throw new Error('OpenAPI specification not found');
     }
-    
-    console.log('✅ Swagger spec available with', Object.keys(swaggerSpec.paths || {}).length, 'paths');
-    
-    const html = generateRedocHTML(swaggerSpec);
+    const html = generateRedocHTML();
     
     return new NextResponse(html, {
       status: 200,
