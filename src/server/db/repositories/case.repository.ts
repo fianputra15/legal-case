@@ -206,30 +206,6 @@ export class CaseRepository {
     }
   }
 
-  // /**
-  //  * Delete case
-  //  */
-  async delete(id: string): Promise<boolean> {
-    // TODO: Implement database deletion
-    return false;
-  }
-
-  // /**
-  //  * Find cases by status
-  //  */
-  // async findByStatus(status: string): Promise<CaseEntity[]> {
-  //   // TODO: Implement database query
-  //   return [];
-  // }
-
-  // /**
-  //  * Find cases assigned to lawyer
-  //  */
-  // async findByLawyerId(lawyerId: string): Promise<CaseEntity[]> {
-  //   // TODO: Implement database query
-  //   return [];
-  // }
-
   /**
    * Count cases by user
    */
@@ -296,6 +272,30 @@ export class CaseRepository {
     } catch (error) {
       console.error('Error checking case access:', error);
       return false;
+    }
+  }
+
+   /**
+   * Check if lawyer has access to a case
+   */
+  async grantedInfo(caseId: string, lawyerId: string): Promise<{ grantedAt: Date } | null> {
+    try {
+      console.log(`🔍 Checking grantedInfo for caseId: ${caseId}, lawyerId: ${lawyerId}`);
+        const access = await prisma.caseAccess.findFirst({
+          select:{
+            grantedAt: true
+          },
+        where: {
+          caseId,
+          lawyerId,
+        }
+      });
+      const result = access;
+      console.log(`🔍 hasAccess returning: ${result}`);
+      return result;
+    } catch (error) {
+      console.error('Error checking case access:', error);
+      return null;
     }
   }
 
@@ -533,5 +533,24 @@ export class CaseRepository {
       createdAt: case_.createdAt,
       updatedAt: case_.updatedAt,
     };
+  }
+
+   /**
+   * Check if lawyer has access to a case
+   */
+  async getDocumentCount(caseId: string): Promise<number | null> {
+    try {
+      const documentCount = await prisma.document.count({
+        where: {
+          caseId,
+        }
+      });
+      console.log(documentCount, 'document');
+      const result = documentCount
+      return result;
+    } catch (error) {
+      console.error('Error checking case access:', error);
+      return null;
+    }
   }
 }

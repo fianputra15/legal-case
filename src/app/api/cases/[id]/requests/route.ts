@@ -14,6 +14,75 @@ interface RouteParams {
 }
 
 /**
+ * @swagger
+ * /api/cases/{id}/requests:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: Get pending access requests for a case
+ *     description: |
+ *       Retrieve all pending access requests from lawyers for a specific case.
+ *       Only the case owner (CLIENT) can access this endpoint.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *     responses:
+ *       200:
+ *         description: Pending access requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "clreq123abc"
+ *                       lawyerId:
+ *                         type: string
+ *                         example: "cllaw456def"
+ *                       caseId:
+ *                         type: string
+ *                         example: "clx789def012"
+ *                       requestedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T10:30:00Z"
+ *                       lawyer:
+ *                         type: object
+ *                         properties:
+ *                           firstName:
+ *                             type: string
+ *                             example: "John"
+ *                           lastName:
+ *                             type: string
+ *                             example: "Smith"
+ *                           email:
+ *                             type: string
+ *                             example: "john.smith@law.com"
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
  * GET /api/cases/[id]/requests - Get pending access requests for a case
  * 
  * Authorization: User must own the case (CLIENT role only)

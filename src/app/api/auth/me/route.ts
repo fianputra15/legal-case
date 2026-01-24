@@ -5,6 +5,95 @@ import { UserRepository } from "@/server/db/repositories/user.repository";
 import { UserService } from "@/server/services";
 import { ResponseHandler } from "@/server/utils/response";
 
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Get current user information
+ *     description: |
+ *       Retrieve information about the currently authenticated user using session cookie.
+ *       Requires a valid JWT token stored in the "token" cookie.
+ *     security:
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *             examples:
+ *               client:
+ *                 summary: Client user response
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     user:
+ *                       id: "cmkpizd280000fssdv9ltu6v6"
+ *                       email: "client@example.com"
+ *                       firstName: "Jane"
+ *                       lastName: "Doe"
+ *                       role: "CLIENT"
+ *                       createdAt: "2024-01-15T10:30:00Z"
+ *                       updatedAt: "2024-01-16T14:20:00Z"
+ *               lawyer:
+ *                 summary: Lawyer user response
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     user:
+ *                       id: "cmklaw123456789"
+ *                       email: "lawyer@legal.com"
+ *                       firstName: "John"
+ *                       lastName: "Smith"
+ *                       role: "LAWYER"
+ *                       createdAt: "2024-01-10T08:15:00Z"
+ *                       updatedAt: "2024-01-15T16:45:00Z"
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             examples:
+ *               missing_token:
+ *                 summary: No authentication token provided
+ *                 value:
+ *                   error: "Unauthorized"
+ *               invalid_token:
+ *                 summary: Invalid or expired token
+ *                 value:
+ *                   error: "Invalid or expired token"
+ *       404:
+ *         description: User not found in database
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             example:
+ *               error: "User not found"
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+
 const userService = new UserService(new UserRepository());
 
 export async function GET() {

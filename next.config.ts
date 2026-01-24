@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   
   // Page extensions
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  reactStrictMode: false
 };
 
 export default nextConfig;

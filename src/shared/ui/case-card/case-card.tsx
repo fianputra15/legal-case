@@ -7,6 +7,7 @@ import UserIcon from "../../../../public/icons/people.svg";
 import ClipIcon from "../../../../public/icons/clip.svg";
 import Clock from "../../../../public/icons/clock.svg";
 import Warning from "../../../../public/icons/warning.svg";
+import ApprovedIcon from "../../../../public/icons/circle-marked.svg";
 import { formatDate, getCategoryLabel } from "@/shared/lib/case-utils";
 import { useModal } from "@/shared/providers/modal-provider";
 import Typography from "../typography";
@@ -22,7 +23,7 @@ export interface CaseCardProps {
   createdAt: string;
   updatedAt: string;
   ownerId: string;
-  attachments?: number;
+  documentCount?: number;
   owner?: {
     id: string;
     firstName: string;
@@ -32,6 +33,7 @@ export interface CaseCardProps {
   showOwner?: boolean;
   userRole?: "CLIENT" | "LAWYER";
   hasAccess?: boolean;
+  grantedAt?: string | null;
   hasPendingRequest?: boolean;
   requestedAt?: string | null;
   onRequestAccess?: (caseId: string) => void;
@@ -45,9 +47,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({
   description,
   category,
   createdAt,
-  attachments,
+  documentCount,
   userRole,
   hasAccess = false,
+  grantedAt = null,
   hasPendingRequest = false,
   requestedAt = null,
   onRequestAccess,
@@ -56,11 +59,6 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 }) => {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { showModal } = useModal();
-  const getAttachmentCount = (caseId: string) => {
-    // Generate consistent attachment count based on case ID
-    const hash = caseId.split("").reduce((a, b) => a + b.charCodeAt(0), 0);
-    return hash % 6; // 0-5 attachments
-  };
 
   const handleWithdrawRequest = () => {
     showModal({
@@ -114,13 +112,33 @@ export const CaseCard: React.FC<CaseCardProps> = ({
           </div>
           <div className="flex items-center gap-1">
             <Image src={ClipIcon} alt="Attachments" className="w-4 h-4" />
-            <span>{attachments || getAttachmentCount(id)} Attachments</span>
+            <span>{documentCount ?? 0} Attachments</span>
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between pt-4">
+         {hasAccess && (
+          <>
+            <div className="bg-lighter px-2 py-1 flex items-center gap-1 rounded-md mr-4">
+              <Image
+                src={ApprovedIcon}
+                width={16}
+                height={16}
+                alt="pending-approval"
+              />
+              <Typography variant="xs" weight="medium" className="text-success">
+                Approved
+              </Typography>
+            </div>
+            <div>
+              <Typography variant="xs" weight="normal" className="text-base">
+                Access Granted on {formatDate(grantedAt ?? "")}
+              </Typography>
+            </div>
+          </>
+        )}
         {hasPendingRequest && (
           <>
             <div className="bg-weak60 px-2 py-1 flex items-center gap-1 rounded-md mr-4">
@@ -150,7 +168,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             onRequestAccess && (
               <button
                 onClick={() => onRequestAccess(id)}
-                className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors"
+                className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors cursor-pointer"
               >
                 Request Access
               </button>
@@ -161,7 +179,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             <button
               onClick={handleWithdrawRequest}
               disabled={isWithdrawing}
-              className={`text-sm font-medium p-2 rounded transition-colors ${
+              className={`text-xs font-medium p-2 rounded transition-colors cursor-pointer ${
                 isWithdrawing
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-red-100 text-red-700 hover:bg-red-200"
@@ -187,7 +205,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
               )}
               <Link
                 href={`/case/${id}`}
-                className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-orange-600 transition-colors"
+                className="px-3 py-1.5 text-xs bg-white text-sub-600 white rounded hover:bg-light border-light border"
               >
                 {userRole === "LAWYER" ? "Open Case" : "View Details"}
               </Link>

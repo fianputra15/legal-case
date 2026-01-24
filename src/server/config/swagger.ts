@@ -41,22 +41,14 @@ const options: swaggerJSDoc.Options = {
         name: 'Documents',
         description: 'Document upload and management for legal cases'
       },
-      {
-        name: 'Messages',
-        description: 'Communication and messaging within cases'
-      },
-      {
-        name: 'Users',
-        description: 'User management and profile operations'
-      }
     ],
     components: {
       securitySchemes: {
         CookieAuth: {
           type: 'apiKey',
           in: 'cookie',
-          name: 'session-id',
-          description: 'HttpOnly session cookie set automatically after login'
+          name: 'token',
+          description: 'JWT token stored in HttpOnly cookie after login'
         }
       },
       schemas: {
@@ -65,7 +57,7 @@ const options: swaggerJSDoc.Options = {
           properties: {
             id: {
               type: 'string',
-              example: 'clx123abc456'
+              example: 'cmkpizd280000fssdv9ltu6v6'
             },
             email: {
               type: 'string',
@@ -84,9 +76,19 @@ const options: swaggerJSDoc.Options = {
               type: 'string',
               enum: ['CLIENT', 'LAWYER'],
               example: 'CLIENT'
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-01-15T10:30:00Z'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-01-16T14:20:00Z'
             }
           },
-          required: ['id', 'email', 'firstName', 'lastName', 'role']
+          required: ['id', 'email', 'firstName', 'lastName', 'role', 'createdAt', 'updatedAt']
         },
         Case: {
           type: 'object',
@@ -413,6 +415,114 @@ const options: swaggerJSDoc.Options = {
             }
           }
         },
+        CaseAccessRequest: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: 'clreq123xyz'
+            },
+            caseId: {
+              type: 'string',
+              example: 'clcase123abc'
+            },
+            lawyerId: {
+              type: 'string',
+              example: 'cllawyer123def'
+            },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'APPROVED', 'REJECTED'],
+              example: 'PENDING'
+            },
+            requestedAt: {
+              type: 'string',
+              format: 'date-time',
+              example: '2026-01-20T10:30:00.000Z'
+            },
+            lawyer: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: 'cllawyer123def'
+                },
+                firstName: {
+                  type: 'string',
+                  example: 'Jane'
+                },
+                lastName: {
+                  type: 'string',
+                  example: 'Smith'
+                },
+                email: {
+                  type: 'string',
+                  example: 'jane.smith@legal.com'
+                },
+                specialization: {
+                  type: 'string',
+                  example: 'Corporate Law'
+                }
+              }
+            }
+          },
+          required: ['id', 'caseId', 'lawyerId', 'status', 'requestedAt']
+        },
+        CaseUpdateRequest: {
+          type: 'object',
+          properties: {
+            title: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 255,
+              example: 'Updated Contract Dispute - ABC Corp'
+            },
+            description: {
+              type: 'string',
+              maxLength: 2000,
+              example: 'Updated description with new information about the dispute.'
+            },
+            category: {
+              type: 'string',
+              enum: ['CRIMINAL_LAW', 'CIVIL_LAW', 'CORPORATE_LAW', 'FAMILY_LAW', 'IMMIGRATION_LAW', 'INTELLECTUAL_PROPERTY', 'LABOR_LAW', 'REAL_ESTATE', 'TAX_LAW', 'OTHER'],
+              example: 'CORPORATE_LAW'
+            },
+            status: {
+              type: 'string',
+              enum: ['OPEN', 'CLOSED'],
+              example: 'OPEN'
+            },
+            priority: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 4,
+              example: 3,
+              description: '1=Low, 2=Medium, 3=High, 4=Urgent'
+            }
+          }
+        },
+        PaginationResult: {
+          type: 'object',
+          properties: {
+            page: {
+              type: 'integer',
+              example: 1
+            },
+            limit: {
+              type: 'integer',
+              example: 10
+            },
+            total: {
+              type: 'integer',
+              example: 25
+            },
+            totalPages: {
+              type: 'integer',
+              example: 3
+            }
+          },
+          required: ['page', 'limit', 'total', 'totalPages']
+        },
         ApiResponse: {
           type: 'object',
           properties: {
@@ -431,6 +541,16 @@ const options: swaggerJSDoc.Options = {
           }
         },
         ErrorResponse: {
+          type: 'object',
+          properties: {
+            error: {
+              type: 'string',
+              example: 'Unauthorized'
+            }
+          },
+          required: ['error']
+        },
+        DetailedErrorResponse: {
           type: 'object',
           properties: {
             success: {
@@ -457,10 +577,19 @@ const options: swaggerJSDoc.Options = {
               schema: {
                 $ref: '#/components/schemas/ErrorResponse'
               },
-              example: {
-                success: false,
-                error: 'Authentication required',
-                message: 'Please login to access this resource'
+              examples: {
+                missing_token: {
+                  summary: 'Missing authentication token',
+                  value: {
+                    error: 'Unauthorized'
+                  }
+                },
+                invalid_token: {
+                  summary: 'Invalid or expired token',
+                  value: {
+                    error: 'Invalid or expired token'
+                  }
+                }
               }
             }
           }
@@ -473,9 +602,59 @@ const options: swaggerJSDoc.Options = {
                 $ref: '#/components/schemas/ErrorResponse'
               },
               example: {
-                success: false,
-                error: 'Insufficient permissions',
-                message: 'You do not have permission to perform this action'
+                error: 'Insufficient permissions'
+              }
+            }
+          }
+        },
+        BadRequest: {
+          description: 'Invalid request data or business rule violation',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              },
+              example: {
+                error: 'Invalid request data'
+              }
+            }
+          }
+        },
+        Forbidden: {
+          description: 'Access denied - insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              },
+              example: {
+                error: 'Access denied'
+              }
+            }
+          }
+        },
+        NotFound: {
+          description: 'Resource not found or access denied',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              },
+              example: {
+                error: 'Resource not found'
+              }
+            }
+          }
+        },
+        Unauthorized: {
+          description: 'Authentication required',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              },
+              example: {
+                error: 'Unauthorized'
               }
             }
           }
@@ -570,7 +749,18 @@ const options: swaggerJSDoc.Options = {
       }
     ]
   },
-  apis: ['./app/api/**/*.ts', './src/server/examples/*.ts'], // Path to API files for JSDoc comments
+  apis: [
+    './src/app/api/**/*.ts',
+    './src/app/api/**/route.ts',
+    './app/api/**/*.ts',
+    './app/api/**/route.ts'
+  ], // Multiple path patterns to ensure JSDoc comments are found
 };
 
+// Debug logging to check if swagger spec is generated
+console.log('🔧 Generating Swagger spec...');
 export const swaggerSpec = swaggerJSDoc(options);
+console.log('✅ Swagger spec generated with', Object.keys(swaggerSpec.paths || {}).length, 'paths');
+if (Object.keys(swaggerSpec.paths || {}).length === 0) {
+  console.warn('⚠️ No API paths found in swagger spec. Check JSDoc comments in API routes.');
+}

@@ -18,6 +18,70 @@ const handleRequestSchema = z.object({
 });
 
 /**
+ * @swagger
+ * /api/cases/{id}/access-requests:
+ *   put:
+ *     tags:
+ *       - Cases
+ *     summary: Handle case access request (approve/reject)
+ *     description: |
+ *       Approve or reject a pending access request from a lawyer for a specific case.
+ *       Only the case owner (CLIENT) can perform this action.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - action
+ *               - lawyerId
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [approve, reject]
+ *                 description: Action to perform on the request
+ *                 example: "approve"
+ *               lawyerId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the lawyer making the request
+ *                 example: "clx123abc456"
+ *     responses:
+ *       200:
+ *         description: Access request handled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Access request approved successfully"
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
  * PUT /api/cases/[id]/access-requests - Handle access request (approve/reject)
  * 
  * Authorization: Only case owner or admin

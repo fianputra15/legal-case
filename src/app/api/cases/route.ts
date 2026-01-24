@@ -16,12 +16,97 @@ const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
 
 /**
- * GET /api/cases - Browse all cases (for discovery/browsing)
- * 
- * Authorization:
- * - LAWYER: Can see all cases for browsing and discovery
- * - CLIENT: Can see only their own cases
- * - ADMIN: Can see all cases
+ * @swagger
+ * /api/cases:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: Browse all cases with filters and pagination
+ *     description: |
+ *       Get list of cases based on user role and permissions.
+ *       - LAWYER: Can see all cases for browsing and discovery
+ *       - CLIENT: Can see only their own cases
+ *       - ADMIN: Can see all cases
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *       - name: search
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Search term for case title or description
+ *       - name: status
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED]
+ *         description: Filter by case status
+ *       - name: category
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, IMMIGRATION_LAW, INTELLECTUAL_PROPERTY, LABOR_LAW, REAL_ESTATE, TAX_LAW, OTHER]
+ *         description: Filter by case category
+ *       - name: sortBy
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [newest, oldest, title]
+ *           default: newest
+ *         description: Sort order for results
+ *     responses:
+ *       200:
+ *         description: Cases retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     cases:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Case'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         totalPages:
+ *                           type: integer
+ *                     userRole:
+ *                       type: string
+ *                       enum: [CLIENT, LAWYER, ADMIN]
+ *                     appliedFilters:
+ *                       type: object
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function GET(request: NextRequest) {
   try {
@@ -139,12 +224,70 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/cases - Create a new case
- * 
- * Authorization: Only CLIENT role users can create cases
- * - The authenticated user becomes the case owner
- * - Required fields: title, category
- * - Optional fields: status (defaults to OPEN)
+ * @swagger
+ * /api/cases:
+ *   post:
+ *     tags:
+ *       - Cases
+ *     summary: Create a new legal case
+ *     description: Create a new case. Only clients can create cases.
+ *     security:
+ *       - CookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 example: "Contract Dispute - ABC Corp"
+ *               description:
+ *                 type: string
+ *                 maxLength: 2000
+ *                 example: "Client needs assistance with contract dispute regarding service delivery terms."
+ *               category:
+ *                 type: string
+ *                 enum: [CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, IMMIGRATION_LAW, INTELLECTUAL_PROPERTY, LABOR_LAW, REAL_ESTATE, TAX_LAW, OTHER]
+ *                 example: "CORPORATE_LAW"
+ *               priority:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 4
+ *                 example: 3
+ *                 description: "1=Low, 2=Medium, 3=High, 4=Urgent"
+ *             required: [title, category, priority]
+ *     responses:
+ *       201:
+ *         description: Case created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Case'
+ *                 message:
+ *                   type: string
+ *                   example: "Case created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function POST(request: NextRequest) {
   try {

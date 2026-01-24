@@ -12,6 +12,43 @@ const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
 
 /**
+ * @swagger
+ * /api/my-access-requests:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: Get lawyer's pending access requests
+ *     description: |
+ *       Retrieve all pending access requests submitted by the authenticated lawyer.
+ *       Only accessible by users with LAWYER role.
+ *     security:
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Access requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CaseAccessRequest'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - Only lawyers can access this endpoint
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
  * GET /api/my-access-requests - Get lawyer's pending access requests
  * 
  * Authorization: Only LAWYER role users can access this endpoint

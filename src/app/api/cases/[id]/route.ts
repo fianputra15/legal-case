@@ -18,20 +18,45 @@ interface RouteParams {
 }
 
 /**
- * GET /api/cases/[id] - Get a specific case
- * 
- * Authorization: User must have access to the case via canAccessCase()
- * 
- * Security Design:
- * - Returns 404 for both non-existent cases AND unauthorized access
- * - This prevents resource enumeration attacks (cannot determine if case exists)
- * - Never returns 403 to avoid information leakage
- * 
- * Status Code Strategy:
- * - 401: Not authenticated (no valid token)
- * - 404: Case not found OR no access (security by design)
- * - 200: Success with case data
- * - 500: Internal server error
+ * @swagger
+ * /api/cases/{id}:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: Get a specific case by ID
+ *     description: |
+ *       Retrieve detailed information about a specific case.
+ *       Users can only access cases they have permission for.
+ *       Returns 404 for both non-existent cases and unauthorized access for security.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *     responses:
+ *       200:
+ *         description: Case retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Case'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -222,23 +247,83 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PATCH /api/cases/[id] - Partially update a specific case
- * 
- * Authorization: User must own the case (CLIENT role only)
- * - Only case owners (clients) can modify their cases
- * - Lawyers are explicitly prevented from updating cases
- * 
- * Allowed Updates:
- * - title: Case title (string, 1-255 characters)
- * - category: Case category (enum)
- * - status: Case status (enum)
- * 
- * Status Code Strategy:
- * - 401: Not authenticated
- * - 403: Not case owner or not a client
- * - 404: Case not found
- * - 400: Invalid input data
- * - 200: Success
+ * @swagger
+ * /api/cases/{id}:
+ *   patch:
+ *     tags:
+ *       - Cases
+ *     summary: Partially update a case
+ *     description: |
+ *       Update specific fields of a case. Only the case owner (CLIENT) can update cases.
+ *       Lawyers cannot modify cases, even if they have access.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID to update
+ *         example: "clx789def012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CaseUpdateRequest'
+ *           examples:
+ *             update_title:
+ *               summary: Update title only
+ *               value:
+ *                 title: "Updated Contract Dispute - XYZ Corp"
+ *             update_status:
+ *               summary: Close case
+ *               value:
+ *                 status: "CLOSED"
+ *             partial_update:
+ *               summary: Update multiple fields
+ *               value:
+ *                 title: "Contract Dispute - Resolution Pending"
+ *                 priority: 2
+ *                 description: "Case updated with new resolution timeline"
+ *     responses:
+ *       200:
+ *         description: Case updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Case'
+ *                 message:
+ *                   type: string
+ *                   example: "Case updated successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - not case owner or not a client
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               success: false
+ *               error: "Only the case owner can update this case"
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {

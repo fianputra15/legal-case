@@ -14,24 +14,7 @@ export class CaseAccessUtils {
   static async enhanceCasesWithAccessInfo(
     cases: CaseEntity[],
     userId: string,
-    userRole: string
   ): Promise<any[]> {
-    console.log('🔍 CaseAccessUtils.enhanceCasesWithAccessInfo called:', {
-      casesCount: cases.length,
-      userId,
-      userRole
-    });
-
-    if (userRole !== 'LAWYER') {
-      // For non-lawyers, just return cases as-is with default values
-      return cases.map(caseItem => ({
-        ...caseItem,
-        hasAccess: false,
-        hasPendingRequest: false,
-        requestedAt: null,
-      }));
-    }
-
     // For lawyers, check access and pending requests for each case
     const enhancedCases = await Promise.all(
       cases.map(async (caseItem) => {
@@ -43,18 +26,30 @@ export class CaseAccessUtils {
           // Check if there's a pending request and get the request date
           const pendingRequestInfo = await this.caseRepository.getAccessRequestInfo(caseItem.id, userId);
           console.log(`   Case ${caseItem.title} (${caseItem.id}) - pendingRequestInfo:`, pendingRequestInfo);
-          
+
+          // Check if there's granted info
+          const grantedInfo = await this.caseRepository.grantedInfo(caseItem.id, userId);
+          console.log(`   Case ${caseItem.title} (${caseItem.id}) - grantedInfo:`, grantedInfo);
+
+          // Count case documents
+          const documentCount = await this.caseRepository.getDocumentCount(caseItem.id);
+          console.log(`   Case ${caseItem.title} (${caseItem.id}) - documentInfo:`, documentCount);
+
           const result = {
             ...caseItem,
             hasAccess,
             hasPendingRequest: !!pendingRequestInfo,
             requestedAt: pendingRequestInfo?.requestedAt || null,
+            grantedAt: grantedInfo?.grantedAt || null,
+            documentCount: documentCount || 0
           };
           
           console.log(`   Case ${caseItem.title} enhanced result:`, {
             hasAccess: result.hasAccess,
             hasPendingRequest: result.hasPendingRequest,
-            requestedAt: result.requestedAt
+            requestedAt: result.requestedAt,
+            grantedAt: result.grantedAt,
+            documentCount: result.documentCount
           });
           
           return result;

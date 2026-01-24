@@ -15,12 +15,107 @@ const userService = new UserService(new UserRepository());
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
+
 /**
- * POST /api/cases/[id]/request-access - Request access to a case (for lawyers)
- * 
- * Authorization: Only LAWYER role users can request access
- * 
- * @param params - Contains the case ID
+ * @swagger
+ * /api/cases/{id}/request-access:
+ *   post:
+ *     tags:
+ *       - Cases
+ *     summary: Request access to a case
+ *     description: |
+ *       Allow lawyers to request access to a client's case.
+ *       Only LAWYER role users can make access requests.
+ *       Prevents duplicate requests and notifies the case owner.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID to request access to
+ *         example: "clx789def012"
+ *     responses:
+ *       200:
+ *         description: Access request submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Access request submitted successfully"
+ *       400:
+ *         description: Bad request - already has access or pending request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - only lawyers can request access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *   delete:
+ *     tags:
+ *       - Cases
+ *     summary: Withdraw access request
+ *     description: |
+ *       Allow lawyers to withdraw their pending access request for a case.
+ *       Only the lawyer who made the request can withdraw it.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID to withdraw access request from
+ *         example: "clx789def012"
+ *     responses:
+ *       200:
+ *         description: Access request withdrawn successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Access request withdrawn successfully"
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - only lawyers can withdraw requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: No pending request found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {

@@ -18,6 +18,165 @@ interface RouteParams {
 }
 
 /**
+ * @swagger
+ * /api/cases/{id}/access:
+ *   post:
+ *     tags:
+ *       - Cases
+ *     summary: Grant lawyer access to a case
+ *     description: |
+ *       Grant access to a specific lawyer for a case. Only the case owner (CLIENT) can perform this action.
+ *       Validates that the target user has LAWYER role and prevents duplicate access grants.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - lawyerId
+ *             properties:
+ *               lawyerId:
+ *                 type: string
+ *                 description: ID of the lawyer to grant access to
+ *                 example: "clx123abc456"
+ *     responses:
+ *       200:
+ *         description: Access granted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     caseId:
+ *                       type: string
+ *                       example: "clx789def012"
+ *                     lawyerId:
+ *                       type: string
+ *                       example: "clx123abc456"
+ *                     grantedBy:
+ *                       type: string
+ *                       example: "clowner123"
+ *                     grantedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:30:00Z"
+ *                 message:
+ *                   type: string
+ *                   example: "Access granted successfully"
+ *       400:
+ *         description: Bad request - validation error or business rule violation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               invalid_lawyer:
+ *                 summary: Invalid lawyer ID
+ *                 value:
+ *                   success: false
+ *                   error: "Lawyer not found or invalid role"
+ *               duplicate_access:
+ *                 summary: Duplicate access grant
+ *                 value:
+ *                   success: false
+ *                   error: "Lawyer already has access to this case"
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
+ *   delete:
+ *     tags:
+ *       - Cases
+ *     summary: Revoke lawyer access from a case
+ *     description: |
+ *       Revoke access from a specific lawyer for a case. Only the case owner (CLIENT) can perform this action.
+ *       Prevents lawyers from revoking access from cases.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - lawyerId
+ *             properties:
+ *               lawyerId:
+ *                 type: string
+ *                 description: ID of the lawyer to revoke access from
+ *                 example: "clx123abc456"
+ *     responses:
+ *       200:
+ *         description: Access revoked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     caseId:
+ *                       type: string
+ *                       example: "clx789def012"
+ *                     lawyerId:
+ *                       type: string
+ *                       example: "clx123abc456"
+ *                     revokedBy:
+ *                       type: string
+ *                       example: "clowner123"
+ *                     revokedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:30:00Z"
+ *                 message:
+ *                   type: string
+ *                   example: "Access revoked successfully"
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
  * POST /api/cases/[id]/access - Grant lawyer access to a case
  * 
  * Authorization: User must own the case (CLIENT role only)

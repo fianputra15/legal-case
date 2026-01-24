@@ -12,6 +12,7 @@
     "db:push": "prisma db push",
     "db:pull": "prisma db pull",
     "db:seed": "tsx prisma/seed.ts",
+    "db:case-seed": "tsx prisma/case.seed.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset && npm run db:seed"
   },

@@ -16,12 +16,88 @@ const caseService = new CaseService(new CaseRepository());
 const userService = new UserService(new UserRepository());
 
 /**
- * GET /api/my-cases - Get cases accessible to the current user
- * 
- * Authorization:
- * - CLIENT: Returns cases owned by the client
- * - LAWYER: Returns cases where the lawyer has been granted access through CaseAccess table
- * - ADMIN: Returns all cases
+ * @swagger
+ * /api/my-cases:
+ *   get:
+ *     tags:
+ *       - Cases
+ *     summary: Get cases for the current user
+ *     description: |
+ *       Retrieve cases based on the current user's role and permissions:
+ *       - CLIENT: Returns cases they own
+ *       - LAWYER: Returns cases they have been granted access to
+ *       - ADMIN: Returns all cases in the system
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *       - name: search
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Search term for case title or description
+ *       - name: status
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED]
+ *         description: Filter by case status
+ *       - name: category
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [CRIMINAL_LAW, CIVIL_LAW, CORPORATE_LAW, FAMILY_LAW, IMMIGRATION_LAW, INTELLECTUAL_PROPERTY, LABOR_LAW, REAL_ESTATE, TAX_LAW, OTHER]
+ *         description: Filter by case category
+ *     responses:
+ *       200:
+ *         description: User cases retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     cases:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Case'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         totalPages:
+ *                           type: integer
+ *                     userRole:
+ *                       type: string
+ *                       enum: [CLIENT, LAWYER, ADMIN]
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export async function GET(request: NextRequest) {
   try {

@@ -17,6 +17,55 @@ interface RouteParams {
 }
 
 /**
+ * @swagger
+ * /api/cases/{id}/requests/{requestId}:
+ *   delete:
+ *     tags:
+ *       - Cases
+ *     summary: Reject a specific access request
+ *     description: |
+ *       Reject a specific pending access request from a lawyer for a case.
+ *       Only the case owner (CLIENT) can perform this action.
+ *     security:
+ *       - CookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Case ID
+ *         example: "clx789def012"
+ *       - name: requestId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Access request ID to reject
+ *         example: "clreq123abc"
+ *     responses:
+ *       200:
+ *         description: Access request rejected successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Access request rejected successfully"
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ *
  * DELETE /api/cases/[id]/requests/[requestId] - Reject a specific access request
  * 
  * Authorization: User must own the case (CLIENT role only)

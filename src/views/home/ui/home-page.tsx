@@ -1,10 +1,9 @@
 "use client";
 import { MainLayout } from "@/widgets/layout";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 
@@ -21,6 +20,16 @@ export default function HomePage() {
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage] = useState(10); // Fixed items per page
+
+
+  const handleEdit = useCallback((caseId: string) => {
+    router.push(`/edit-case/${caseId}`);
+  }, [router]);
 
   const handleRequestAccess = async (caseId: string) => {
     try {
@@ -53,6 +62,9 @@ export default function HomePage() {
         const params = new URLSearchParams();
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
+        params.append("page", currentPage.toString());
+        params.append("limit", itemsPerPage.toString());
+        params.append("sortBy", sortBy);
 
         const response = await apiClient.get<any>(`/api/cases?${params.toString()}`);
         
@@ -65,7 +77,9 @@ export default function HomePage() {
         }));
         
         setCases(casesData);
-        setTotalCases(response.data?.pagination?.total || response.data?.cases?.length || 0);
+        const total = response.data?.pagination?.total || response.data?.cases?.length || 0;
+        setTotalCases(total);
+        setTotalPages(Math.ceil(total / itemsPerPage));
       } catch (err) {
         console.error('Error fetching cases:', err);
         if (err instanceof ApiError) {
@@ -79,7 +93,19 @@ export default function HomePage() {
     };
 
     fetchCases();
-  }, [category, status, user]);
+  }, [category, status, sortBy, currentPage, user, handleEdit, itemsPerPage]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [category, status, sortBy]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleWithdrawRequest = async (caseId: string) => {
     try {
@@ -105,9 +131,6 @@ export default function HomePage() {
     }
   };
 
-  const handleEdit = (caseId: string) => {
-    router.push(`/edit-case/${caseId}` as any);
-  };
 
   return (
     <MainLayout headerTitle="Browse Cases" showFooter={false}>
@@ -142,6 +165,13 @@ export default function HomePage() {
             showCreateButton: user?.role === 'CLIENT',
             createButtonText: "Create Your First Case",
             createButtonHref: "/create-case",
+          }}
+          pagination={{
+            currentPage,
+            totalPages,
+            itemsPerPage,
+            totalItems: totalCases,
+            onPageChange: handlePageChange,
           }}
         />
       </div>
