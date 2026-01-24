@@ -296,7 +296,7 @@ export function CaseDetailPage() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <div className="text-success text-xs font-medium bg-weak60 px-2 py-1 flex items-center gap-1 rounded-md mr-4">
+              <div className={`${cases.status === 'open' ? 'text-success bg-weak60' : 'text-sub600 bg-lighter'} text-xs font-medium  px-2 py-1 flex items-center gap-1 rounded-md mr-4`}>
                 <div className="w-2 h-2 rounded-full bg-current"></div>
                 {getStatusLabel(cases.status)}
               </div>

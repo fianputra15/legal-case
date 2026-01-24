@@ -42,6 +42,8 @@ function MyCasesContent() {
         const casesData = (response.data?.cases || []).map(
           (caseItem) => ({
             ...caseItem,
+            createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
+            updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
             userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
             showOwner: user?.role === "LAWYER", // Show owner for lawyers in My Cases too
             onEdit: handleEdit,

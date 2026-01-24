@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createCase, type CreateCaseForm } from "../api";
+import { createCase} from "../api";
+import { CreateCaseFormData } from "@/shared/types";
 
 export function useCreateCase() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateCase = async (formData: CreateCaseForm) => {
+  const handleCreateCase = async (formData: CreateCaseFormData) => {
     setIsSubmitting(true);
     setError(null);
 

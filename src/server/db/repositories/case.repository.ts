@@ -189,11 +189,13 @@ export class CaseRepository {
         title?: string;
         description?: string;
         category?: CaseCategory;
+        status?: CaseStatus;
       } = {};
       
       if (data.title !== undefined) updateData.title = data.title;
       if (data.description !== undefined) updateData.description = data.description;
       if (data.category !== undefined) updateData.category = data.category as CaseCategory;
+      if (data.status !== undefined) updateData.status = data.status as CaseStatus;
       
       // Only proceed if there are fields to update
       if (Object.keys(updateData).length === 0) {

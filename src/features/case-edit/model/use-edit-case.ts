@@ -41,13 +41,26 @@ export function useEditCase(caseId: string) {
 
     try {
       // Basic client-side validation
-      if (!formData.title.trim() || !formData.category || !formData.description.trim()) {
+      if (!formData.title?.trim() || !formData.category || !formData.description?.trim()) {
         throw new Error("Please fill in all required fields");
       }
 
-      await updateCase(caseId, formData);
+      const updatedCase = await updateCase(caseId, formData);
+      
+      // Update local case data with the response
+      if (updatedCase && caseData) {
+        setCaseData({
+          ...caseData,
+          title: formData.title,
+          category: formData.category,
+          description: formData.description,
+          status: formData.status || caseData.status,
+          updatedAt: new Date().toISOString(), // Update timestamp
+        });
+      }
+      
       alert("Case updated successfully");
-      router.push("/my-cases");
+            
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof ApiError 

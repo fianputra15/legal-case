@@ -148,10 +148,10 @@ export interface WithdrawRequestResponse {
 }
 
 // Create Case Form Data
-export interface CreateCaseForm {
+export interface CreateCaseFormData {
   title: string;
   description: string;
-  category: CaseCategory;
+  category: CaseCategory | ""; // Allow empty string for initial form state
   priority: number;
 }
 

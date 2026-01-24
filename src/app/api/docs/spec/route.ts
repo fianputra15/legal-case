@@ -5,23 +5,19 @@
  */
 
 import { swaggerSpec } from '@/server/config/swagger';
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 
 /**
  * GET /api/docs/spec - Serve OpenAPI JSON specification
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('📡 Serving swagger spec...');
-    console.log('📊 Swagger spec paths:', Object.keys(swaggerSpec.paths || {}));
-    console.log('📋 Swagger spec info:', swaggerSpec.info);
-    
-    // Ensure we have a valid specification
-    if (!swaggerSpec || !swaggerSpec.info) {
+        // Ensure we have a valid specification
+    if (!swaggerSpec || !(swaggerSpec as any).info) {
       throw new Error('Invalid swagger specification');
     }
     
-    if (!swaggerSpec.paths || Object.keys(swaggerSpec.paths).length === 0) {
+    if (!(swaggerSpec as any).paths || Object.keys((swaggerSpec as any).paths).length === 0) {
       console.warn('⚠️ Swagger spec has no paths defined');
     }
     
@@ -43,8 +39,8 @@ export async function GET(request: NextRequest) {
         message: error instanceof Error ? error.message : 'Unknown error',
         debug: {
           hasSwaggerSpec: !!swaggerSpec,
-          pathCount: Object.keys(swaggerSpec?.paths || {}).length,
-          info: swaggerSpec?.info
+          pathCount: Object.keys((swaggerSpec as any)?.paths || {}).length,
+          info: (swaggerSpec as any)?.info
         }
       },
       { 

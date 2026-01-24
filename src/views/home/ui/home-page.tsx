@@ -1,5 +1,5 @@
 "use client";
-import { MainLayout } from "@/widgets/layout";
+  import { MainLayout } from "@/widgets/layout";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';

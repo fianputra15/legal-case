@@ -1,4 +1,4 @@
-import { CreateCaseForm, CaseData, ApiResponse } from "@/shared/types";
+import { CreateCaseFormData, CaseData, ApiResponse } from "@/shared/types";
 
 export interface CreateCaseResponse {
   success: boolean;
@@ -6,7 +6,7 @@ export interface CreateCaseResponse {
   error?: string;
 }
 
-export const createCase = async (caseData: CreateCaseForm): Promise<CreateCaseResponse> => {
+export const createCase = async (caseData: CreateCaseFormData): Promise<CreateCaseResponse> => {
   const response = await fetch("/api/cases", {
     method: "POST",
     headers: {
@@ -19,12 +19,12 @@ export const createCase = async (caseData: CreateCaseForm): Promise<CreateCaseRe
   const data: ApiResponse<CaseData> = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
 
   return {
     success: data.success,
     data: data.data,
-    error: data.error
+    error: data.message,
   };
 };

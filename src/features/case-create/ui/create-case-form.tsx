@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useCreateCase } from "../model";
 import { categoryOptions, priorityOptions } from "../model/constants";
 import { FormField } from "@/shared/ui";
-import type { CreateCaseForm } from "../api";
+import { CreateCaseFormData } from "@/shared/types";
 
 interface CreateCaseFormProps {
   onCancel?: () => void;
@@ -11,7 +11,7 @@ interface CreateCaseFormProps {
 
 export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
   const { isSubmitting, error, handleCreateCase, clearError } = useCreateCase();
-  const [form, setForm] = useState<CreateCaseForm>({
+  const [form, setForm] = useState<CreateCaseFormData>({
     title: "",
     category: "",
     description: "",
@@ -22,7 +22,7 @@ export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev: CreateCaseForm) => ({
+    setForm((prev: CreateCaseFormData) => ({
       ...prev,
       [name]: name === "priority" ? parseInt(value) : value,
     }));

@@ -1,5 +1,5 @@
 "use client";
-import {  useState } from "react";
+import { useState, useEffect } from "react";
 import { useEditCase, categoryOptions, statusOptions } from "../model";
 import { FormField } from "@/shared/ui";
 import type { EditCaseForm } from "../api";
@@ -21,30 +21,24 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
 
   
   // Initialize form state with case data or empty values
-  const [form, setForm] = useState(() => ({
-    title: caseData?.title || "",
-    category: caseData?.category || "",
-    description: caseData?.description || "",
-    status: caseData?.status || "OPEN",
-  }));
+  const [form, setForm] = useState<EditCaseForm>({
+    title: "",
+    category: undefined,
+    description: "",
+    status: "OPEN",
+  });
 
-  // Update form when caseData changes
-  const formData = {
-    title: caseData?.title || "",
-    category: caseData?.category || "",
-    description: caseData?.description || "",
-    status: caseData?.status || "OPEN",
-  };
-
-  // Only update form if caseData has actually changed
-  if (caseData && (
-    form.title !== formData.title ||
-    form.category !== formData.category ||
-    form.description !== formData.description ||
-    form.status !== formData.status
-  )) {
-    setForm(formData);
-  }
+  // Update form when caseData loads
+  useEffect(() => {
+    if (caseData) {
+      setForm({ //eslint-disable-line
+        title: caseData.title || "",
+        category: caseData.category || "",
+        description: caseData.description || "",
+        status: caseData.status || "OPEN",
+      });
+    }
+  }, [caseData]);
 
 
   const handleChange = (
@@ -133,7 +127,7 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
         <FormField
           name="title"
           label="Case Title"
-          value={form.title}
+          value={form.title || ""}
           onChange={handleChange}
           placeholder="Enter a descriptive title for your case"
           className={isCaseClosed ? 'bg-gray-100' : ''}
@@ -146,7 +140,7 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
           type="select"
           name="category"
           label="Legal Category"
-          value={form.category}
+          value={form.category || ""}
           onChange={handleChange}
           options={categoryOptions}
           placeholder="Select a legal category"
@@ -160,7 +154,7 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
           type="select"
           name="status"
           label="Case Status"
-          value={form.status}
+          value={form.status || "OPEN"}
           onChange={handleChange}
           options={statusOptions}
           hint={form.status === 'CLOSED' ? 'Closing this case will prevent further edits and document uploads' : undefined}
@@ -171,7 +165,7 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
           type="textarea"
           name="description"
           label="Case Description"
-          value={form.description}
+          value={form.description || ""}
           onChange={handleChange}
           placeholder="Provide detailed information about your case..."
           rows={6}
@@ -188,7 +182,7 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
             className="px-6 py-3 border border-gray-300 text-sub600 rounded-lg hover:bg-gray-50 transition-colors"
             disabled={isSubmitting}
           >
-            {isCaseClosed ? 'Back' : 'Cancel'}
+            Back
           </button>
           {!isCaseClosed && (
             <button
