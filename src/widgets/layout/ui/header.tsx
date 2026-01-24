@@ -6,6 +6,7 @@ import BellIcon from "../../../../public/icons/bell.svg";
 import Image from "next/image";
 import { useAuth } from "@/shared/lib/auth";
 import { apiClient, ApiError } from "@/shared/api";
+import { ApiResponse, CasesListResponse, SearchResult } from "@/shared/types";
 
 interface HeaderProps {
   title?: ReactNode | string;
@@ -13,15 +14,6 @@ interface HeaderProps {
   children?: ReactNode;
   showSearchBar?: boolean;
   showProfile?: boolean;
-}
-
-interface SearchResult {
-  id: string;
-  title: string;
-  category: string;
-  status: string;
-  priority: number;
-  clientName?: string;
 }
 
 export default function Header({
@@ -80,10 +72,10 @@ export default function Header({
       params.append("limit", "8"); // Limit results for dropdown
       params.append("page", "1");
 
-      const response = await apiClient.get<any>(`/api/cases?${params.toString()}`);
+      const response = await apiClient.get<ApiResponse<CasesListResponse>>(`/api/cases?${params.toString()}`);
       
       if (response.data?.cases) {
-        const mappedResults: SearchResult[] = response.data.cases.map((caseItem: any) => ({
+        const mappedResults: SearchResult[] = response.data.cases.map((caseItem) => ({
           id: caseItem.id,
           title: caseItem.title,
           category: caseItem.category,
@@ -164,7 +156,7 @@ export default function Header({
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
-                  placeholder="Search cases, clients..."
+                  placeholder="Search cases"
                   className="text-soft400 w-80 pl-10 pr-4 py-2 bg-weak border border-light rounded-lg text-sm placeholder:text-soft400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <Image
@@ -216,8 +208,8 @@ export default function Header({
           {showProfile && (
             <>
               {/* Notifications */}
-              <button className="relative p-2 text-text-sub hover:text-text-primary transition-colors">
-                <Image src={BellIcon} alt="Notifications" width={20} height={20} />
+              <button className="relative p-2 text-sub hover:text-text-primary transition-colors">
+                <Image src={BellIcon} fill  alt="Notifications"  />
               </button>
               {/* User Menu */}
               <div className="relative" ref={menuRef}>

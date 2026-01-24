@@ -1,4 +1,4 @@
-import { CaseCategory, CaseStatus } from 'prisma/generated/client';
+import { Case, CaseAccessRequest, CaseCategory, CaseStatus } from 'prisma/generated/client';
 import { CaseEntity, CreateCaseDto, UpdateCaseDto, CaseFilters, PaginationOptions, PaginatedResult } from '../../types/database';
 import { prisma } from '../client';
 
@@ -80,7 +80,15 @@ export class CaseRepository {
     pagination: PaginationOptions
   ): Promise<PaginatedResult<CaseEntity>> {
     try {
-      const whereClause: any = {};
+      const whereClause: {
+        id?: { in: string[] };
+        OR?: Array<{
+          title?: { contains: string; mode: 'insensitive' };
+          description?: { contains: string; mode: 'insensitive' };
+        }>;
+        status?: CaseStatus;
+        category?: CaseCategory;
+      } = {};
 
       // Apply case ID restriction
       if (accessibleCaseIds.length > 0) {
@@ -108,12 +116,12 @@ export class CaseRepository {
 
       // Apply status filter
       if (filters.status) {
-        whereClause.status = filters.status;
+        whereClause.status = filters.status as CaseStatus;
       }
 
       // Apply category filter
       if (filters.category) {
-        whereClause.category = filters.category;
+        whereClause.category = filters.category as CaseCategory;
       }
 
       // Get total count
@@ -229,7 +237,7 @@ export class CaseRepository {
       return true;
     } catch (error) {
       // Handle unique constraint violation (duplicate access)
-      if ((error as any)?.code === 'P2002') {
+      if ((error as { code?: string })?.code === 'P2002') {
         return false; // Access already exists
       }
       throw error;
@@ -368,7 +376,7 @@ export class CaseRepository {
   /**
    * Get access requests for a case
    */
-  async getAccessRequests(caseId: string): Promise<any[]> {
+  async getAccessRequests(caseId: string): Promise<CaseAccessRequest[]> {
     try {
       const requests = await prisma.caseAccessRequest.findMany({
         where: {
@@ -399,7 +407,7 @@ export class CaseRepository {
   /**
    * Get lawyer's access requests
    */
-  async getLawyerAccessRequests(lawyerId: string): Promise<any[]> {
+  async getLawyerAccessRequests(lawyerId: string): Promise<CaseAccessRequest[]> {
     try {
       const requests = await prisma.caseAccessRequest.findMany({
         where: {
@@ -521,7 +529,7 @@ export class CaseRepository {
   /**
    * Map Prisma Case model to CaseEntity
    */
-  private mapToEntity(case_: any): CaseEntity {
+  private mapToEntity(case_: Case): CaseEntity {
     return {
       id: case_.id,
       title: case_.title,

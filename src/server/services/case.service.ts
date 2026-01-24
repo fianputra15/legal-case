@@ -1,3 +1,4 @@
+import { CaseAccessRequest } from 'prisma/generated/client';
 import { CaseRepository } from '../db/repositories/case.repository';
 import { UserRepository } from '../db/repositories/user.repository';
 import { CreateCaseDto, UpdateCaseDto, CaseEntity, CaseFilters, PaginationOptions, PaginatedResult } from '../types/database';
@@ -73,17 +74,34 @@ export class CaseService {
       throw new Error('Title cannot be empty');
     }
 
+    // Get current case to check business rules
+    const currentCase = await this.caseRepository.findById(id);
+    if (!currentCase) {
+      throw new Error('Case not found');
+    }
+
+    // Business Rule: If case is CLOSED, only allow status changes
+    if (currentCase.status === 'CLOSED' && data.status !== 'OPEN') {
+      const nonStatusUpdates = Object.entries(data)
+        .filter(([key, value]) => key !== 'status' && value !== undefined)
+        .length;
+      
+      if (nonStatusUpdates > 0) {
+        throw new Error('Closed cases can only have their status changed to reopen them. No other fields can be modified.');
+      }
+    }
+
     return this.caseRepository.update(id, data);
   }
 
-  /**
-   * Delete a case
-   */
-  async deleteCase(id: string): Promise<boolean> {
-    // TODO: Add authorization check
-    // TODO: Implement soft delete or cascade rules
-    return this.caseRepository.delete(id);
-  }
+  // /**
+  //  * Delete a case
+  //  */
+  // async deleteCase(id: string): Promise<boolean> {
+  //   // TODO: Add authorization check
+  //   // TODO: Implement soft delete or cascade rules
+  //   return this.caseRepository.delete(id);
+  // }
 
   /**
    * Get all case IDs (for admin/lawyer access)
@@ -174,7 +192,7 @@ export class CaseService {
   /**
    * Get pending access requests for a case (for case owner/admin)
    */
-  async getCaseAccessRequests(caseId: string): Promise<any[]> {
+  async getCaseAccessRequests(caseId: string): Promise<CaseAccessRequest[]> {
     return this.caseRepository.getAccessRequests(caseId);
   }
 
@@ -218,7 +236,7 @@ export class CaseService {
   /**
    * Get lawyer's pending access requests
    */
-  async getLawyerAccessRequests(lawyerId: string): Promise<any[]> {
+  async getLawyerAccessRequests(lawyerId: string): Promise<CaseAccessRequest[]> {
     return this.caseRepository.getLawyerAccessRequests(lawyerId);
   }
 

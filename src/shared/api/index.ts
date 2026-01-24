@@ -48,7 +48,7 @@ class ApiClient {
         this.notifyAuthFailure();
         const errorData = await this.safeParseResponse(response);
         throw new ApiError(
-          errorData?.error || 'Authentication required',
+          errorData || 'Authentication required',
           response.status,
           response.statusText,
           errorData
@@ -58,7 +58,7 @@ class ApiClient {
       if (response.status === 403) {
         const errorData = await this.safeParseResponse(response);
         throw new ApiError(
-          errorData?.error || 'Insufficient permissions',
+          errorData || 'Insufficient permissions',
           response.status,
           response.statusText,
           errorData
@@ -68,7 +68,7 @@ class ApiClient {
       if (!response.ok) {
         const errorData = await this.safeParseResponse(response);
         throw new ApiError(
-          errorData?.error || `API request failed: ${response.statusText}`,
+          errorData || `API request failed: ${response.statusText}`,
           response.status,
           response.statusText,
           errorData
@@ -91,7 +91,7 @@ class ApiClient {
     }
   }
 
-  private async safeParseResponse(response: Response): Promise<any> {
+  private async safeParseResponse(response: Response): Promise<string | null> {
     try {
       const text = await response.text();
       return text ? JSON.parse(text) : null;

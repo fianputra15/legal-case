@@ -1,19 +1,9 @@
 import { apiClient } from "@/shared/api";
-
-export interface EditCaseForm {
-  title: string;
-  category: string;
-  description: string;
-}
-
-export interface CaseData {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  status: string;
-  priority: number;
-}
+import {
+  EditCaseForm,
+  CaseData,
+  ApiResponse,
+} from "@/shared/types";
 
 export interface EditCaseResponse {
   success: boolean;
@@ -22,11 +12,26 @@ export interface EditCaseResponse {
 }
 
 export const fetchCase = async (caseId: string): Promise<CaseData> => {
-  const response = await apiClient.get<{ data: CaseData }>(`/api/cases/${caseId}`);
-  return response.data;
+  const response = await apiClient.get<Promise<{ data: CaseData }>>(
+    `/api/cases/${caseId}`,
+    {
+      credentials: "include",
+    },
+  );
+  const { data } = response;
+  return data;
 };
 
-export const updateCase = async (caseId: string, formData: EditCaseForm): Promise<EditCaseResponse> => {
-  const response = await apiClient.patch(`/api/cases/${caseId}`, formData);
+export const updateCase = async (
+  caseId: string,
+  formData: EditCaseForm,
+): Promise<EditCaseResponse> => {
+  const response = await apiClient.patch<ApiResponse<CaseData>>(
+    `/api/cases/${caseId}`,
+    formData,
+    {
+      credentials: "include",
+    },
+  );
   return response as EditCaseResponse;
 };

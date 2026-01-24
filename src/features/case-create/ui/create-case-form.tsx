@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useCreateCase } from "../model";
 import { categoryOptions, priorityOptions } from "../model/constants";
+import { FormField } from "@/shared/ui";
 import type { CreateCaseForm } from "../api";
 
 interface CreateCaseFormProps {
@@ -21,7 +22,7 @@ export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
+    setForm((prev: CreateCaseForm) => ({
       ...prev,
       [name]: name === "priority" ? parseInt(value) : value,
     }));
@@ -59,104 +60,52 @@ export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Case Title */}
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-strong900 mb-2"
-          >
-            Case Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            placeholder="Enter a descriptive title for your case"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-colors"
-            required
-          />
-          <p className="text-xs text-sub600 mt-1">
-            Be specific and descriptive to help lawyers understand your case quickly.
-          </p>
-        </div>
+        <FormField
+          name="title"
+          label="Case Title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="Enter a descriptive title for your case"
+          hint="Be specific and descriptive to help lawyers understand your case quickly."
+          required
+        />
 
         {/* Case Category */}
-        <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-strong900 mb-2"
-          >
-            Legal Category *
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-colors"
-            required
-          >
-            <option value="">Select a legal category</option>
-            {categoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-sub600 mt-1">
-            Choose the category that best describes your legal matter.
-          </p>
-        </div>
+        <FormField
+          type="select"
+          name="category"
+          label="Legal Category"
+          value={form.category}
+          onChange={handleChange}
+          options={categoryOptions}
+          placeholder="Select a legal category"
+          hint="Choose the category that best describes your legal matter."
+          required
+        />
 
         {/* Priority */}
-        <div>
-          <label
-            htmlFor="priority"
-            className="block text-sm font-medium text-strong900 mb-2"
-          >
-            Priority Level
-          </label>
-          <select
-            id="priority"
-            name="priority"
-            value={form.priority}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-colors"
-          >
-            {priorityOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-sub600 mt-1">
-            Indicate how urgent this case is for you.
-          </p>
-        </div>
+        <FormField
+          type="select"
+          name="priority"
+          label="Priority Level"
+          value={form.priority as number}
+          onChange={handleChange}
+          options={priorityOptions}
+          hint="Indicate how urgent this case is for you."
+        />
 
         {/* Case Description */}
-        <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-strong900 mb-2"
-          >
-            Case Description *
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={6}
-            placeholder="Provide detailed information about your case, including relevant facts, timeline, and what kind of legal assistance you need..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-colors resize-vertical"
-            required
-          />
-          <p className="text-xs text-sub600 mt-1">
-            Include as much relevant detail as possible. This helps lawyers understand your situation and provide better assistance.
-          </p>
-        </div>
+        <FormField
+          type="textarea"
+          name="description"
+          label="Case Description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Provide detailed information about your case, including relevant facts, timeline, and what kind of legal assistance you need..."
+          hint="Include as much relevant detail as possible. This helps lawyers understand your situation and provide better assistance."
+          rows={6}
+          required
+        />
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">

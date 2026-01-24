@@ -9,11 +9,15 @@ import { DocumentEntity } from "@/entities/document";
 interface DocumentManagerProps {
   caseId: string;
   onDocumentCountChange?: (count: number) => void;
+  isReadOnly?: boolean;
+  readOnlyReason?: string;
 }
 
 export function DocumentManager({
   caseId,
   onDocumentCountChange,
+  isReadOnly = false,
+  readOnlyReason,
 }: DocumentManagerProps) {
   const { refreshDocuments, addDocument, documentCount, documents, loading, error } =
     useDocuments(caseId);
@@ -40,6 +44,15 @@ export function DocumentManager({
 
   return (
     <div className="space-y-6">
+      {isReadOnly && readOnlyReason && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="text-amber-600 text-lg mr-2">🔒</div>
+            <p className="text-amber-700 text-sm">{readOnlyReason}</p>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-strong900 mb-1">
@@ -48,12 +61,16 @@ export function DocumentManager({
           <p className="text-sm text-sub600 mb-6">
             {documentCount > 0
               ? `${documentCount} document${documentCount === 1 ? "" : "s"} uploaded to this case.`
-              : "Upload and manage documents related to this case."}
+              : isReadOnly 
+                ? "Documents are read-only for this case."
+                : "Upload and manage documents related to this case."}
           </p>
         </div>
-        <div>
-          <Button onClick={handleUploadDocument}>Add Document</Button>
-        </div>
+        {!isReadOnly && (
+          <div>
+            <Button onClick={handleUploadDocument}>Add Document</Button>
+          </div>
+        )}
       </div>
 
       {/* Document List */}
@@ -66,12 +83,14 @@ export function DocumentManager({
       />
 
       {/* Upload Modal */}
-      <DocumentUploadModal
-        caseId={caseId}
-        onUploadSuccess={handleUploadSuccess}
-        onClose={handleCloseModal}
-        open={isModalOpen}
-      />
+      {!isReadOnly && (
+        <DocumentUploadModal
+          caseId={caseId}
+          onUploadSuccess={handleUploadSuccess}
+          onClose={handleCloseModal}
+          open={isModalOpen}
+        />
+      )}
     </div>
   );
 }

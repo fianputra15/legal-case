@@ -56,3 +56,6 @@ export interface AppConfig {
 }
 
 // Add other global types here
+
+// API Types
+export * from './api';

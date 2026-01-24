@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
 import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
+import { ApiResponse, CasesListResponse } from '@/shared/types';
 import { useRouter } from "next/navigation";
 import { useAccessRequest } from "@/features";
-
 
 
 export default function HomePage() {
@@ -79,10 +79,12 @@ export default function HomePage() {
         params.append("limit", itemsPerPage.toString());
         params.append("sortBy", sortBy);
 
-        const response = await apiClient.get<any>(`/api/cases?${params.toString()}`);
+        const response = await apiClient.get<ApiResponse<CasesListResponse>>(`/api/cases?${params.toString()}`);
         
-        const casesData = (response.data?.cases || []).map((caseItem: any) => ({
+        const casesData = (response.data?.cases || []).map((caseItem) => ({
           ...caseItem,
+          createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
+          updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
           userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
           showOwner: user?.role === 'LAWYER', // Show owner for lawyers
           onRequestAccess: handleRequestAccess,

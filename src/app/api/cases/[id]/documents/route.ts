@@ -149,6 +149,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DocumentType, DocumentStatus } from '../../../../../../prisma/generated/client';
 import { AuthorizationService } from '@/server/auth/authorization';
 import { DocumentService } from '@/server/services/document.service';
+import { CaseService } from '@/server/services/case.service';
+import { CaseRepository } from '@/server/db/repositories/case.repository';
 import { ResponseHandler } from '@/server/utils/response';
 import { Logger } from '@/server/utils/logger';
 import { cookies } from 'next/headers';
@@ -157,6 +159,7 @@ import { UserService } from '@/server/services';
 import { UserRepository } from '@/server/db/repositories/user.repository';
 
 const userService = new UserService(new UserRepository());
+const caseService = new CaseService(new CaseRepository());
 
 // Configure allowed file types for this endpoint (subset of all supported types)
 const UPLOAD_ALLOWED_MIME_TYPES = [
@@ -216,7 +219,18 @@ export async function POST(
       return ResponseHandler.notFound('Case not found or access denied');
     }
     
-    // 4. Parse multipart form data
+    // 4. Verify case exists and check status (business rules)
+    const caseData = await caseService.getCaseById(caseId);
+    if (!caseData) {
+      return ResponseHandler.notFound('Case not found');
+    }
+    
+    // Business Rule: Prevent document uploads to closed cases
+    if (caseData.status === 'CLOSED') {
+      return ResponseHandler.forbidden('Cannot upload documents to closed cases. Only viewing and downloading is allowed.');
+    }
+    
+    // 5. Parse multipart form data
     let formData: FormData;
     try {
       formData = await request.formData();

@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/shared/lib/auth";
 import { apiClient, ApiError } from "@/shared/api";
+import { ApiResponse, CasesListResponse } from "@/shared/types";
 import { MainLayout } from "@/widgets/layout";
 import { CaseList, CaseFilters, CaseCardProps } from "@/shared/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CaseResponse } from "@/server/types";
 
 function MyCasesContent() {
   const { user } = useAuth();
@@ -36,11 +36,11 @@ function MyCasesContent() {
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
 
-        const response = await apiClient.get<any>(
+        const response = await apiClient.get<ApiResponse<CasesListResponse>>(
           `/api/my-cases?${params.toString()}`,
         );
         const casesData = (response.data?.cases || []).map(
-          (caseItem: CaseResponse) => ({
+          (caseItem) => ({
             ...caseItem,
             userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
             showOwner: user?.role === "LAWYER", // Show owner for lawyers in My Cases too

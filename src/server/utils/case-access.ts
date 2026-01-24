@@ -4,6 +4,8 @@
 
 import { CaseEntity } from '../types/database';
 import { CaseRepository } from '../db/repositories/case.repository';
+import { CaseCategory, CaseStatus } from '../../shared/types/api';
+import { CaseCardProps } from '@/shared/ui/case-card/types';
 
 export class CaseAccessUtils {
   private static caseRepository = new CaseRepository();
@@ -14,7 +16,7 @@ export class CaseAccessUtils {
   static async enhanceCasesWithAccessInfo(
     cases: CaseEntity[],
     userId: string,
-  ): Promise<any[]> {
+  ): Promise<CaseCardProps[]> {
     // For lawyers, check access and pending requests for each case
     const enhancedCases = await Promise.all(
       cases.map(async (caseItem) => {
@@ -35,8 +37,12 @@ export class CaseAccessUtils {
           const documentCount = await this.caseRepository.getDocumentCount(caseItem.id);
           console.log(`   Case ${caseItem.title} (${caseItem.id}) - documentInfo:`, documentCount);
 
-          const result = {
+          const result: CaseCardProps = {
             ...caseItem,
+            category: caseItem.category as CaseCategory, // Cast DB string to CaseCategory enum
+            status: caseItem.status as CaseStatus, // Cast DB string to CaseStatus enum
+            createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
+            updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
             hasAccess,
             hasPendingRequest: !!pendingRequestInfo,
             requestedAt: pendingRequestInfo?.requestedAt || null,
@@ -57,10 +63,14 @@ export class CaseAccessUtils {
           console.error(`Error enhancing case ${caseItem.id}:`, error);
           return {
             ...caseItem,
+            category: caseItem.category as CaseCategory,
+            status: caseItem.status as CaseStatus,
+            createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
+            updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
             hasAccess: false,
             hasPendingRequest: false,
             requestedAt: null,
-          };
+          } as CaseCardProps;
         }
       })
     );
@@ -76,7 +86,6 @@ export class CaseAccessUtils {
     userRole: string,
     caseOwnerId?: string
   ): Promise<boolean> {
-    if (userRole === 'ADMIN') return true;
     if (userRole === 'CLIENT' && caseOwnerId === userId) return true;
     if (userRole === 'LAWYER') {
       return this.caseRepository.hasAccess(caseId, userId);

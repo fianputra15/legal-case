@@ -10,3 +10,8 @@ export const categoryOptions = [
   { value: "TAX_LAW", label: "Tax Law" },
   { value: "OTHER", label: "Other" },
 ];
+
+export const statusOptions = [
+  { value: "OPEN", label: "Open" },
+  { value: "CLOSED", label: "Closed" },
+];

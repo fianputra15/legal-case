@@ -68,6 +68,7 @@ export interface UpdateCaseDto {
   description?: string;
   category?: string;
   assignedLawyerId?: string;
+  status?: string;
 }
 
 // Message entity and DTOs

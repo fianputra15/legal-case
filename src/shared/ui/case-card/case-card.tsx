@@ -10,39 +10,8 @@ import ApprovedIcon from "../../../../public/icons/circle-marked.svg";
 import { formatDate, getCategoryLabel } from "@/shared/lib/case-utils";
 import { RequestAccessButton, WithdrawRequestButton } from "@/features/case-request-access";
 import Typography from "../typography";
+import { CaseCardProps } from "./types";
 
-
-export interface CaseCardProps {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  category: string;
-  priority: number;
-  createdAt: string;
-  updatedAt: string;
-  ownerId: string;
-  documentCount?: number;
-  owner?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  showOwner?: boolean;
-  userRole?: "CLIENT" | "LAWYER";
-  hasAccess?: boolean;
-  grantedAt?: string | null;
-  hasPendingRequest?: boolean;
-  requestedAt?: string | null;
-  onRequestAccess?: (caseId: string) => void;
-  onWithdrawRequest?: (caseId: string) => void;
-  onRequestSuccess?: (caseId: string) => void;
-  onRequestError?: (message: string) => void;
-  onWithdrawSuccess?: (caseId: string) => void;
-  onWithdrawError?: (message: string) => void;
-  onEdit?: (caseId: string) => void;
-}
 
 export const CaseCard: React.FC<CaseCardProps> = ({
   id,
@@ -118,7 +87,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             </div>
             <div>
               <Typography variant="xs" weight="normal" className="text-base">
-                Access Granted on {formatDate(grantedAt ?? "")}
+                Access Granted on {formatDate(grantedAt?.toString() ?? "")}
               </Typography>
             </div>
           </>
@@ -138,7 +107,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
             </div>
             <div>
               <Typography variant="xs" weight="normal" className="text-base">
-                Requested on {formatDate(requestedAt ?? "")}
+                Requested on {formatDate(requestedAt?.toString() ?? "")}
               </Typography>
             </div>
           </>

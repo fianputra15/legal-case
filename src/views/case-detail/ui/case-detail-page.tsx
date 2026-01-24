@@ -8,7 +8,6 @@ import FileIcon from "../../../../public/icons/file-text.svg";
 import ArrowRight from "../../../../public/icons/arrow-right.svg";
 import BrowseIcon from "../../../../public/icons/page-text-search.svg";
 import SquareArrowIcon from "../../../../public/icons/square-arrow.svg";
-import { Button } from "@/shared/ui";
 import { DocumentManager } from "@/widgets/document-manager";
 import { PendingRequestCard } from "@/features/case-request-access";
 
@@ -492,6 +491,8 @@ export function CaseDetailPage() {
           <DocumentManager
             caseId={caseId}
             onDocumentCountChange={handleDocumentCountChange}
+            isReadOnly={cases?.status === 'CLOSED'}
+            readOnlyReason={cases?.status === 'CLOSED' ? "This case is closed. Document uploads are not allowed, but you can still view and download existing documents." : undefined}
           />
         )}
       </div>

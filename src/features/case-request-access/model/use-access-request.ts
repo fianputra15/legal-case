@@ -88,7 +88,7 @@ export function useAccessRequest() {
   ) => {
     try {
       setIsProcessing(true);
-      const response = await rejectAccessRequest(caseId, lawyerId, requestId);
+      const response = await rejectAccessRequest(caseId, lawyerId);
       
       if (response.success) {
         onSuccess?.(requestId);

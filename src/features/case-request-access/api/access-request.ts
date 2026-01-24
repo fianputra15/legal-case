@@ -1,16 +1,5 @@
 import { apiClient } from "@/shared/api";
-
-// Types
-export interface AccessRequestResponse {
-  success: boolean;
-  message: string;
-  requestSubmitted: boolean;
-}
-
-export interface WithdrawRequestResponse {
-  success: boolean;
-  message: string;
-}
+import { AccessRequestResponse, WithdrawRequestResponse } from "@/shared/types";
 
 // API functions
 export async function requestCaseAccess(caseId: string): Promise<AccessRequestResponse> {
@@ -23,15 +12,15 @@ export async function withdrawAccessRequest(caseId: string): Promise<WithdrawReq
   return response;
 }
 
-export async function approveLawyerAccess(caseId: string, lawyerId: string): Promise<any> {
-  const response = await apiClient.post(`/api/cases/${caseId}/access`, {
+export async function approveLawyerAccess(caseId: string, lawyerId: string): Promise<AccessRequestResponse> {
+  const response = await apiClient.post<Promise<AccessRequestResponse>>(`/api/cases/${caseId}/access`, {
     lawyerId
   });
   return response;
 }
 
-export async function rejectAccessRequest(caseId: string, lawyerId: string, requestId: string): Promise<any> {
-  const response = await apiClient.put(`/api/cases/${caseId}/access-requests`, {
+export async function rejectAccessRequest(caseId: string, lawyerId: string): Promise<AccessRequestResponse> {
+  const response = await apiClient.put<Promise<AccessRequestResponse>>(`/api/cases/${caseId}/access-requests`, {
     action: 'reject',
     lawyerId
   });

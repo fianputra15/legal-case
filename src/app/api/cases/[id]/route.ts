@@ -192,59 +192,59 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  * Authorization: User must own the case
  * - Only case owners can delete their cases
  */
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    const resolvedParams = await params;
-    const caseId = resolvedParams.id;
+// export async function DELETE(request: NextRequest, { params }: RouteParams) {
+//   try {
+//     const resolvedParams = await params;
+//     const caseId = resolvedParams.id;
     
-    // Require authentication first - using same pattern as /me route
-    const token = (await cookies()).get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+//     // Require authentication first - using same pattern as /me route
+//     const token = (await cookies()).get("token")?.value;
+//     if (!token) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//     }
 
-    // Verify and decode the JWT using the secret
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    } catch (error) {
-      console.log(error);
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
-    }
+//     // Verify and decode the JWT using the secret
+//     let decoded;
+//     try {
+//       decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+//     } catch (error) {
+//       console.log(error);
+//       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+//     }
     
-    // Query the database to find the user by ID
-    const user = await userService.getUserById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+//     // Query the database to find the user by ID
+//     const user = await userService.getUserById(decoded.userId);
+//     if (!user) {
+//       return NextResponse.json({ error: "User not found" }, { status: 404 });
+//     }
     
-    // Check case ownership using AuthorizationService
-    const isOwner = await AuthorizationService.isCaseOwner(user, caseId);
-    if (!isOwner) {
-      const hasAccess = await AuthorizationService.canAccessCase(user, caseId);
-      if (!hasAccess) {
-        Logger.warn(`User ${user.email} attempted to delete non-existent or inaccessible case ${caseId}`);
-        return ResponseHandler.notFound('Case not found');
-      } else {
-        Logger.warn(`User ${user.email} attempted to delete case ${caseId} without ownership`);
-        return ResponseHandler.forbidden('Only case owners can delete cases');
-      }
-    }
-    const deleted = await caseService.deleteCase(caseId);
+//     // Check case ownership using AuthorizationService
+//     const isOwner = await AuthorizationService.isCaseOwner(user, caseId);
+//     if (!isOwner) {
+//       const hasAccess = await AuthorizationService.canAccessCase(user, caseId);
+//       if (!hasAccess) {
+//         Logger.warn(`User ${user.email} attempted to delete non-existent or inaccessible case ${caseId}`);
+//         return ResponseHandler.notFound('Case not found');
+//       } else {
+//         Logger.warn(`User ${user.email} attempted to delete case ${caseId} without ownership`);
+//         return ResponseHandler.forbidden('Only case owners can delete cases');
+//       }
+//     }
+//     const deleted = await caseService.deleteCase(caseId);
 
-    if (!deleted) {
-      return ResponseHandler.notFound('Case not found');
-    }
+//     if (!deleted) {
+//       return ResponseHandler.notFound('Case not found');
+//     }
 
-    Logger.info(`Case deleted: ${caseId} by owner ${user.email}`);
+//     Logger.info(`Case deleted: ${caseId} by owner ${user.email}`);
 
-    return ResponseHandler.success(null, 'Case deleted successfully');
+//     return ResponseHandler.success(null, 'Case deleted successfully');
 
-  } catch (error) {
-    Logger.error('Delete case error:', error);
-    return ResponseHandler.internalError('Failed to delete case');
-  }
-}
+//   } catch (error) {
+//     Logger.error('Delete case error:', error);
+//     return ResponseHandler.internalError('Failed to delete case');
+//   }
+// }
 
 /**
  * @swagger

@@ -1,2 +1,2 @@
 export { useEditCase } from './use-edit-case';
-export { categoryOptions } from './constants';
+export { categoryOptions, statusOptions } from './constants';

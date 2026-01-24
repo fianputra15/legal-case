@@ -72,6 +72,7 @@ The following aliases are now available:
 - `@/app/*` → `./src/app/*`
 - `@/views/*` → `./src/views/*`
 - `@/widgets/*` → `./src/widgets/*`
+
 - `@/features/*` → `./src/features/*`
 - `@/entities/*` → `./src/entities/*`
 - `@/shared/*` → `./src/shared/*`

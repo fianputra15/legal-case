@@ -1,13 +1,8 @@
-export interface CreateCaseForm {
-  title: string;
-  category: string;
-  description: string;
-  priority?: number;
-}
+import { CreateCaseForm, CaseData, ApiResponse } from "@/shared/types";
 
 export interface CreateCaseResponse {
   success: boolean;
-  data?: any;
+  data?: CaseData;
   error?: string;
 }
 
@@ -21,11 +16,15 @@ export const createCase = async (caseData: CreateCaseForm): Promise<CreateCaseRe
     body: JSON.stringify(caseData),
   });
 
-  const data = await response.json();
+  const data: ApiResponse<CaseData> = await response.json();
 
   if (!response.ok) {
     throw new Error(data.error || `HTTP error! status: ${response.status}`);
   }
 
-  return data;
+  return {
+    success: data.success,
+    data: data.data,
+    error: data.error
+  };
 };
