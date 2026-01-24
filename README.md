@@ -125,7 +125,7 @@ DATABASE_URL="postgresql://username:password@localhost:5432/legal_db"
 
 # Supabase (for file storage)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_supabase_service_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Database Setup and Seeding
