@@ -4,13 +4,16 @@
 
 const categoryOptions = [
   { value: "all", label: "All" },
-  { value: "EMPLOYMENT_LAW", label: "Employment Law" },
-  { value: "FAMILY_LAW", label: "Family Law" },
-  { value: "COMMERCIAL_LAW", label: "Commercial" },
-  { value: "INTELLECTUAL_PROPERTY", label: "Intellectual Property" },
   { value: "CRIMINAL_LAW", label: "Criminal Law" },
   { value: "CIVIL_LAW", label: "Civil Law" },
   { value: "CORPORATE_LAW", label: "Corporate Law" },
+  { value: "FAMILY_LAW", label: "Family Law" },
+  { value: "IMMIGRATION_LAW", label: "Immigration Law" },
+  { value: "INTELLECTUAL_PROPERTY", label: "Intellectual Property" },
+  { value: "LABOR_LAW", label: "Labor Law" },
+  { value: "REAL_ESTATE", label: "Real Estate" },
+  { value: "TAX_LAW", label: "Tax Law" },
+  { value: "OTHER", label: "Other" },
 ];
 
 export const formatDate = (dateString: string): string => {

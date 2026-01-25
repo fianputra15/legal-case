@@ -14,6 +14,7 @@ This documentation covers all the shared UI components located in `/src/shared/u
 8. [CaseList](#case-list)
 9. [DocumentList](#document-list)
 10. [DocumentUploadModal](#document-upload-modal)
+11. [LoadingShimmer](#loading-shimmer)
 
 ---
 
@@ -609,6 +610,142 @@ const [uploadModalOpen, setUploadModalOpen] = useState(false);
   }}
 />
 ```
+
+---
+
+## LoadingShimmer
+
+A versatile loading shimmer component that provides skeleton loading states with various preset patterns.
+
+### Props
+
+```typescript
+interface LoadingShimmerProps {
+  className?: string;
+  variant?: 'default' | 'text' | 'card' | 'avatar' | 'button' | 'table-row';
+  lines?: number;
+  width?: 'full' | 'half' | 'third' | 'quarter' | string;
+  height?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | string;
+}
+```
+
+### Variants
+
+- **default**: Basic rectangular shimmer
+- **text**: Text-like shimmer with multiple lines support
+- **card**: Complete card layout with header, content, and actions
+- **avatar**: Avatar with name and description
+- **button**: Button-shaped shimmer
+- **table-row**: Table row with multiple columns
+
+### Width Options
+
+- **full**: 100% width
+- **half**: 50% width
+- **third**: 33.33% width
+- **quarter**: 25% width
+- **custom**: Any Tailwind width class or custom value
+
+### Height Options
+
+- **xs**: 12px (h-3)
+- **sm**: 16px (h-4)
+- **md**: 20px (h-5) - default
+- **lg**: 24px (h-6)
+- **xl**: 32px (h-8)
+- **custom**: Any Tailwind height class or custom value
+
+### Basic Usage
+
+```tsx
+import { LoadingShimmer } from '@/shared/ui';
+
+// Basic shimmer
+<LoadingShimmer />
+
+// Text shimmer with multiple lines
+<LoadingShimmer variant="text" lines={3} />
+
+// Card shimmer
+<LoadingShimmer variant="card" />
+
+// Custom dimensions
+<LoadingShimmer width="w-32" height="h-10" className="rounded-lg" />
+```
+
+### Preset Patterns (LoadingShimmers)
+
+The component includes preset patterns for common loading scenarios:
+
+```tsx
+import { LoadingShimmers } from '@/shared/ui';
+
+// Case card loading
+<LoadingShimmers.CaseCard />
+
+// Case header loading
+<LoadingShimmers.CaseHeader />
+
+// Document list loading
+<LoadingShimmers.DocumentList />
+
+// Pending requests loading
+<LoadingShimmers.PendingRequests />
+
+// Table loading
+<LoadingShimmers.Table rows={5} />
+
+// Timeline loading
+<LoadingShimmers.Timeline events={3} />
+```
+
+### Features
+
+- **Smooth Animation**: CSS-based pulse animation for better performance
+- **Responsive Design**: Adapts to container sizes
+- **Flexible Sizing**: Support for both preset and custom dimensions
+- **Preset Patterns**: Common UI patterns pre-built for consistency
+- **Customizable**: Easily extendable with custom classes
+- **Accessible**: Maintains proper contrast ratios
+
+### Example Implementation
+
+```tsx
+import { LoadingShimmers, LoadingShimmer } from '@/shared/ui';
+
+function CaseDetailPage() {
+  const [loading, setLoading] = useState(true);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {/* Header loading */}
+        <LoadingShimmers.CaseHeader />
+        
+        {/* Tab content loading */}
+        <div className="space-y-4">
+          <LoadingShimmers.Table rows={3} />
+          <LoadingShimmers.Timeline events={2} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Actual content */}
+    </div>
+  );
+}
+```
+
+### Best Practices
+
+1. **Match Content Structure**: Use shimmers that closely match your actual content layout
+2. **Consistent Timing**: Keep loading times predictable across similar components
+3. **Progressive Loading**: Show shimmers immediately, don't delay
+4. **Proper Hierarchy**: Use appropriate heights and widths that match real content
+5. **Accessible Colors**: Maintain sufficient contrast for users with visual impairments
 
 ---
 

@@ -10,6 +10,7 @@ import BrowseIcon from "../../../../public/icons/page-text-search.svg";
 import SquareArrowIcon from "../../../../public/icons/square-arrow.svg";
 import { DocumentManager } from "@/widgets/document-manager";
 import { PendingRequestCard } from "@/features/case-request-access";
+import { LoadingShimmers } from "@/shared/ui";
 
 interface CaseAccessRequest {
   id: string;
@@ -244,10 +245,10 @@ export function CaseDetailPage() {
         <div className="space-y-6 bg-white p-2">
           {loading ? (
             <div className="space-y-6 bg-white p-6">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded mb-4 w-1/2"></div>
-                <div className="h-6 bg-gray-200 rounded mb-3 w-1/3"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
+              <LoadingShimmers.CaseHeader />
+              <div className="space-y-4">
+                <LoadingShimmers.Table rows={3} />
+                <LoadingShimmers.Timeline events={2} />
               </div>
             </div>
           ) : (
@@ -443,12 +444,7 @@ export function CaseDetailPage() {
         {activeTab === "engagement" && (
           <div className="space-y-6">
             {loadingRequests && (
-              <div className="bg-white rounded-lg p-6 animate-pulse">
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-              </div>
+              <LoadingShimmers.PendingRequests />
             )}
             {!pendingRequests.length && !loadingRequests && (
               <div className="text-center py-12">

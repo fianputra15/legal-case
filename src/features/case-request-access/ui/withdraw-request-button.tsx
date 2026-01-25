@@ -5,6 +5,7 @@ interface WithdrawRequestButtonProps {
   caseId: string;
   onSuccess?: (caseId: string) => void;
   onError?: (message: string) => void;
+  onWithdrawRequest?: (caseId: string) => void;
   className?: string;
   children?: React.ReactNode;
 }
@@ -13,13 +14,20 @@ export function WithdrawRequestButton({
   caseId, 
   onSuccess, 
   onError, 
+  onWithdrawRequest,
   className = "px-3 py-1.5 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors cursor-pointer",
   children = "Withdraw"
 }: WithdrawRequestButtonProps) {
   const { isWithdrawing, handleWithdrawRequest } = useAccessRequest();
 
   const handleClick = () => {
-    handleWithdrawRequest(caseId, onSuccess, onError);
+    // If onWithdrawRequest is provided (for confirmation flow), use it
+    if (onWithdrawRequest) {
+      onWithdrawRequest(caseId);
+    } else {
+      // Otherwise, use the direct API call
+      handleWithdrawRequest(caseId, onSuccess, onError);
+    }
   };
 
   return (

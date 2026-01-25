@@ -2,16 +2,20 @@
   import { MainLayout } from "@/widgets/layout";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
-import { CaseList, CaseFilters, CaseCardProps } from '@/shared/ui';
+import { CaseList, CaseFilters, CaseCardProps, Typography } from '@/shared/ui';
 import { apiClient, ApiError } from '@/shared/api';
 import { ApiResponse, CasesListResponse } from '@/shared/types';
 import { useRouter } from "next/navigation";
 import { useAccessRequest } from "@/features";
+import { useModal } from "@/shared/providers/modal-provider";
+import WarningIcon from "../../../../public/icons/warning.svg";
+import Image from "next/image";
 
 
 export default function HomePage() {
   const { user } = useAuth();
   const { handleRequestAccess } = useAccessRequest();
+  const { showModal } = useModal();
   const router = useRouter();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +52,45 @@ export default function HomePage() {
 
   const handleRequestError = (message: string) => {
     alert(`Failed to request access: ${message}`);
+  };
+
+  const handleWithdrawRequest = (caseId: string) => {
+    showModal({
+      title: (<div className="flex items-center gap-4 mb-4">
+        <Image src={WarningIcon} alt="Warning" width={20} height={20} />
+        <Typography variant="sm" weight="medium">Withdraw access request?</Typography></div>),
+      description: "You'll be removed from the client's list of requesting lawyers. You can request access again later.",
+      confirmText: "Withdraw",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/cases/${caseId}/request-access`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            // Update the cases to remove pending request
+            setCases(prevCases =>
+              prevCases.map(caseItem =>
+                caseItem.id === caseId
+                  ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
+                  : caseItem
+              )
+            );
+            
+            alert('Access request withdrawn successfully!');
+          } else {
+            const data = await response.json();
+            alert(`Failed to withdraw request: ${data.message || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('Error withdrawing request:', error);
+          alert('Failed to withdraw request. Please try again.');
+        }
+      }
+    });
   };
 
   const handleWithdrawSuccess = (caseId: string) => {
@@ -143,6 +186,7 @@ export default function HomePage() {
           onRetry={() => window.location.reload()}
           onRequestSuccess={handleRequestSuccess}
           onRequestError={handleRequestError}
+          onWithdrawRequest={handleWithdrawRequest}
           onWithdrawSuccess={handleWithdrawSuccess}
           onWithdrawError={handleWithdrawError}
           onEdit={handleEdit}

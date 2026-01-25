@@ -27,6 +27,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
   requestedAt = null,
   onRequestSuccess,
   onRequestError,
+  onWithdrawRequest,
   onWithdrawSuccess,
   onWithdrawError,
   onEdit,
@@ -37,9 +38,15 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-lg transition-shadow">
       {/* Category and Status Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+        <div className="flex items-center gap-2">
+          <Typography className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full" variant="xs" weight="normal">
           {getCategoryLabel(category)}
-        </span>
+        </Typography>
+        <Typography className=" text-gray-700 px-2 py-1" variant="xs" weight="normal">
+          Singapore
+        </Typography>
+        </div>
+       
         <span className="text-xs text-sub600">{formatDate(createdAt)}</span>
       </div>
 
@@ -131,6 +138,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
               caseId={id}
               onSuccess={onWithdrawSuccess}
               onError={onWithdrawError}
+              onWithdrawRequest={onWithdrawRequest}
               className="text-xs font-medium p-2 rounded transition-colors cursor-pointer bg-red-100 text-red-700 hover:bg-red-200"
             >
               Withdraw Request

@@ -13,5 +13,8 @@ export { CaseFilters } from './case-filters';
 export { DocumentUploadModal } from './document-upload';
 export { DocumentList } from './document-list';
 
+// Loading components
+export { LoadingShimmer, LoadingShimmers } from './loading-shimmer';
+
 // Export types
 export type { CaseCardProps } from './case-card';
