@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useCreateCase } from "../model";
-import { categoryOptions, priorityOptions } from "../model/constants";
+import { categoryOptions } from "../model/constants";
 import { FormField } from "@/shared/ui";
 import { CreateCaseFormData } from "@/shared/types";
 
@@ -83,16 +83,6 @@ export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
           required
         />
 
-        {/* Priority */}
-        <FormField
-          type="select"
-          name="priority"
-          label="Priority Level"
-          value={form.priority as number}
-          onChange={handleChange}
-          options={priorityOptions}
-          hint="Indicate how urgent this case is for you."
-        />
 
         {/* Case Description */}
         <FormField
