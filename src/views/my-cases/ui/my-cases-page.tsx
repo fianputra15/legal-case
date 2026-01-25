@@ -5,7 +5,7 @@ import { useAuth } from "@/shared/lib/auth";
 import { apiClient, ApiError } from "@/shared/api";
 import { ApiResponse, CasesListResponse } from "@/shared/types";
 import { MainLayout } from "@/widgets/layout";
-import { CaseList, CaseFilters, CaseCardProps } from "@/shared/ui";
+import { CaseList, CaseFilters, CaseCardProps, Button } from "@/shared/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -22,9 +22,12 @@ function MyCasesContent() {
   const [status, setStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
-  const handleEdit = useCallback((caseId: string) => {
-    router.push(`/edit-case/${caseId}`);
-  }, [router]);
+  const handleEdit = useCallback(
+    (caseId: string) => {
+      router.push(`/edit-case/${caseId}`);
+    },
+    [router],
+  );
 
   useEffect(() => {
     const loadCases = async () => {
@@ -39,16 +42,20 @@ function MyCasesContent() {
         const response = await apiClient.get<ApiResponse<CasesListResponse>>(
           `/api/my-cases?${params.toString()}`,
         );
-        const casesData = (response.data?.cases || []).map(
-          (caseItem) => ({
-            ...caseItem,
-            createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
-            updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
-            userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
-            showOwner: user?.role === "LAWYER", // Show owner for lawyers in My Cases too
-            onEdit: handleEdit,
-          }),
-        );
+        const casesData = (response.data?.cases || []).map((caseItem) => ({
+          ...caseItem,
+          createdAt:
+            typeof caseItem.createdAt === "string"
+              ? caseItem.createdAt
+              : caseItem.createdAt.toISOString(),
+          updatedAt:
+            typeof caseItem.updatedAt === "string"
+              ? caseItem.updatedAt
+              : caseItem.updatedAt.toISOString(),
+          userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
+          showOwner: user?.role === "LAWYER", // Show owner for lawyers in My Cases too
+          onEdit: handleEdit,
+        }));
         setCases(casesData);
         setTotalCases(
           response.data?.pagination?.total || response.data?.cases?.length || 0,
@@ -71,29 +78,17 @@ function MyCasesContent() {
     <div className="space-y-6 bg-white p-6">
       {/* Header Section */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          {user?.role === "CLIENT" && (
-            <Link
-              href="/create-case"
-              className="bg-brand text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-brand-orange-600 transition-colors inline-flex items-center gap-2"
+        {user?.role === "CLIENT" && (
+          <div className="flex">
+            <Button
+              onClick={() => router.push("/create-case")}
+              className="ml-auto"
+              variant="default"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Create New Case
-            </Link>
-          )}
-        </div>
+              Add Case
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Filters Bar */}

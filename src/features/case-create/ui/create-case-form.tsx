@@ -41,9 +41,6 @@ export function CreateCaseForm({ onCancel }: CreateCaseFormProps) {
   return (
     <div className="mx-auto bg-white p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-strong900 mb-2">
-          Create New Legal Case
-        </h1>
         <p className="text-sub600">
           Please provide the details for your new legal case. All fields marked with * are required.
         </p>
