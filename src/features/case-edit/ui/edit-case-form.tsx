@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useEditCase, categoryOptions, statusOptions } from "../model";
-import { FormField } from "@/shared/ui";
+import { FormField, LoadingShimmer } from "@/shared/ui";
 import type { EditCaseForm } from "../api";
 
 interface EditCaseFormProps {
@@ -74,10 +74,37 @@ export function EditCaseForm({ caseId, onCancel }: EditCaseFormProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sub600">Loading case...</span>
+      <div className="mx-auto bg-white p-6">
+        <div className="space-y-6">
+          {/* Case Title Shimmer */}
+          <div className="space-y-2">
+            <LoadingShimmer width="w-24" height="h-4" />
+            <LoadingShimmer width="full" height="h-10" className="rounded-lg" />
+          </div>
+          
+          {/* Legal Category Shimmer */}
+          <div className="space-y-2">
+            <LoadingShimmer width="w-32" height="h-4" />
+            <LoadingShimmer width="full" height="h-10" className="rounded-lg" />
+          </div>
+          
+          {/* Case Status Shimmer */}
+          <div className="space-y-2">
+            <LoadingShimmer width="w-28" height="h-4" />
+            <LoadingShimmer width="full" height="h-10" className="rounded-lg" />
+          </div>
+          
+          {/* Case Description Shimmer */}
+          <div className="space-y-2">
+            <LoadingShimmer width="w-36" height="h-4" />
+            <LoadingShimmer width="full" height="h-32" className="rounded-lg" />
+          </div>
+          
+          {/* Action Buttons Shimmer */}
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
+            <LoadingShimmer width="w-16" height="h-12" className="rounded-lg" />
+            <LoadingShimmer width="w-32" height="h-12" className="rounded-lg" />
+          </div>
         </div>
       </div>
     );
