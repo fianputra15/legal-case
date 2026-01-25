@@ -30,7 +30,6 @@ export function useCreateCase() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create case";
       setError(errorMessage);
-      console.error("Error creating case:", err);
       return { success: false, error: errorMessage };
     } finally {
       setIsSubmitting(false);

@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { caseFilterOptions } from '@/shared/lib/case-utils';
+import React from "react";
+import { caseFilterOptions } from "@/shared/lib/case-utils";
+import { useAuth } from "@/shared/lib";
 
 interface CaseFiltersProps {
   category: string;
@@ -28,9 +29,9 @@ export const CaseFilters: React.FC<CaseFiltersProps> = ({
   onCategoryChange,
   onStatusChange,
   onSortChange,
-  totalCases,
   filteredCount,
 }) => {
+  const { user } = useAuth();
   return (
     <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
       {/* Left side */}
@@ -47,9 +48,7 @@ export const CaseFilters: React.FC<CaseFiltersProps> = ({
 
         {/* Category */}
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-sub600">
-            Category:
-          </label>
+          <label className="text-sm font-medium text-sub600">Category:</label>
           <select
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white min-w-32"
             value={category}
@@ -80,9 +79,7 @@ export const CaseFilters: React.FC<CaseFiltersProps> = ({
         </div>
 
         {/* Showing count */}
-        <div className="text-sm text-sub600">
-          Showing {filteredCount} cases
-        </div>
+        <div className="text-sm text-sub600">Showing {filteredCount} cases</div>
       </div>
 
       {/* Right side */}

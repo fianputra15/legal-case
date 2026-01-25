@@ -1,16 +1,21 @@
 "use client";
-  import { MainLayout } from "@/widgets/layout";
+import { MainLayout } from "@/widgets/layout";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/lib/auth";
-import { CaseList, CaseFilters, CaseCardProps, Typography } from '@/shared/ui';
-import { apiClient, ApiError } from '@/shared/api';
-import { ApiResponse, CasesListResponse } from '@/shared/types';
+import {
+  CaseList,
+  CaseFilters,
+  CaseCardProps,
+  Typography,
+  Button,
+} from "@/shared/ui";
+import { apiClient, ApiError } from "@/shared/api";
+import { ApiResponse, CasesListResponse } from "@/shared/types";
 import { useRouter } from "next/navigation";
 import { useAccessRequest } from "@/features";
 import { useModal } from "@/shared/providers/modal-provider";
 import WarningIcon from "../../../../public/icons/warning.svg";
 import Image from "next/image";
-
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -19,7 +24,7 @@ export default function HomePage() {
   const router = useRouter();
   const [cases, setCases] = useState<CaseCardProps[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [totalCases, setTotalCases] = useState(0);
 
   // Filter states
@@ -32,22 +37,28 @@ export default function HomePage() {
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage] = useState(10); // Fixed items per page
 
-
-  const handleEdit = useCallback((caseId: string) => {
-    router.push(`/edit-case/${caseId}`);
-  }, [router]);
+  const handleEdit = useCallback(
+    (caseId: string) => {
+      router.push(`/edit-case/${caseId}`);
+    },
+    [router],
+  );
 
   const handleRequestSuccess = (caseId: string) => {
     // Update the case in local state to show pending request
-    setCases(prevCases => 
-      prevCases.map(c => 
-        c.id === caseId 
-          ? { ...c, hasPendingRequest: true, requestedAt: new Date().toISOString() }
-          : c
-      )
+    setCases((prevCases) =>
+      prevCases.map((c) =>
+        c.id === caseId
+          ? {
+              ...c,
+              hasPendingRequest: true,
+              requestedAt: new Date().toISOString(),
+            }
+          : c,
+      ),
     );
-    
-    alert('Access request submitted successfully!');
+
+    alert("Access request submitted successfully!");
   };
 
   const handleRequestError = (message: string) => {
@@ -56,54 +67,62 @@ export default function HomePage() {
 
   const handleWithdrawRequest = (caseId: string) => {
     showModal({
-      title: (<div className="flex items-center gap-4 mb-4">
-        <Image src={WarningIcon} alt="Warning" width={20} height={20} />
-        <Typography variant="sm" weight="medium">Withdraw access request?</Typography></div>),
-      description: "You'll be removed from the client's list of requesting lawyers. You can request access again later.",
+      title: (
+        <div className="flex items-center gap-4 mb-4">
+          <Image src={WarningIcon} alt="Warning" width={20} height={20} />
+          <Typography variant="sm" weight="medium">
+            Withdraw access request?
+          </Typography>
+        </div>
+      ),
+      description:
+        "You'll be removed from the client's list of requesting lawyers. You can request access again later.",
       confirmText: "Withdraw",
       cancelText: "Cancel",
       variant: "destructive",
       onConfirm: async () => {
         try {
           const response = await fetch(`/api/cases/${caseId}/request-access`, {
-            method: 'DELETE',
-            credentials: 'include',
+            method: "DELETE",
+            credentials: "include",
           });
 
           if (response.ok) {
             // Update the cases to remove pending request
-            setCases(prevCases =>
-              prevCases.map(caseItem =>
+            setCases((prevCases) =>
+              prevCases.map((caseItem) =>
                 caseItem.id === caseId
                   ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
-                  : caseItem
-              )
+                  : caseItem,
+              ),
             );
-            
-            alert('Access request withdrawn successfully!');
+
+            alert("Access request withdrawn successfully!");
           } else {
             const data = await response.json();
-            alert(`Failed to withdraw request: ${data.message || 'Unknown error'}`);
+            alert(
+              `Failed to withdraw request: ${data.message || "Unknown error"}`,
+            );
           }
         } catch (error) {
-          console.error('Error withdrawing request:', error);
-          alert('Failed to withdraw request. Please try again.');
+          console.error("Error withdrawing request:", error);
+          alert("Failed to withdraw request. Please try again.");
         }
-      }
+      },
     });
   };
 
   const handleWithdrawSuccess = (caseId: string) => {
     // Update the cases to remove pending request
-    setCases(prevCases =>
-      prevCases.map(caseItem =>
+    setCases((prevCases) =>
+      prevCases.map((caseItem) =>
         caseItem.id === caseId
           ? { ...caseItem, hasPendingRequest: false, requestedAt: null }
-          : caseItem
-      )
+          : caseItem,
+      ),
     );
-    
-    alert('Access request withdrawn successfully!');
+
+    alert("Access request withdrawn successfully!");
   };
 
   const handleWithdrawError = (message: string) => {
@@ -114,7 +133,7 @@ export default function HomePage() {
     const fetchCases = async () => {
       try {
         setLoading(true);
-        setError('');
+        setError("");
         const params = new URLSearchParams();
         if (category !== "all") params.append("category", category);
         if (status !== "all") params.append("status", status);
@@ -122,28 +141,37 @@ export default function HomePage() {
         params.append("limit", itemsPerPage.toString());
         params.append("sortBy", sortBy);
 
-        const response = await apiClient.get<ApiResponse<CasesListResponse>>(`/api/cases?${params.toString()}`);
-        
+        const response = await apiClient.get<ApiResponse<CasesListResponse>>(
+          `/api/cases?${params.toString()}`,
+        );
+
         const casesData = (response.data?.cases || []).map((caseItem) => ({
           ...caseItem,
-          createdAt: typeof caseItem.createdAt === 'string' ? caseItem.createdAt : caseItem.createdAt.toISOString(),
-          updatedAt: typeof caseItem.updatedAt === 'string' ? caseItem.updatedAt : caseItem.updatedAt.toISOString(),
-          userRole: user?.role as 'CLIENT' | 'LAWYER' | 'ADMIN',
-          showOwner: user?.role === 'LAWYER', // Show owner for lawyers
+          createdAt:
+            typeof caseItem.createdAt === "string"
+              ? caseItem.createdAt
+              : caseItem.createdAt.toISOString(),
+          updatedAt:
+            typeof caseItem.updatedAt === "string"
+              ? caseItem.updatedAt
+              : caseItem.updatedAt.toISOString(),
+          userRole: user?.role as "CLIENT" | "LAWYER" | "ADMIN",
+          showOwner: user?.role === "LAWYER", // Show owner for lawyers
           onRequestAccess: handleRequestAccess,
           onEdit: handleEdit,
         }));
-        
+
         setCases(casesData);
-        const total = response.data?.pagination?.total || response.data?.cases?.length || 0;
+        const total =
+          response.data?.pagination?.total || response.data?.cases?.length || 0;
         setTotalCases(total);
         setTotalPages(Math.ceil(total / itemsPerPage));
       } catch (err) {
-        console.error('Error fetching cases:', err);
+        console.error("Error fetching cases:", err);
         if (err instanceof ApiError) {
           setError(`Failed to load cases: ${err.message}`);
         } else {
-          setError('Failed to load cases. Please try again.');
+          setError("Failed to load cases. Please try again.");
         }
       } finally {
         setLoading(false);
@@ -151,7 +179,16 @@ export default function HomePage() {
     };
 
     fetchCases();
-  }, [category, status, sortBy, currentPage, user, handleEdit, itemsPerPage, handleRequestAccess]);
+  }, [
+    category,
+    status,
+    sortBy,
+    currentPage,
+    user,
+    handleEdit,
+    itemsPerPage,
+    handleRequestAccess,
+  ]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -160,7 +197,7 @@ export default function HomePage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -177,7 +214,11 @@ export default function HomePage() {
           totalCases={totalCases}
           filteredCount={cases.length}
         />
-
+        {user?.role === "CLIENT" && (
+            <div className="flex">
+              <Button onClick={() => router.push('/create-case')} className="ml-auto" variant="default">Add Case</Button>
+            </div>
+          )}
         {/* Cases List */}
         <CaseList
           cases={cases}
@@ -192,11 +233,11 @@ export default function HomePage() {
           onEdit={handleEdit}
           emptyStateConfig={{
             title: "No Cases Found",
-            description: 
+            description:
               category !== "all" || status !== "all"
                 ? "No cases match your current filters."
                 : "No cases are available at the moment.",
-            showCreateButton: user?.role === 'CLIENT',
+            showCreateButton: user?.role === "CLIENT",
             createButtonText: "Create Your First Case",
             createButtonHref: "/create-case",
           }}
